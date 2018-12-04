@@ -49,7 +49,14 @@ public:
     /// generated, which deallocates memory with operator delete(getData()).
     /// If cb is not nullptr, and copy is true, then caller must free
     /// the memory
+	/// If copy is false, then nothing happens on deletion unless cb
+	/// is provided
     Buffer(void* ptr, size_t size, bool copy=false, DeleteCb cb=nullptr);
+
+	/// Create a bffer via copy (new memory extent is allocated).
+	/// Same as BUffer(ptr, size, true, cb), except that it accepts
+	/// const void * pointer.
+	Buffer(const void *ptr, size_t size, DeleteCb cb=nullptr);
 
     /// Set new callback, which will be called in destructor. Previous
     /// callback is returned
@@ -97,7 +104,7 @@ public:
     {
         T res;
         std::tie(res, buf)=extract<T>(buf);
-        return std::copy(res);
+        return res;
     }
 
     /// Create a buffer of given size
@@ -136,6 +143,28 @@ public:
         T val=*static_cast<T*>(buf->data_);
         return std::make_tuple(val, rest);
     }
+
+	/// Same as extractString, but an arbitrary item, which supports
+	/// delerialization from buffer, is constructed
+	/// The item must implement T(Buffer &buf) constructor, which
+	/// deserializes itself, and modifies buf to point to the tail
+	template<class T>
+	static std::tuple<T, BufferPtr> extractItem(const BufferPtr &buf)
+	{
+		BufferPtr b(buf);
+		T item(b);
+		return std::tuple<T, BufferPtr>(item, b);
+	}
+
+	/// Same as extractItem, but the item is returned.
+	/// The BufferPtr is modified to be the tail
+	template<class T>
+	static T popItem(BufferPtr &buf)
+	{
+		T res;
+		std::tie(res, buf)=extractItem<T>(buf);
+		return res;
+	}
 
 private:
     void *data_;

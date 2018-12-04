@@ -121,21 +121,21 @@ void RtsEnv::send_value(const LocatorPtr &dest, const Id &cf,
 void RtsEnv::transmit_cf(const NodeId &dest, const Id &id,
 	const CfLogicPtr &cf)
 {
-	size_t size=get_size(id)+get_size(*cf);
-	char *buf=new char[size];
+	Buffers bufs;
 
-	size_t ofs=serialize(buf, size, id);
-	assert(ofs<=size);
-	ofs+=serialize(buf+ofs, size-ofs, *cf);
-	assert(ofs==size);
-	
-	rts_->comm_.send(dest, RTS::TAG_CF, buf, size);
+	id.serialize(bufs);
+	cf->serialize(bufs);
 
-	delete buf;
+	bufs.push_front(Buffer::create(RTS::TAG_CF));
+	rts_->comm_.send(dest, bufs);
 }
 
-void RtsEnv::receive_cf(const NodeId &src, const void *buf, size_t size)
+void RtsEnv::receive_cf(const NodeId &src, const BufferPtr &buf)
 {
+	BufferPtr b(buf);
+	Id id=Buffer::popItem<Id>(b);
+
+	NIMPL /*
 	printf("START\n");
 	const char *cbuf=static_cast<const char *>(buf);
 	size_t ofs=0;
@@ -159,31 +159,25 @@ void RtsEnv::receive_cf(const NodeId &src, const void *buf, size_t size)
 		id->to_string().c_str(), (int)src);
 	printf("SUBMIT\n");
 	submit_cf(*id, cf);
-	printf("END\n");
+	printf("END\n");*/
 }
 
 void RtsEnv::transmit_df(const NodeId &dest, const Id &id,
 	const DfLogicPtr &df, const ValuePtr &val)
 {
-	size_t size=get_size(id)+get_size(*df)+get_size(*val);
-	char *buf=new char[size];
+	Buffers bufs;
 
-	size_t ofs=serialize(buf, size, id);
-	assert(ofs<=size);
-	ofs+=serialize(buf+ofs, size-ofs, *df);
-	assert(ofs<=size);
-	ofs+=serialize(buf+ofs, size-ofs, *val);
-	assert(ofs==size);
-	
-	printf("%d: send df `%s` to %d\n", (int)rts_->comm_.get_rank(),
-		id.to_string().c_str(), (int)dest);
-	rts_->comm_.send(dest, RTS::TAG_DF, buf, size);
+	id.serialize(bufs);
+	df->serialize(bufs);
+	val->serialize(bufs);
 
-	delete buf;
+	bufs.push_front(Buffer::create(RTS::TAG_DF));
+	rts_->comm_.send(dest, bufs);
 }
 
-void RtsEnv::receive_df(const NodeId &src, const void *buf, size_t size)
+void RtsEnv::receive_df(const NodeId &src, const BufferPtr &buf)
 {
+	NIMPL /*
 	const char *cbuf=static_cast<const char *>(buf);
 	size_t ofs=0;
 	std::pair<size_t, factory::Serializable *> res;
@@ -202,53 +196,32 @@ void RtsEnv::receive_df(const NodeId &src, const void *buf, size_t size)
 	printf("%d: received df `%s` from %d\n", (int)rts_->comm_.get_rank(),
 		id->to_string().c_str(), (int)src);
 	submit_df(*id, df, val);
+*/
 }
 
 void RtsEnv::transmit_df_to_cf(const NodeId &dest, const LocatorPtr &loc,
 	const Id &cf, const Id &df, const ValuePtr &val)
 {
-	size_t size=get_size(*loc)+get_size(cf)+get_size(df)+get_size(*val);
-	char *buf=new char[size];
+	Buffers bufs;
 
-	size_t ofs=serialize(buf, size, *loc);
-	assert(ofs<=size);
-	ofs+=serialize(buf+ofs, size-ofs, df);
-	assert(ofs<=size);
-	ofs+=serialize(buf+ofs, size-ofs, cf);
-	assert(ofs<=size);
-	ofs+=serialize(buf+ofs, size-ofs, *val);
-	assert(ofs==size);
-	
-	rts_->comm_.send(dest, RTS::TAG_DF_VALUE, buf, size);
+	loc->serialize(bufs);
+	cf.serialize(bufs);
+	df.serialize(bufs);
+	val->serialize(bufs);
 
-	delete buf;
+	bufs.push_front(Buffer::create(RTS::TAG_DF_VALUE));
+	rts_->comm_.send(dest, bufs);
 }
 
-void RtsEnv::receive_df_to_cf(const NodeId &src, const void *buf,
-	size_t size)
+void RtsEnv::receive_df_to_cf(const NodeId &src, const BufferPtr &cbuf)
 {
-	const char *cbuf=static_cast<const char *>(buf);
-	size_t ofs=0;
-	std::pair<size_t, factory::Serializable *> res;
+	BufferPtr buf(cbuf);
+	LocatorPtr loc(dynamic_cast<Locator*>(rts_->construct(buf)));
+	Id cf=Buffer::popItem<Id>(buf);
+	Id df=Buffer::popItem<Id>(buf);
+	ValuePtr val(dynamic_cast<Value*>(rts_->construct(buf)));
 
-	res=factory::deserialize(cbuf+ofs, size-ofs); ofs+=res.first;
-	LocatorPtr loc(dynamic_cast<Locator*>(res.second)); assert(loc.get());
-
-	res=factory::deserialize(cbuf+ofs, size-ofs); ofs+=res.first;
-	IdPtr df(dynamic_cast<Id*>(res.second)); assert(df.get());
-
-	res=factory::deserialize(cbuf+ofs, size-ofs); ofs+=res.first;
-	IdPtr cf(dynamic_cast<Id*>(res.second)); assert(cf.get());
-
-	res=factory::deserialize(cbuf+ofs, size-ofs); ofs+=res.first;
-	ValuePtr val(dynamic_cast<Value*>(res.second)); assert(val.get());
-
-	assert(ofs==size);
-
-	printf("%d: received df `%s` from %d for cf `%s`\n",
-		(int)rts_->comm_.get_rank(),
-		df->to_string().c_str(), (int)src, cf->to_string().c_str());
-	send_value(loc, *cf, *df, val);
+	send_value(loc, cf, df, val);
 }
 
 void RtsEnv::issue_request(const Request &req)

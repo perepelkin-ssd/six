@@ -12,6 +12,9 @@
 #include "id.h"
 #include "idle_stopper.h"
 #include "rts_env.h"
+#include "serialization_tags.h"
+
+typedef std::function<Serializable *(BufferPtr &)> Constructor;
 
 class RTS
 {
@@ -23,6 +26,8 @@ public:
 
 	// Root node is the first node to wait. 
 	void wait_all(bool is_root_node);
+
+	Constructor set_constructor(STAGS tag, Constructor);
 private:
 	std::mutex m_;
 	std::condition_variable cv_;
@@ -30,6 +35,7 @@ private:
 	RtsEnv env_;
 	IdleStopper<NodeId> *stopper_;
 	bool idle_flag_;
+	std::map<STAGS, Constructor> cons_;
 
 	friend class RtsEnv;
 
@@ -41,8 +47,9 @@ private:
 		TAG_IDLE
 	};
 
-	void on_message(const NodeId &src, const Tag &tag, const void *buf,
-		size_t size);
+	void on_message(const NodeId &src, BufferPtr);
+
+	Serializable *construct(BufferPtr &);
 };
 
 #endif // RTS_H_

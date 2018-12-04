@@ -18,11 +18,12 @@ void mpi_comm_test()
 	bool stop_flag=false;
 
 	comm.set_handler([&m, &cv, &comm, &stop_flag](
-			const NodeId &, const Tag&, const void *, size_t) {
+			const NodeId &, const BufferPtr &buf) {
 		std::lock_guard<std::mutex> lk(m);
 
 		if (comm.get_rank()!=0) {
-			comm.send((comm.get_rank()+1)%comm.get_size(), 0, nullptr, 0);
+			comm.send((comm.get_rank()+1)%comm.get_size(),
+				{BufferPtr(new Buffer(0))});
 		}
 
 		stop_flag=true;
@@ -32,7 +33,8 @@ void mpi_comm_test()
 	comm.start();
 
 	if (comm.get_rank()==0) {
-		comm.send((comm.get_rank()+1)%comm.get_size(), 0, nullptr, 0);
+		comm.send((comm.get_rank()+1)%comm.get_size(),
+			{BufferPtr(new Buffer(0))});
 	}
 
 	std::unique_lock<std::mutex> lk(m);

@@ -14,6 +14,17 @@ Id::Id(const std::vector<int> &idx, const std::string &label)
 	}
 }
 
+Id::Id(BufferPtr &buf)
+{
+	size_t indices_count=Buffer::pop<size_t>(buf);
+
+	for (auto i=0u; i<indices_count; i++) {
+		push_back(Buffer::pop<int>(buf));
+	}
+
+	label_=Buffer::popString(buf);
+}
+
 std::string Id::to_string() const
 {
 	std::ostringstream os;
@@ -43,68 +54,6 @@ std::string Id::to_string() const
 	return os.str();
 }
 
-size_t Id::get_size() const
-{
-	// serialized format:
-	// <size_t label_len> <char []label> <size_t idx_count> <int []indices>
-	return sizeof(size_t)+label_.size()+sizeof(size_t)+size()*sizeof(int);
-}
-
-size_t Id::serialize(void *buf, size_t buf_size) const
-{
-	assert(get_size()<=buf_size);
-
-	char *cur=static_cast<char*>(buf);
-
-	size_t idx_count=size();
-	size_t label_size=label_.size();
-	size_t ofs=0;
-
-	memcpy(cur+ofs, &label_size, sizeof(label_size));
-	ofs+=sizeof(label_size);
-	assert(ofs<=buf_size);
-
-	memcpy(cur+ofs, label_.c_str(), label_size); ofs+=label_size;
-	assert(ofs<=buf_size);
-
-	memcpy(cur+ofs, &idx_count, sizeof(idx_count)); ofs+=sizeof(idx_count);
-	assert(ofs<=buf_size);
-	for (auto i=0u; i<size(); i++) {
-		int val=at(i);
-		memcpy(cur+ofs, &val, sizeof(val)); ofs+=sizeof(val);
-		assert(ofs<=buf_size);
-	}
-
-	return ofs;
-}
-
-std::pair<size_t, factory::Serializable *> Id::deserialize(const void *buf,
-	size_t size)
-{
-	const char *cbuf=static_cast<const char*>(buf);
-	size_t ofs=0;
-
-	size_t label_len; assert(size-ofs>=sizeof(label_len));
-	memcpy(&label_len, cbuf+ofs, sizeof(label_len)); ofs+=sizeof(label_len);
-
-	assert(size-ofs>=label_len);
-	std::string label(cbuf+ofs, label_len);
-	ofs+=label_len;
-
-	size_t idx_count; assert(size-ofs>=sizeof(idx_count));
-	memcpy(&idx_count, cbuf+ofs, sizeof(idx_count)); ofs+=sizeof(idx_count);
-
-	std::vector<int> indices;
-
-	for (auto i=0u; i<idx_count; i++) {
-		int idx; assert(size-ofs>=sizeof(idx));
-		memcpy(&idx, cbuf+ofs, sizeof(idx)); ofs+=sizeof(idx);
-		indices.push_back(idx);
-	}
-
-	return std::make_pair(ofs, new Id(indices, label));
-}
-
 bool Id::operator<(const Id &id) const
 {
 	if (size() < id.size()) return true;
@@ -128,3 +77,13 @@ bool Id::operator==(const Id &id) const
 
 	return true;
 }
+
+void Id::serialize(Buffers &bufs) const
+{
+	bufs.push_back(Buffer::create<size_t>(size()));
+	
+	bufs.push_back(BufferPtr(new Buffer(data(), size()*sizeof(int))));
+
+	bufs.push_back(Buffer::create(label_));
+}
+

@@ -56,9 +56,9 @@ private:
 
 	friend class RTS;
 
-	void receive_cf(const NodeId &src, const void *buf, size_t size);
-	void receive_df(const NodeId &src, const void *buf, size_t size);
-	void receive_df_to_cf(const NodeId &src, const void *buf, size_t size);
+	void receive_cf(const NodeId &src, const BufferPtr &buf);
+	void receive_df(const NodeId &src, const BufferPtr &buf);
+	void receive_df_to_cf(const NodeId &src, const BufferPtr &buf);
 };
 
 

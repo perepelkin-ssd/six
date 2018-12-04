@@ -3,8 +3,9 @@
 
 #include "common.h"
 #include "fp.h"
-#include "rts.h"
 #include "mpi_comm.h"
+#include "rts.h"
+#include "serialization_tags.h"
 
 // TEST:
 /*
@@ -53,28 +54,13 @@ public:
 		on_consumed(env, b_);
 	}
 
-	virtual size_t get_size() const
+	virtual void serialize(Buffers &bufs) const
 	{
-		return loc_->get_size()+sizeof(consumptions_count_)
-			+x_.get_size()+b_.get_size()+b_loc_->get_size();
-	}
-
-	virtual size_t serialize(void *buf, size_t len) const
-	{
-		char *cbuf=static_cast<char*>(buf);
-		size_t ofs=0;
-		ofs+=loc_->serialize(cbuf+ofs, len-ofs);
-		
-		memcpy(cbuf+ofs, &consumptions_count_, sizeof(consumptions_count_));
-		ofs+=sizeof(consumptions_count_);
-
-		ofs+=x_.serialize(cbuf+ofs, len-ofs);
-		ofs+=b_.serialize(cbuf+ofs, len-ofs);
-		ofs+=b_loc_->serialize(cbuf+ofs, len-ofs);
-
-		assert(ofs<=len);
-
-		return ofs;
+		loc_->serialize(bufs);
+		bufs.push_back(Buffer::create(consumptions_count_));
+		x_.serialize(bufs);
+		b_.serialize(bufs);
+		b_loc_->serialize(bufs);
 	}
 };
 
@@ -96,15 +82,12 @@ public:
 		env.send_value(c_loc_, c_, y_, val);
 	}
 
-	virtual size_t get_size() const
+	virtual void serialize(Buffers &bufs) const
 	{
-		return y_.get_size()+c_.get_size()
-			+ c_loc_->get_size();
-	}
-
-	virtual size_t serialize(void *buf, size_t len) const
-	{
-		NIMPL
+		y_loc_->serialize(bufs);
+		y_.serialize(bufs);
+		c_.serialize(bufs);
+		c_loc_->serialize(bufs);
 	}
 };
 
@@ -128,8 +111,15 @@ public:
 		env.submit_df(x_, DfLogicPtr(new DfX(x_, b_, b_loc_)),
 			IntValue::create(5));
 	}
-	virtual size_t get_size() const NIMPL
-	virtual size_t serialize(void *buf, size_t len) const NIMPL
+
+	void serialize(Buffers &bufs) const
+	{
+		loc_->serialize(bufs);
+		a_.serialize(bufs);
+		x_.serialize(bufs);
+		b_.serialize(bufs);
+		b_loc_->serialize(bufs);
+	}
 };
 
 class CfB : public CfLogic
@@ -159,25 +149,15 @@ public:
 		env.submit_df(y_, DfLogicPtr(new DfY(y_loc_, y_, c_, c_loc_)),
 			IntValue::create(10+x_val));
 	}
-	virtual size_t get_size() const
+	void serialize(Buffers &bufs) const
 	{
-		return loc_->get_size()+b_.get_size()+x_.get_size()+y_.get_size()
-			+c_.get_size()+c_loc_->get_size()+y_loc_->get_size();
-	}
-	virtual size_t serialize(void *buf, size_t len) const
-	{
-		char *cbuf=static_cast<char*>(buf);
-		size_t ofs=0;
-
-		ofs+=loc_->serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=b_.serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=x_.serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=y_.serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=c_.serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=c_loc_->serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=y_loc_->serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-
-		return ofs;
+		loc_->serialize(bufs);
+		b_.serialize(bufs);
+		x_.serialize(bufs);
+		y_.serialize(bufs);
+		c_.serialize(bufs);
+		c_loc_->serialize(bufs);
+		y_loc_->serialize(bufs);
 	}
 };
 
@@ -210,23 +190,14 @@ public:
 
 		env.delete_df(y_, y_loc_);
 	}
-	virtual size_t get_size() const
-	{
-		return loc_->get_size()+c_.get_size()+x_.get_size()+y_.get_size()
-			+y_loc_->get_size();
-	}
-	virtual size_t serialize(void *buf, size_t len) const
-	{
-		char *cbuf=static_cast<char*>(buf);
-		size_t ofs=0;
 
-		ofs+=loc_->serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=c_.serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=x_.serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=y_.serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-		ofs+=y_loc_->serialize(cbuf+ofs, len-ofs); assert(ofs<=len);
-
-		return ofs;
+	void serialize(Buffers &bufs) const
+	{
+		loc_->serialize(bufs);
+		c_.serialize(bufs);
+		x_.serialize(bufs);
+		y_.serialize(bufs);
+		y_loc_->serialize(bufs);
 	}
 };
 
@@ -266,27 +237,24 @@ public:
 		env.submit_cf(b, bl);
 		env.submit_cf(c, cl);
 	}
-	virtual size_t get_size() const NIMPL
-	virtual size_t serialize(void *buf, size_t len) const NIMPL
+	virtual void serialize(Buffers &) const NIMPL
 };
 
-void factory_init()
+void init_stags(RTS &rts)
 {
-	factory::set_constructor(std::type_index(typeid(Id)),
-		[](const void *buf, size_t size) {
-			return Id::deserialize(buf, size);
+	rts.set_constructor(STAG_Locator_CyclicLocator, [](BufferPtr &buf){
+		return new CyclicLocator(buf);
 	});
 
-	factory::set_constructor(std::type_index(typeid(CyclicLocator)),
-		[](const void *buf, size_t size) {
-			return CyclicLocator::deserialize(buf, size);
+	rts.set_constructor(STAG_Value_IntValue, [](BufferPtr &buf){
+		return new IntValue(buf);
 	});
 }
 
 void test_all();
 int main(int argc, char **argv)
 {
-	factory_init();
+	printf("\033[32;1mNEXT: continue implementation until test works\033[0m\n");
 	int desired=MPI_THREAD_MULTIPLE, provided;
 	MPI_Init_thread(&argc, &argv, desired, &provided);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -298,6 +266,8 @@ int main(int argc, char **argv)
 	rank=comm.get_rank();
 
 	RTS rts(comm);
+
+	init_stags(rts);
 
 	auto &env=rts.get_env();
 	if (rank==0) {
@@ -313,7 +283,6 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void factory_test();
 void thread_pool_test();
 void idle_stopper_test();
 void mpi_comm_test();
@@ -332,9 +301,6 @@ void note(const std::string &msg)
 void test_all()
 {
 #ifndef NDEBUG
-	note("Factory: ...");
-	factory_test();
-	note("OK\n");
 	note("ThreadPool: ...");
 	for (int i=0; i<2; i++) 
 		thread_pool_test();
@@ -347,54 +313,8 @@ void test_all()
 		mpi_comm_test();
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
-
-	test_mpi_factory();
-
 	note("OK\n");
 	note("All tests passed.\n");
 #endif // NDEBUG
 }
 
-void test_mpi_factory()
-{
-	std::mutex m;
-	std::condition_variable cv;
-	bool flag=false;
-	MpiComm comm(MPI_COMM_WORLD);
-	if (comm.get_rank()+1==(int)comm.get_size()) {
-		comm.set_handler([&](const NodeId &from, const Tag &,
-				const void *buf, size_t size){
-			std::lock_guard<std::mutex> lk(m);
-
-			flag=true;
-			cv.notify_all();
-
-			auto res=factory::deserialize(buf, size);
-			Id *id=dynamic_cast<Id *>(res.second);
-
-			printf("ID=%s, %s\n", id->to_string().c_str(),
-				(*id==Id({1,2,3}, "hello")? "eq": "neq"));
-
-			delete id;
-		});
-	}
-	comm.start();
-	if (comm.get_rank()==0) {
-		Id id({1,2,3}, "hello");
-		
-		char buf[get_size(id)];
-		serialize(buf, get_size(id), id);
-		comm.send(comm.get_size()-1, 0, buf, get_size(id));
-	}
-
-	if (comm.get_rank()+1==(int)comm.get_size()) {
-		std::unique_lock<std::mutex> lk(m);
-
-		while(!flag) {
-			cv.wait(lk);
-		}
-	}
-
-	MPI_Barrier(MPI_COMM_WORLD);
-	comm.stop();
-}

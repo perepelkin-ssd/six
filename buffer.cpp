@@ -27,6 +27,20 @@ Buffer::Buffer(void *ptr, size_t size, bool copy, Buffer::DeleteCb cb)
     }
 }
 
+Buffer::Buffer(const void *ptr, size_t size, Buffer::DeleteCb cb)
+{
+	data_=operator new(size);
+	size_=size;
+	memcpy(data_, ptr, size);
+	if (cb) {
+		cb_=cb;
+	} else {
+		cb_=[this]() {
+			operator delete(getData());
+		};
+	}
+}
+
 Buffer::DeleteCb Buffer::setDeleteCb(Buffer::DeleteCb cb)
 {
     auto res=cb_;

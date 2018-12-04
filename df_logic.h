@@ -3,8 +3,9 @@
 #include <memory>
 
 #include "df_env.h"
+#include "serializable.h"
 
-class DfLogic : public factory::Serializable
+class DfLogic : public Serializable
 {
 public:
 	virtual ~DfLogic() {}

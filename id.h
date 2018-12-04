@@ -5,28 +5,28 @@
 #include <string>
 #include <vector>
 
-#include "factory.h"
+#include "serializable.h"
 
 typedef std::string Name;
 
-class Id : public std::vector<int>, public factory::Serializable
+class Id : public std::vector<int>, public Serializable
 {
 public:
 	Id(const std::vector<int> &idx=std::vector<int>(),
 		const std::string &label=std::string());
+	Id(BufferPtr &);
 
 	void set_label(const std::string &label);
 
 	std::string to_string() const;
 
-	virtual size_t get_size() const;
-	virtual size_t serialize(void *buf, size_t) const;
-
-	static std::pair<size_t, Serializable *> deserialize(const void *,
-		size_t);
-
 	bool operator<(const Id &) const;
 	bool operator==(const Id &) const;
+
+	void serialize(Buffers &) const;
+
+	// Modifies the reference to the tail
+	static Id deserialize(Buffer &);
 
 private:
 	std::string label_;

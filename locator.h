@@ -4,9 +4,9 @@
 #include <memory>
 
 #include "comm.h"
-#include "factory.h"
+#include "serializable.h"
 
-class Locator : public factory::Serializable
+class Locator : public Serializable
 {
 public:
 	virtual ~Locator() {}
@@ -18,14 +18,11 @@ class CyclicLocator : public Locator
 {
 public:
 	CyclicLocator(int);
+	CyclicLocator(BufferPtr &);
 
 	virtual NodeId get_next_node(const Comm &) const;
 
-	virtual size_t get_size() const;
-	virtual size_t serialize(void *dest, size_t max_len) const;
-
-	static std::pair<size_t, factory::Serializable *> deserialize(
-		const void *, size_t);
+	virtual void serialize(Buffers &) const;
 private:
 	int rank_;
 };

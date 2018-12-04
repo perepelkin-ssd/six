@@ -3,9 +3,9 @@
 
 #include <memory>
 
-#include "factory.h"
+#include "serializable.h"
 
-class Value : public factory::Serializable
+class Value : public Serializable
 {
 public:
 	virtual ~Value() {}
@@ -23,13 +23,13 @@ public:
 	virtual ~IntValue() {}
 
 	IntValue(int);
+	IntValue(BufferPtr &buf);
 	
 	static ValuePtr create(int value);
 
 	int value() const;
 
-	virtual size_t get_size() const;
-	virtual size_t serialize(void *buf, size_t) const;
+	void serialize(Buffers &) const;
 private:
 	int value_;
 };

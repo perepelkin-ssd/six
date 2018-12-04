@@ -7,11 +7,11 @@
 #include <string>
 
 #define WNIMPL { \
-	fprintf(stderr, "WARNING: Code not implemented: %s:%d\n", __FILE__, __LINE__); \
+	fprintf(stderr, "\033[33;1mWARNING:\033[0;1m Code not implemented: \033[34m%s:%d\033[0m\n", __FILE__, __LINE__); \
 }
 
 #define NIMPL { \
-	fprintf(stderr, "ERROR: Code not implemented: %s:%d\n", __FILE__, __LINE__); \
+	fprintf(stderr, "\033[31;1mERROR:\033[0;1m Code not implemented: \033[34m%s:%d\033[0m\n", __FILE__, __LINE__); \
 	print_trace(); \
 	abort(); \
 }

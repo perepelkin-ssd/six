@@ -8,27 +8,6 @@
 #include "comm.h"
 #include "thread_pool.h"
 
-class Message
-{
-public:
-	Message();
-	Message(const NodeId &node, const Tag &tag, const void *data,
-		const size_t &size, int mpi_tag);
-	void *udata();
-	const void *udata() const;
-	Tag &tag();
-	const Tag &tag() const;
-
-	NodeId node;
-	// data buffer comprises tag and user data. buffer size is:
-	// sizeof(Tag) + size
-	void *data;
-
-	// size is user data size
-	size_t size;
-	int mpi_tag;
-};
-
 class MpiComm : public Comm
 {
 public:
@@ -46,8 +25,7 @@ public:
 	virtual NodeId get_rank() const;
 	virtual size_t get_size() const;
 
-	virtual void send(const NodeId &dest, const Tag &,
-		const void *data, size_t size);
+	virtual void send(const NodeId &dest, const Buffers &);
 	virtual MsgHandler set_handler(MsgHandler);
 private:
 	static const int TAG_USER=1;
@@ -55,9 +33,7 @@ private:
 	NodeId rank_;
 	size_t size_;
 	MsgHandler handler_;
-	std::queue<Message> send_queue_;
 	std::mutex m_;
-//	std::condition_variable cv_send_, cv_req_;
 	size_t handler_threads_, send_threads_, recv_threads_, req_threads_;
 	bool stop_flag_;
 	ThreadPool msg_pool_, req_pool_, send_pool_, recv_pool_;
@@ -66,8 +42,7 @@ private:
 
 	void receiver_routine();
 
-	void _send(const NodeId &dest, const Tag &,
-		const void *data, size_t size, int mpi_tag);
+	void _send(const NodeId &dest, const Buffers &data, int mpi_tag);
 };
 
 #endif // MPI_COMM_H_

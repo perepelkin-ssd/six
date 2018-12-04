@@ -3,9 +3,16 @@
 #include <cassert>
 #include <cstring>
 
+#include "serialization_tags.h"
+
 IntValue::IntValue(int val)
 	: value_(val)
 {}
+
+IntValue::IntValue(BufferPtr &buf)
+{
+	value_=Buffer::pop<int>(buf);
+}
 
 ValuePtr IntValue::create(int value)
 {
@@ -14,16 +21,8 @@ ValuePtr IntValue::create(int value)
 
 int IntValue::value() const { return value_; }
 
-size_t IntValue::get_size() const
+void IntValue::serialize(Buffers &bufs) const
 {
-	return sizeof(value_);
-}
-
-size_t IntValue::serialize(void *buf, size_t max_len) const
-{
-	assert(max_len>=sizeof(value_));
-
-	memcpy(buf, &value_, sizeof(value_));
-	
-	return sizeof(value_);
+	bufs.push_back(Buffer::create(STAG_Value_IntValue));
+	bufs.push_back(Buffer::create(value_));
 }

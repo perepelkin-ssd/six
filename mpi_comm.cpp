@@ -7,37 +7,6 @@
 
 #include "common.h"
 
-Message::Message() {}
-
-Message::Message(const NodeId &node, const Tag &tag,
-		const void *data, const size_t &size, int mpi_tag)
-	: node(node), size(size), mpi_tag(mpi_tag)
-{
-	this->data=operator new(size+sizeof(Tag));
-	memcpy(this->data, &tag, sizeof(tag));
-	memcpy(udata(), data, size);
-}
-
-void *Message::udata()
-{
-	return static_cast<char*>(data)+sizeof(Tag);
-}
-
-const void *Message::udata() const
-{
-	return static_cast<const char*>(data)+sizeof(Tag);
-}
-
-Tag &Message::tag()
-{
-	return *static_cast<Tag*>(data);
-}
-
-const Tag &Message::tag() const
-{
-	return *static_cast<const Tag*>(data);
-}
-
 MpiComm::~MpiComm()
 {
 	if (finalize_flag_) {
@@ -111,7 +80,7 @@ void MpiComm::stop()
 	assert(!stop_flag_);
 
 	for (auto i=0u; i<recv_threads_; i++) {
-		_send(rank_, 0, nullptr, 0, TAG_SYSTEM);
+		_send(rank_, {BufferPtr(new Buffer(0))}, TAG_SYSTEM);
 	}
 	
 	stop_flag_=true;
@@ -138,8 +107,7 @@ size_t MpiComm::get_size() const
 	return size_;
 }
 
-void MpiComm::send(const NodeId &dest, const Tag &tag,
-	const void *data, size_t size)
+void MpiComm::send(const NodeId &dest, const Buffers &data)
 {
 	std::lock_guard<std::mutex> lk(m_);
 
@@ -148,25 +116,38 @@ void MpiComm::send(const NodeId &dest, const Tag &tag,
 		abort();
 	}
 
-	_send(dest, tag, data, size, TAG_USER);
+	_send(dest, data, TAG_USER);
 }
-void MpiComm::_send(const NodeId &dest, const Tag &tag,
-	const void *data, size_t size, int mpi_tag)
+void MpiComm::_send(const NodeId &dest, const Buffers &bufs, int mpi_tag)
 {
-	Message msg(dest, tag, operator new(size), size, mpi_tag);
-	memcpy(msg.udata(), data, size);
+    int count=bufs.size();
+    int lengths[count];
+    MPI_Aint disps[count];
+    MPI_Datatype old_types[count];
+    MPI_Datatype mpi_type;
+    int total_size=0;
 
-	send_pool_.submit([msg, this](){
-		MPI_Request request;
-		MPI_Isend(msg.data, msg.size+sizeof(Tag), MPI_BYTE,
-			msg.node, msg.mpi_tag, comm_, &request);
+    int i=0;
+    char *base_ptr=bufs.empty()? nullptr: static_cast<char*>(bufs[0]->getData());
+    for (auto b: bufs) {
+        lengths[i]=b->getSize();
+        disps[i]=static_cast<char*>(b->getData())-base_ptr;
+        old_types[i]=MPI_BYTE;
+        i++;
+        total_size+=b->getSize();
+    }
+    assert(i==count);
+    MPI_Type_struct(count, lengths, disps, old_types, &mpi_type);
+    MPI_Type_commit(&mpi_type);
 
-		req_pool_.submit([msg, request](){
-			MPI_Request req=request;
-			MPI_Wait(&req, MPI_STATUS_IGNORE);
-			operator delete(msg.data);
-		});
-		
+    std::shared_ptr<MPI_Request> req(new MPI_Request);
+
+    MPI_Isend(base_ptr, 1, mpi_type, (int)dest, mpi_tag, comm_, req.get());
+
+    MPI_Type_free(&mpi_type);
+
+	req_pool_.submit([bufs, req](){
+		MPI_Wait(req.get(), MPI_STATUS_IGNORE);
 	});
 }
 
@@ -182,35 +163,27 @@ void MpiComm::receiver_routine()
 	MPI_Status status;
 	MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm_, &status);
 
-	Message msg;
-
 	int msg_size;
 	MPI_Get_count(&status, MPI_BYTE, &msg_size);
-	msg.size=msg_size-sizeof(Tag);
-	msg.node=status.MPI_SOURCE;
-	msg.mpi_tag=status.MPI_TAG;
-	msg.data=operator new(msg_size);
-	MPI_Recv(msg.data, msg_size, MPI_BYTE, status.MPI_SOURCE,
+	BufferPtr buf(new Buffer(msg_size));
+	MPI_Recv(buf->getData(), msg_size, MPI_BYTE, status.MPI_SOURCE,
 		status.MPI_TAG, comm_, &status);
 
-	msg.tag()=*(static_cast<Tag*>(msg.data));
+	NodeId src(status.MPI_SOURCE);
 
 	std::unique_lock<std::mutex> lk(m_);
 
-	if (msg.mpi_tag==TAG_USER) {
-		msg_pool_.submit([this, msg](){
+	if (status.MPI_TAG==TAG_USER) {
+		msg_pool_.submit([this, src, buf](){
 			if (handler_) {
-				handler_(msg.node, msg.tag(), msg.udata(),
-					msg.size);
+				handler_(src, buf);
 			}
-			operator delete(msg.data);
 		});
 		recv_pool_.submit([this](){
 			receiver_routine();
 		});
 	} else {
-		assert(msg.mpi_tag==TAG_SYSTEM);
-		operator delete(msg.data);
+		assert(status.MPI_TAG==TAG_SYSTEM);
 	}
 }
 

@@ -5,7 +5,6 @@
 
 #include "cf_logic.h"
 #include "df_logic.h"
-#include "factory.h"
 #include "id.h"
 #include "locator.h"
 #include "value.h"

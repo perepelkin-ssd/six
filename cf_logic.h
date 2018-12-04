@@ -2,6 +2,7 @@
 
 #include "id.h"
 #include "locator.h"
+#include "serializable.h"
 
 struct Request
 {
@@ -11,7 +12,7 @@ struct Request
 
 class CfEnv;
 
-class CfLogic : public factory::Serializable
+class CfLogic : public Serializable
 {
 public:
 	virtual ~CfLogic() {}
