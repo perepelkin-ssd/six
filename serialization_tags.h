@@ -11,5 +11,6 @@ enum STAGS {
 	STAG_Delivery,
 	STAG_StoreDf,
 	STAG_SubmitDfToCf,
+	STAG_MonitorSignal,
 	_STAG_END
 };

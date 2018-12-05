@@ -37,6 +37,22 @@ private:
 	TaskPtr task_;
 };
 
+class MonitorSignal : public Task
+{
+public:
+	virtual ~MonitorSignal() {}
+
+	MonitorSignal(const RPtr &, const BufferPtr &signal);
+	MonitorSignal(BufferPtr &);
+
+	virtual void run(const EnvironPtr &);
+
+	virtual void serialize(Buffers &) const;
+private:
+	RPtr rptr_;
+	BufferPtr signal_;
+};
+
 class StoreDf : public Task
 {
 public:

@@ -56,6 +56,42 @@ void Delivery::serialize(Buffers &bufs) const
 	task_->serialize(bufs);
 }
 
+MonitorSignal::MonitorSignal(const RPtr &rptr, const BufferPtr &signal)
+	: rptr_(rptr), signal_(signal)
+{
+	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr.node_, rptr.ptr_);
+	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
+}
+
+MonitorSignal::MonitorSignal(BufferPtr &buf)
+{
+	rptr_=RPtr(buf);
+	signal_=buf;
+	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
+}
+
+void MonitorSignal::run(const EnvironPtr &env)
+{
+	printf("------------\n%d: %d:%p\n----------\n",
+		(int)env->comm().get_rank(), (int)rptr_.node_, rptr_.ptr_);
+	if (env->comm().get_rank()==rptr_.node_) {
+		BufHandler *handler=(BufHandler*)rptr_.ptr_;
+		handler->handle(signal_);
+	} else {
+		Buffers bufs;
+		serialize(bufs);
+		env->send(rptr_.node_, bufs);
+	}
+}
+
+void MonitorSignal::serialize(Buffers &bufs) const
+{
+	bufs.push_back(Buffer::create(STAG_MonitorSignal));
+	rptr_.serialize(bufs);
+	bufs.push_back(signal_);
+	printf("\t\tMONITOR SERIALIZE rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
+}
+
 StoreDf::StoreDf(const Id &id, const ValuePtr &val,
 		const TaskPtr &on_stored)
 	: id_(id), val_(val), on_stored_(on_stored)

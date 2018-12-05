@@ -6,10 +6,20 @@
 #include "df_pusher.h"
 #include "df_requester.h"
 #include "id.h"
+#include "rptr.h"
 #include "value.h"
 
 class Task;
 typedef std::shared_ptr<Task> TaskPtr;
+
+// TODO: move BufHandler to a better place (file)
+class BufHandler
+{
+public:
+	virtual ~BufHandler() {}
+
+	virtual void handle(BufferPtr &)=0;
+};
 
 // Environ implementation MUST provide existence of the corresponding Task
 // instance during Environ lifetime
@@ -34,6 +44,9 @@ public:
 	virtual DfPusher &df_pusher()=0;
 	
 	virtual DfRequester &df_requester()=0;
+
+	virtual RPtr start_monitor(std::function<void(BufferPtr &)>)=0;
+	virtual void stop_monitor()=0;
 };
 
 typedef std::shared_ptr<Environ> EnvironPtr;

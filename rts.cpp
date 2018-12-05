@@ -5,18 +5,45 @@
 #include "common.h"
 #include "environ.h"
 
-struct TaskEnv : public Environ
+struct TaskEnv : public Environ, public BufHandler
 {
 	RTS &rts_;
 	Comm &comm_;
-	TaskPtr self_;
+	TaskPtr task_;
+	EnvironPtr self_;
+	std::weak_ptr<Environ> weak_self_;
+	std::mutex m_;
+	std::function<void(BufferPtr &)> monitor_handler_;
+
+	virtual void handle(BufferPtr &buf)
+	{
+		std::function<void(BufferPtr &)> h;
+		{
+			std::lock_guard<std::mutex> lk(m_);
+			h=monitor_handler_;
+		}
+
+		if (h) {
+			h(buf);
+		} else {
+			throw std::runtime_error("nullptr monitor handling");
+		}
+	}
 
 	virtual ~TaskEnv() {}
 
-	TaskEnv(RTS &rts, Comm &comm, const TaskPtr &self)
-		: rts_(rts), comm_(comm), self_(self)
+	TaskEnv(RTS &rts, Comm &comm, const TaskPtr &task)
+		: rts_(rts), comm_(comm), task_(task), self_(nullptr),
+			monitor_handler_(nullptr)
 	{}
-	
+
+	void init(const EnvironPtr &self)
+	{
+		std::lock_guard<std::mutex> lk(m_);
+
+		weak_self_=self;
+	}
+
 	virtual Comm &comm() { return comm_; }
 
 	virtual void send(const NodeId &dest, const Buffers &data)
@@ -42,13 +69,40 @@ struct TaskEnv : public Environ
 		return rts_.create_id(label, idx);
 	}
 
-	virtual TaskPtr get_self()
-	{
-		return self_;
-	}
-
 	virtual DfPusher &df_pusher() { return rts_.df_pusher(); }
 	virtual DfRequester &df_requester() { return rts_.df_requester(); }
+
+	virtual RPtr start_monitor(std::function<void(BufferPtr &)> h)
+	{
+		std::lock_guard<std::mutex> lk(m_);
+
+		if (self_) {
+			throw std::runtime_error("monitor already started");
+		}
+
+		self_=weak_self_.lock();
+
+		if(!self_) {
+			throw std::runtime_error("dead weak pointer");
+		}
+
+		assert(!monitor_handler_);
+		monitor_handler_=h;
+
+		return RPtr(comm_.get_rank(), dynamic_cast<BufHandler*>(this));
+	}
+
+	virtual void stop_monitor()
+	{
+		std::lock_guard<std::mutex> lk(m_);
+
+		if (!self_) {
+			throw std::runtime_error("monitor not started");
+		}
+
+		self_.reset();
+		monitor_handler_=nullptr;
+	}
 };
 
 RTS::~RTS()
@@ -113,6 +167,7 @@ void RTS::submit(const TaskPtr &task)
 	std::lock_guard<std::mutex> lk(m_);
 
 	EnvironPtr env(new TaskEnv(*this, comm_, task));
+	dynamic_cast<TaskEnv*>(env.get())->init(env);
 	pool_.submit([env, task, this](){
 //		printf("%d: RTS: running job: %s\n",
 //			(int)comm_.get_rank(), std::type_index(typeid(*task)).name());
