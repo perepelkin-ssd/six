@@ -13,10 +13,10 @@ class Id : public std::vector<int>, public Serializable
 {
 public:
 	Id(const std::vector<int> &idx=std::vector<int>(),
-		const std::string &label=std::string());
+		const std::string &label=Name());
 	Id(BufferPtr &);
 
-	void set_label(const std::string &label);
+	void set_label(const Name &label);
 
 	std::string to_string() const;
 
@@ -29,7 +29,7 @@ public:
 	static Id deserialize(Buffer &);
 
 private:
-	std::string label_;
+	Name label_;
 };
 
 typedef std::shared_ptr<Id> IdPtr;

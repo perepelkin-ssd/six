@@ -2,7 +2,8 @@
 #include <cstring>
 
 #include "common.h"
-#include "delivery.h"
+#include "tasks.h"
+#include "environ.h"
 #include "fp.h"
 #include "locator.h"
 #include "mpi_comm.h"
@@ -29,220 +30,6 @@ sub main()
 */
 
 int rank;
-/*
-class DfX : public DfLogic
-{
-	LocatorPtr loc_;
-	size_t consumptions_count_;
-	Id x_;
-	Id b_;
-	LocatorPtr b_loc_;
-public:
-	DfX(const Id &x, const Id &b, const LocatorPtr &b_loc)
-		: loc_(new CyclicLocator(1)), x_(x), b_(b), b_loc_(b_loc) {}
-	
-	virtual const LocatorPtr &get_locator() const { return loc_; }
-
-	virtual void on_consumed(DfEnv &env, const Id &cf)
-	{
-		consumptions_count_++;
-		if (consumptions_count_==2) {
-			env.delete_df(x_, loc_); // rm internal ValuePtr
-		}
-	}
-
-	virtual void on_computed(DfEnv &env, const ValuePtr &val)
-	{
-		env.send_value(b_loc_, b_, x_, val);
-		on_consumed(env, b_);
-	}
-
-	virtual void serialize(Buffers &bufs) const
-	{
-		loc_->serialize(bufs);
-		bufs.push_back(Buffer::create(consumptions_count_));
-		x_.serialize(bufs);
-		b_.serialize(bufs);
-		b_loc_->serialize(bufs);
-	}
-};
-
-class DfY : public DfLogic
-{
-	LocatorPtr y_loc_;
-	Id y_;
-	Id c_;
-	LocatorPtr c_loc_;
-public:
-	DfY(const LocatorPtr &y_loc, const Id &y, const Id &c,
-		const LocatorPtr &c_loc)
-		: y_loc_(y_loc), y_(y), c_(c), c_loc_(c_loc) {}
-
-	virtual const LocatorPtr &get_locator() const { return y_loc_; }
-
-	virtual void on_computed(DfEnv &env, const ValuePtr &val)
-	{
-		env.send_value(c_loc_, c_, y_, val);
-	}
-
-	virtual void serialize(Buffers &bufs) const
-	{
-		y_loc_->serialize(bufs);
-		y_.serialize(bufs);
-		c_.serialize(bufs);
-		c_loc_->serialize(bufs);
-	}
-};
-
-class CfA : public CfLogic
-{
-	LocatorPtr loc_;
-	Id a_, x_, b_;
-	LocatorPtr b_loc_;
-public:
-	CfA(const Id &a, const Id &x, const Id &b, const LocatorPtr &b_loc)
-		: loc_(new CyclicLocator(0)), a_(a), x_(x), b_(b), b_loc_(b_loc)
-	{}
-
-	virtual bool is_ready(const CfEnv &env) const { return true; }
-
-	virtual const LocatorPtr &get_locator(const CfEnv &) const
-	{ return loc_; }
-
-	virtual void execute(CfEnv &env)
-	{
-		env.submit_df(x_, DfLogicPtr(new DfX(x_, b_, b_loc_)),
-			IntValue::create(5));
-	}
-
-	void serialize(Buffers &bufs) const
-	{
-		loc_->serialize(bufs);
-		a_.serialize(bufs);
-		x_.serialize(bufs);
-		b_.serialize(bufs);
-		b_loc_->serialize(bufs);
-	}
-};
-
-class CfB : public CfLogic
-{
-	LocatorPtr loc_;
-	Id b_, x_, y_, c_;
-	LocatorPtr c_loc_, y_loc_;
-public:
-	CfB(const LocatorPtr &loc, const Id &b, const Id &x, const Id &y,
-		const Id &c, const LocatorPtr &c_loc, const LocatorPtr &y_loc)
-		: loc_(loc), b_(b), x_(x), y_(y), c_(c),
-			c_loc_(c_loc), y_loc_(y_loc)
-	{}
-
-	virtual bool is_ready(const CfEnv &env) const
-	{
-		return env.get_df(x_).get()!=nullptr;
-	}
-
-	virtual const LocatorPtr &get_locator(const CfEnv &) const
-	{ return loc_; }
-
-	virtual void execute(CfEnv &env)
-	{
-		auto x_val=dynamic_cast<IntValue*>(env.get_df(x_).get())->value();
-
-		env.submit_df(y_, DfLogicPtr(new DfY(y_loc_, y_, c_, c_loc_)),
-			IntValue::create(10+x_val));
-	}
-	void serialize(Buffers &bufs) const
-	{
-		loc_->serialize(bufs);
-		b_.serialize(bufs);
-		x_.serialize(bufs);
-		y_.serialize(bufs);
-		c_.serialize(bufs);
-		c_loc_->serialize(bufs);
-		y_loc_->serialize(bufs);
-	}
-};
-
-class CfC : public CfLogic
-{
-	LocatorPtr loc_;
-	Id c_, x_, y_;
-	LocatorPtr y_loc_;
-public:
-	CfC(const LocatorPtr &loc, const Id &c, const Id &x, const Id &y,
-		const LocatorPtr &y_loc)
-		: loc_(loc), c_(c), x_(x), y_(y), y_loc_(y_loc)
-	{}
-
-	virtual bool is_ready(const CfEnv &env) const
-	{
-		return env.get_df(x_).get()!=nullptr
-			&& env.get_df(y_).get()!=nullptr;
-	}
-
-	virtual const LocatorPtr &get_locator(const CfEnv &) const
-	{ return loc_; }
-
-	virtual void execute(CfEnv &env)
-	{
-		auto x_val=dynamic_cast<IntValue*>(env.get_df(x_).get())->value();
-		auto y_val=dynamic_cast<IntValue*>(env.get_df(y_).get())->value();
-
-		printf("x=%d, y=%d\n", x_val, y_val);
-
-		env.delete_df(y_, y_loc_);
-	}
-
-	void serialize(Buffers &bufs) const
-	{
-		loc_->serialize(bufs);
-		c_.serialize(bufs);
-		x_.serialize(bufs);
-		y_.serialize(bufs);
-		y_loc_->serialize(bufs);
-	}
-};
-
-class MyMain : public CfLogic
-{
-	LocatorPtr loc_;
-	Id my_id_;
-public:
-	MyMain(const Id &my_id) : loc_(new CyclicLocator(0)), my_id_(my_id) {}
-
-	virtual bool is_ready(const CfEnv &) const { return true; }
-
-	virtual const LocatorPtr &get_locator(const CfEnv &) const
-	{ return loc_; }
-
-	virtual void execute(CfEnv &env)
-	{
-		Id x=env.create_id("x");
-		Id y=env.create_id("y");
-		Id a=env.create_id("a");
-		Id b=env.create_id("b");
-		Id c=env.create_id("c");
-
-		auto b_loc=LocatorPtr(new CyclicLocator(2));
-		auto c_loc=LocatorPtr(new CyclicLocator(4));
-		auto y_loc=LocatorPtr(new CyclicLocator(3));
-
-		CfLogicPtr al(new CfA(a, x, b, b_loc));
-		CfLogicPtr bl(new CfB(b_loc, b, x, y, c, c_loc, y_loc));
-		CfLogicPtr cl(new CfC(c_loc, c, x, y, y_loc));
-
-		env.set_on_finished(my_id_, [](){
-			printf("finished\n");
-		});
-
-		env.submit_cf(a, al);
-		env.submit_cf(b, bl);
-		env.submit_cf(c, cl);
-	}
-	virtual void serialize(Buffers &) const NIMPL
-};
-*/
 void init_stags(Factory &fact);
 void note(const std::string &msg)
 {
@@ -258,7 +45,7 @@ void note(const std::string &msg)
 class MyMain1 : public Task
 {
 public:
-	virtual void run(Environ &)
+	virtual void run(const EnvironPtr &)
 	{
 		printf("Hello!\n");
 	}
@@ -267,17 +54,6 @@ public:
 	{
 		bufs.push_back(Buffer::create(STAG_MyMain1));
 	}
-};
-
-// at 0: main:
-	// at 0 df x;
-		// on_computed: send to b;
-	// at 1 cf a: x:=10;
-	// at 2 cf b: show(x);
-	// on finish: delete x;
-class MyMain2 : public Task
-{
-public:
 };
 
 void test1(RTS *rts)
@@ -290,6 +66,133 @@ void test1(RTS *rts)
 		TaskPtr d_main(new Delivery(loc, main));
 
 		rts->submit(d_main);
+	}
+
+	rts->wait_all(rank==0); // via ball
+}
+
+// at 0: main:
+	// at 0 df x;
+		// on_computed: send to b;
+	// at 1 cf a: x:=10;
+	// at 2 cf b: show(x);
+	// on finish: delete x;
+class My2A : public Task
+{
+	Id x_, b_;
+	LocatorPtr xloc_, bloc_;
+public:
+	My2A(const Id &x, const Id &b, const LocatorPtr xloc, 
+			const LocatorPtr bloc)
+		:x_(x), b_(b), xloc_(xloc), bloc_(bloc)
+	{}
+	My2A(BufferPtr &buf, Factory &fact)
+	{
+		x_=Id(buf);
+		b_=Id(buf);
+		xloc_=fact.pop<Locator>(buf);
+		bloc_=fact.pop<Locator>(buf);
+	}
+	virtual void run(const EnvironPtr &env)
+	{
+		printf("\nEXEC A\n\n");
+		ValuePtr xval(new IntValue(10));
+
+		// store at xloc
+		TaskPtr store(new StoreDf(x_, xval));
+		env->submit(TaskPtr(new Delivery(xloc_, store)));
+
+		// send to b
+		TaskPtr sdc(new SubmitDfToCf(x_, xval, b_));
+		env->submit(TaskPtr(new Delivery(bloc_, sdc)));
+	}
+
+	virtual void serialize(Buffers &bufs) const
+	{
+		bufs.push_back(Buffer::create(STAG_My2A));
+		x_.serialize(bufs);
+		b_.serialize(bufs);
+		xloc_->serialize(bufs);
+		bloc_->serialize(bufs);
+	}
+};
+class My2B : public Task
+{
+	Id xid_, bid_;
+	LocatorPtr xloc_;
+public:
+	My2B(const Id &xid, const Id &bid, const LocatorPtr &xloc)
+		: xid_(xid), bid_(bid), xloc_(xloc)
+	{}
+
+	My2B(BufferPtr &buf, Factory &fact)
+	{
+		xid_=Id(buf);
+		bid_=Id(buf);
+		xloc_=fact.pop<Locator>(buf);
+	}
+	virtual void run(const EnvironPtr &env)
+	{
+		printf("\nEXEC B\n\n");
+
+		auto bid=bid_;
+		env->df_pusher().open(bid_,
+				[this, env, bid](const Id &dfid, const ValuePtr &val) {
+			printf("\n\tGOT FOR B: %s\n\n",
+				dfid.to_string().c_str());
+			exec(val);
+			env->df_pusher().close(bid);
+
+			// destroy df x at xloc
+			TaskPtr del_x(new DelDf(xid_));
+			TaskPtr d_del_x(new Delivery(xloc_, del_x));
+			env->submit(d_del_x);
+		});
+	}
+
+	void exec(const ValuePtr &val)
+	{
+		int i=dynamic_cast<IntValue*>(val.get())->value();
+
+		printf("\nx = %d\n\n", i);
+	}
+
+	virtual void serialize(Buffers &bufs) const
+	{
+		bufs.push_back(Buffer::create(STAG_My2B));
+		xid_.serialize(bufs);
+		bid_.serialize(bufs);
+		xloc_->serialize(bufs);
+	}
+};
+class MyMain2 : public Task
+{
+public:
+	virtual void run(const EnvironPtr &env)
+	{
+		LocatorPtr xloc(new CyclicLocator(0));
+		LocatorPtr aloc(new CyclicLocator(1));
+		LocatorPtr bloc(new CyclicLocator(2));
+
+		Id xid=env->create_id("x");
+		Id bid=env->create_id("b");
+
+		TaskPtr a(new My2A(xid, bid, xloc, bloc));	
+		TaskPtr da(new Delivery(aloc, a));
+		env->submit(da);
+
+		TaskPtr b(new My2B(xid, bid, xloc));
+		TaskPtr db(new Delivery(bloc, b));
+		env->submit(db);
+	}
+};
+
+void test2(RTS *rts)
+{
+	if (rank==0) {
+		TaskPtr main(new MyMain2());
+
+		rts->submit(main);
 	}
 
 	rts->wait_all(rank==0); // via ball
@@ -311,8 +214,8 @@ int main(int argc, char **argv)
 
 	init_stags(rts->factory());
 
-	test1(rts);
-	test1(rts);
+	//test1(rts);
+	test2(rts);
 
 
 	delete rts;
@@ -325,21 +228,25 @@ int main(int argc, char **argv)
 
 void init_stags(Factory &fact)
 {
-	fact.set_constructor(STAG_Locator_CyclicLocator, [](BufferPtr &buf){
-		return new CyclicLocator(buf);
-	});
+#define PLAIN(stag, cls) \
+	fact.set_constructor(stag, [&](BufferPtr &) { \
+		return new cls(); });
+#define BUF(stag, cls) \
+	fact.set_constructor(stag, [&](BufferPtr &buf) { \
+		return new cls(buf); });
+#define FACT(stag, cls) \
+	fact.set_constructor(stag, [&fact](BufferPtr &buf) { \
+		return new cls(buf, fact); });
 
-	fact.set_constructor(STAG_Value_IntValue, [](BufferPtr &buf){
-		return new IntValue(buf);
-	});
-
-	fact.set_constructor(STAG_Delivery, [&fact](BufferPtr &buf){
-		return new Delivery(buf, fact);
-	});
-
-	fact.set_constructor(STAG_MyMain1, [](BufferPtr &) {
-		return new MyMain1();
-	});
+	BUF(STAG_Locator_CyclicLocator, CyclicLocator)
+	BUF(STAG_Value_IntValue, IntValue)
+	FACT(STAG_Delivery, Delivery)
+	BUF(STAG_DelDf, DelDf)
+	PLAIN(STAG_MyMain1, MyMain1)
+	FACT(STAG_My2A, My2A)
+	FACT(STAG_My2B, My2B)
+	FACT(STAG_StoreDf, StoreDf)
+	FACT(STAG_SubmitDfToCf, SubmitDfToCf)
 
 	for (int t=0; t<(int)_STAG_END; t++)
 	{
@@ -348,6 +255,9 @@ void init_stags(Factory &fact)
 			abort();
 		}
 	}
+#undef FACT
+#undef BUF
+#undef PLAIN
 }
 
 void thread_pool_test();

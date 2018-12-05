@@ -7,6 +7,8 @@
 
 #include "comm.h"
 #include "context.h"
+#include "df_pusher.h"
+#include "df_requester.h"
 #include "factory.h"
 #include "fp.h"
 #include "id.h"
@@ -34,6 +36,11 @@ public:
 	Factory &factory() { return factory_; }
 
 	void change_workload(int delta);
+
+	Id create_id(const Name &label="", const std::vector<int> &idx={});
+
+	DfPusher &df_pusher() { return df_pusher_; }
+	DfRequester &df_requester() { return df_requester_; }
 private:
 	std::mutex m_;
 	std::condition_variable cv_;
@@ -43,6 +50,9 @@ private:
 	Factory factory_;
 	ThreadPool pool_;
 	size_t workload_;
+	int next_id_;
+	DfPusher df_pusher_;
+	DfRequester df_requester_;
 
 	void on_message(const NodeId &src, BufferPtr);
 };

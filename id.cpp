@@ -6,7 +6,7 @@
 
 #include "common.h"
 
-Id::Id(const std::vector<int> &idx, const std::string &label)
+Id::Id(const std::vector<int> &idx, const Name &label)
 	: label_(label)
 {
 	for (auto i : idx) {

@@ -9,9 +9,14 @@ struct TaskEnv : public Environ
 {
 	RTS &rts_;
 	Comm &comm_;
+	TaskPtr self_;
 
 	virtual ~TaskEnv() {}
 
+	TaskEnv(RTS &rts, Comm &comm, const TaskPtr &self)
+		: rts_(rts), comm_(comm), self_(self)
+	{}
+	
 	virtual Comm &comm() { return comm_; }
 
 	virtual void send(const NodeId &dest, const Buffers &data)
@@ -32,10 +37,18 @@ struct TaskEnv : public Environ
 		rts_.submit(task);
 	}
 
-	TaskEnv(RTS &rts, Comm &comm)
-		: rts_(rts), comm_(comm)
-	{}
-	
+	virtual Id create_id(const Name &label, const std::vector<int> &idx)
+	{
+		return rts_.create_id(label, idx);
+	}
+
+	virtual TaskPtr get_self()
+	{
+		return self_;
+	}
+
+	virtual DfPusher &df_pusher() { return rts_.df_pusher(); }
+	virtual DfRequester &df_requester() { return rts_.df_requester(); }
 };
 
 RTS::~RTS()
@@ -46,7 +59,11 @@ RTS::~RTS()
 }
 
 RTS::RTS(Comm &comm)
-	: comm_(comm), idle_flag_(false), workload_(0)
+	: comm_(comm), idle_flag_(false), workload_(0), next_id_(0),
+		df_pusher_(&pool_,
+			[this](int delta) {change_workload(delta); }),
+		df_requester_(&pool_,
+			[this](int delta) {change_workload(delta); })
 {
 	stopper_=new IdleStopper<NodeId>(
 		comm_.get_rank(),
@@ -95,11 +112,11 @@ void RTS::submit(const TaskPtr &task)
 
 	std::lock_guard<std::mutex> lk(m_);
 
-	EnvironPtr env(new TaskEnv(*this, comm_));
+	EnvironPtr env(new TaskEnv(*this, comm_, task));
 	pool_.submit([env, task, this](){
 //		printf("%d: RTS: running job: %s\n",
 //			(int)comm_.get_rank(), std::type_index(typeid(*task)).name());
-		task->run(*env);
+		task->run(env);
 
 		change_workload(-1);
 	});
@@ -124,6 +141,21 @@ void RTS::change_workload(int delta)
 	workload_=(size_t)new_workload;
 
 	printf("%d: workload: %d\n", (int)comm_.get_rank(), (int)workload_);
+}
+
+Id RTS::create_id(const Name &label, const std::vector<int> &idx)
+{
+	std::vector<int> indices;
+	{
+		std::lock_guard<std::mutex> lk(m_);
+		indices={(int)comm_.get_rank(), next_id_++};
+	}
+
+	for (auto i : idx) {
+		indices.push_back(i);
+	}
+	
+	return Id(indices, label);
 }
 
 void RTS::on_message(const NodeId &src, BufferPtr buf)

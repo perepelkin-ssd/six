@@ -2,16 +2,15 @@
 
 #include <memory>
 
+#include "environ.h"
 #include "serializable.h"
-
-class Environ;
 
 class Task : public Serializable
 {
 public:
 	virtual ~Task() {}
 
-	virtual void run(Environ &)=0;
+	virtual void run(const EnvironPtr &)=0;
 
 	virtual void serialize(Buffers &) const;
 };

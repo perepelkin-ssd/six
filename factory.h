@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 
 #include "serializable.h"
@@ -20,6 +21,15 @@ public:
 
 	// returns nullptr if none
 	Constructor get_constructor(STAGS tag) const;
+
+	template <class T>
+	std::shared_ptr<T> pop(BufferPtr &buf)
+	{
+		auto p=construct(buf);
+		auto res=dynamic_cast<T*>(p);
+		assert(res);
+		return std::shared_ptr<T>(res);
+	}
 };
 
 
