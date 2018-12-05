@@ -107,8 +107,14 @@ size_t MpiComm::get_size() const
 	return size_;
 }
 
-void MpiComm::send(const NodeId &dest, const Buffers &data)
+void MpiComm::send(const NodeId &dest, const Buffers &data,
+	Callback cb)
 {
+	if (dest<0 || dest>=(int)size_) {
+		fprintf(stderr, "MpiComm::send: dest_rank out of range: 0<=%d<%d\n",
+			(int)dest, (int)size_);
+		abort();
+	}
 	std::lock_guard<std::mutex> lk(m_);
 
 	if (stop_flag_) {
@@ -116,9 +122,10 @@ void MpiComm::send(const NodeId &dest, const Buffers &data)
 		abort();
 	}
 
-	_send(dest, data, TAG_USER);
+	_send(dest, data, TAG_USER, cb);
 }
-void MpiComm::_send(const NodeId &dest, const Buffers &bufs, int mpi_tag)
+void MpiComm::_send(const NodeId &dest, const Buffers &bufs, int mpi_tag,
+	Callback cb)
 {
     int count=bufs.size();
     int lengths[count];
@@ -146,8 +153,9 @@ void MpiComm::_send(const NodeId &dest, const Buffers &bufs, int mpi_tag)
 
     MPI_Type_free(&mpi_type);
 
-	req_pool_.submit([bufs, req](){
+	req_pool_.submit([bufs, req, cb](){
 		MPI_Wait(req.get(), MPI_STATUS_IGNORE);
+		if (cb) { cb(); }
 	});
 }
 

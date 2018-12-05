@@ -2,10 +2,13 @@
 #include <cstring>
 
 #include "common.h"
+#include "delivery.h"
 #include "fp.h"
+#include "locator.h"
 #include "mpi_comm.h"
 #include "rts.h"
 #include "serialization_tags.h"
+#include "task.h"
 
 // TEST:
 /*
@@ -26,7 +29,7 @@ sub main()
 */
 
 int rank;
-
+/*
 class DfX : public DfLogic
 {
 	LocatorPtr loc_;
@@ -239,55 +242,8 @@ public:
 	}
 	virtual void serialize(Buffers &) const NIMPL
 };
-
-void init_stags(RTS &rts)
-{
-	rts.set_constructor(STAG_Locator_CyclicLocator, [](BufferPtr &buf){
-		return new CyclicLocator(buf);
-	});
-
-	rts.set_constructor(STAG_Value_IntValue, [](BufferPtr &buf){
-		return new IntValue(buf);
-	});
-}
-
-void test_all();
-int main(int argc, char **argv)
-{
-	printf("\033[32;1mNEXT: continue implementation until test works\033[0m\n");
-	int desired=MPI_THREAD_MULTIPLE, provided;
-	MPI_Init_thread(&argc, &argv, desired, &provided);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	assert(desired==provided);
-	test_all();
-	MpiComm comm(MPI_COMM_WORLD);
-	comm.start();
-
-	rank=comm.get_rank();
-
-	RTS rts(comm);
-
-	init_stags(rts);
-
-	auto &env=rts.get_env();
-	if (rank==0) {
-		Id main_id=env.create_id("main");
-		CfLogicPtr cf(new MyMain(main_id));
-		env.submit_cf(main_id, cf);
-	}
-
-	rts.wait_all(rank==0); // via ball
-	comm.stop();
-
-	MPI_Finalize();
-	return 0;
-}
-
-void thread_pool_test();
-void idle_stopper_test();
-void mpi_comm_test();
-void test_mpi_factory();
-
+*/
+void init_stags(Factory &fact);
 void note(const std::string &msg)
 {
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -297,6 +253,107 @@ void note(const std::string &msg)
 	}
 	MPI_Barrier(MPI_COMM_WORLD);
 }
+
+// at -1 echo("Hello!");
+class MyMain1 : public Task
+{
+public:
+	virtual void run(Environ &)
+	{
+		printf("Hello!\n");
+	}
+
+	virtual void serialize(Buffers &bufs) const
+	{
+		bufs.push_back(Buffer::create(STAG_MyMain1));
+	}
+};
+
+// at 0: main:
+	// at 0 df x;
+		// on_computed: send to b;
+	// at 1 cf a: x:=10;
+	// at 2 cf b: show(x);
+	// on finish: delete x;
+class MyMain2 : public Task
+{
+public:
+};
+
+void test1(RTS *rts)
+{
+	if (rank==0) {
+		TaskPtr main(new MyMain1());
+
+		LocatorPtr loc(new CyclicLocator(-1));
+
+		TaskPtr d_main(new Delivery(loc, main));
+
+		rts->submit(d_main);
+	}
+
+	rts->wait_all(rank==0); // via ball
+}
+
+void test_all();
+int main(int argc, char **argv)
+{
+	int desired=MPI_THREAD_MULTIPLE, provided;
+	MPI_Init_thread(&argc, &argv, desired, &provided);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	assert(desired==provided);
+	test_all();
+	MpiComm comm(MPI_COMM_WORLD);
+
+	rank=comm.get_rank();
+
+	RTS *rts=new RTS(comm);
+
+	init_stags(rts->factory());
+
+	test1(rts);
+	test1(rts);
+
+
+	delete rts;
+
+	note("NORMAL SYSTEM STOP\n");
+
+	MPI_Finalize();
+	return 0;
+}
+
+void init_stags(Factory &fact)
+{
+	fact.set_constructor(STAG_Locator_CyclicLocator, [](BufferPtr &buf){
+		return new CyclicLocator(buf);
+	});
+
+	fact.set_constructor(STAG_Value_IntValue, [](BufferPtr &buf){
+		return new IntValue(buf);
+	});
+
+	fact.set_constructor(STAG_Delivery, [&fact](BufferPtr &buf){
+		return new Delivery(buf, fact);
+	});
+
+	fact.set_constructor(STAG_MyMain1, [](BufferPtr &) {
+		return new MyMain1();
+	});
+
+	for (int t=0; t<(int)_STAG_END; t++)
+	{
+		if(!fact.get_constructor(STAGS(t))) {
+			fprintf(stderr, "STAG constructor not set: %d\n", t);
+			abort();
+		}
+	}
+}
+
+void thread_pool_test();
+void idle_stopper_test();
+void mpi_comm_test();
+void test_mpi_factory();
 
 void test_all()
 {

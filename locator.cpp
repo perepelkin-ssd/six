@@ -26,7 +26,7 @@ NodeId CyclicLocator::get_next_node(const Comm &comm) const
 		}
 	}
 	assert(0<=rank);
-	return rank_ % size;
+	return rank % size;
 }
 
 void CyclicLocator::serialize(Buffers &bufs) const

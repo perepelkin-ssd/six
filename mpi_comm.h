@@ -25,7 +25,8 @@ public:
 	virtual NodeId get_rank() const;
 	virtual size_t get_size() const;
 
-	virtual void send(const NodeId &dest, const Buffers &);
+	virtual void send(const NodeId &dest, const Buffers &,
+		Callback cb=nullptr);
 	virtual MsgHandler set_handler(MsgHandler);
 private:
 	static const int TAG_USER=1;
@@ -42,7 +43,8 @@ private:
 
 	void receiver_routine();
 
-	void _send(const NodeId &dest, const Buffers &data, int mpi_tag);
+	void _send(const NodeId &dest, const Buffers &data, int mpi_tag,
+		Callback cb=nullptr);
 };
 
 #endif // MPI_COMM_H_
