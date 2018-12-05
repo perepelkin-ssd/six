@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 
 #include "id.h"
 #include "thread_pool.h"
@@ -25,6 +26,7 @@ private:
 	// wait for dfs to appear
 	std::map<Id, ValuePtr> dfs_;
 	std::map<Id, std::queue<Callback> > requests_;
+	std::set<Id> dels_;
 
 	std::function<void(int)> wl_changer_;
 };

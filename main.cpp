@@ -233,8 +233,11 @@ int main(int argc, char **argv)
 
 	init_stags(rts->factory());
 
+
 	//test1(rts);
+	MPI_Barrier(MPI_COMM_WORLD);
 	test2(rts);
+	MPI_Barrier(MPI_COMM_WORLD);
 
 
 	delete rts;
@@ -278,6 +281,7 @@ void init_stags(Factory &fact)
 #undef FACT
 #undef BUF
 #undef PLAIN
+	MPI_Barrier(MPI_COMM_WORLD);
 }
 
 void thread_pool_test();

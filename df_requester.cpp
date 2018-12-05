@@ -11,6 +11,11 @@ void DfRequester::request(const Id &id, DfRequester::Callback cb)
 
 	auto it=dfs_.find(id);
 
+	if (dels_.find(id)!=dels_.end()) {
+		throw std::runtime_error(std::string("request df after del: ")
+			+ id.to_string());
+	}
+
 	if (it!=dfs_.end()) {
 		ValuePtr val=it->second;
 
@@ -26,6 +31,7 @@ void DfRequester::request(const Id &id, DfRequester::Callback cb)
 
 void DfRequester::put(const Id &id, const ValuePtr &val)
 {
+	printf("\n\n\n===================PUT %s\n\n\n", id.to_string().c_str());
 	std::lock_guard<std::mutex> lk(m_);
 	wl_changer_(1);
 	
@@ -34,6 +40,17 @@ void DfRequester::put(const Id &id, const ValuePtr &val)
 	if (it!=dfs_.end() && it->second) {
 		throw std::runtime_error(
 			std::string("DF exists: " + id.to_string()));
+	}
+
+	auto it3=dels_.find(id);
+
+	if (it3!=dels_.end()) {
+		assert(requests_.find(id)==requests_.end());
+
+		dels_.erase(it3);
+		printf("\n\n\n===================DEL\n\n\n");
+		wl_changer_(-2);
+		return;
 	}
 
 	dfs_[id]=val;
@@ -59,16 +76,31 @@ void DfRequester::del(const Id &id)
 {
 	std::lock_guard<std::mutex> lk(m_);
 
-	wl_changer_(-1);
+	//wl_changer_(-1);
 
 	auto it=dfs_.find(id);
 
 	if (it==dfs_.end()) {
-		throw std::runtime_error(std::string("Cannot delete: no such df: ")
-			+ id.to_string());
+		//throw std::runtime_error(std::string("Cannot delete: no such df: ")
+		//	+ id.to_string());
+		if (dels_.find(id)!=dels_.end()) {
+			throw std::runtime_error(std::string(
+			"Duplicate df del request: ") + id.to_string());
+		}
+
+		if (requests_.find(id)!=requests_.end()) {
+			throw std::runtime_error(std::string(
+				"DF del, but requests present for df: ") + id.to_string());
+		}
+
+		printf("\n\n\n===================DEL INSERT\n\n\n");
+		dels_.insert(id);
+		wl_changer_(1);
+		return;
 	}
 
 	dfs_.erase(it);
+	wl_changer_(-1);
 
 	if (requests_.find(id)!=requests_.end()) {
 		throw std::runtime_error(std::string(

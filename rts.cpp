@@ -129,6 +129,7 @@ RTS::RTS(Comm &comm)
 			});
 		},
 		[this](){
+			printf("IDLE_ALL\n");
 			comm_.send_all({
 				Buffer::create(TAG_IDLE)
 			});
@@ -165,6 +166,8 @@ void RTS::submit(const TaskPtr &task)
 	change_workload(1);
 
 	std::lock_guard<std::mutex> lk(m_);
+	printf("%d: RTS::submit: job submitted locked: %s\n",
+		(int)comm_.get_rank(), std::type_index(typeid(*task)).name());
 
 	EnvironPtr env(new TaskEnv(*this, comm_, task));
 	dynamic_cast<TaskEnv*>(env.get())->init(env);
