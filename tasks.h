@@ -6,6 +6,7 @@
 #include "task.h"
 #include "value.h"
 
+// Delete df from df_requester on current node
 class DelDf : public Task
 {
 public:
@@ -21,6 +22,7 @@ private:
 	Id id_;
 };
 
+// Deliver task to another node (using locator)
 class Delivery : public Task
 {
 public:
@@ -37,6 +39,7 @@ private:
 	TaskPtr task_;
 };
 
+// Submit signal to a monitor using rptr
 class MonitorSignal : public Task
 {
 public:
@@ -53,6 +56,7 @@ private:
 	BufferPtr signal_;
 };
 
+// Submit DF to df_requester
 class StoreDf : public Task
 {
 public:
@@ -71,6 +75,7 @@ private:
 	TaskPtr on_stored_;
 };
 
+// Submit df to df_pusher
 class SubmitDfToCf : public Task
 {
 public:

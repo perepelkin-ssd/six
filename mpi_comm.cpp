@@ -29,6 +29,11 @@ MpiComm::MpiComm(MPI_Comm comm, size_t handler_threads,
 	int size;
 	MPI_Comm_size(comm_, &size);
 	size_=size_t(size);
+
+	handler_=[](const NodeId &, const BufferPtr &){
+		throw std::runtime_error("Message received before handler "
+			"is set");
+	}
 }
 
 MpiComm::MpiComm(int *argc, char ***argv, size_t handler_threads,
@@ -56,6 +61,11 @@ MpiComm::MpiComm(int *argc, char ***argv, size_t handler_threads,
 	int size;
 	MPI_Comm_size(comm_, &size);
 	size_=size_t(size);
+
+	handler_=[](const NodeId &, const BufferPtr &){
+		throw std::runtime_error("Message received before handler "
+			"is set");
+	}
 }
 
 void MpiComm::start()
@@ -164,6 +174,11 @@ MsgHandler MpiComm::set_handler(MsgHandler handler)
 	auto res=handler_;
 	handler_=handler;
 	return res;
+}
+
+void MpiComm::barrier()
+{
+	MPI_Barrier(comm_);
 }
 
 void MpiComm::receiver_routine()

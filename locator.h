@@ -6,6 +6,8 @@
 #include "comm.h"
 #include "serializable.h"
 
+// An object, capable of somehow finding a node of an object in a
+// distributed environment.
 class Locator : public Serializable
 {
 public:
@@ -14,6 +16,8 @@ public:
 	virtual NodeId get_next_node(const Comm &) const=0;
 };
 
+// Simple locator, where node=idx % nodes_count (idx may be negative,
+// where -1 is node nodes_count-1, etc.
 class CyclicLocator : public Locator
 {
 public:

@@ -5,6 +5,7 @@
 
 #include "serializable.h"
 
+// DF value abstraction
 class Value : public Serializable
 {
 public:

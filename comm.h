@@ -5,6 +5,8 @@
 
 #include "buffer.h"
 
+// Node identifier abstraction. Must be castable to int and constructable
+// from int in [0; size) range
 typedef long long int NodeId;
 
 typedef std::function<void (const NodeId &src, const BufferPtr &data)>
@@ -25,7 +27,10 @@ public:
 		Callback cb=nullptr)=0;
 	virtual MsgHandler set_handler(MsgHandler)=0;
 
+	// broadcast to every rank, including self
 	virtual void send_all(const Buffers &);
+
+	virtual void barrier()=0;
 };
 
 #endif // COMM_H_

@@ -1,6 +1,7 @@
 #pragma once
 
-// MUST start with 0 and end with pseudo-entry _STAG_END
+// MUST start with 0 and end with pseudo-entry _STAG_END (this is for
+// simplicity of verification, that all constructors are assigned).
 enum STAGS {
 	STAG_Locator_CyclicLocator,
 	STAG_Value_IntValue,

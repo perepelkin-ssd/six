@@ -8,6 +8,10 @@
 #include "comm.h"
 #include "thread_pool.h"
 
+// Mpi-based implementation of Comm interface.
+// May employ existing MPI_Comm or [de]initialize MPI in [~]MpiComm.
+// If a message is received before a handler is set, std::runtime_error
+// is thrown.
 class MpiComm : public Comm
 {
 public:
@@ -25,9 +29,13 @@ public:
 	virtual NodeId get_rank() const;
 	virtual size_t get_size() const;
 
+	// Send a message and invoke callback (if any) after message is
+	// delivered (fully sent out)
 	virtual void send(const NodeId &dest, const Buffers &,
 		Callback cb=nullptr);
 	virtual MsgHandler set_handler(MsgHandler);
+
+	virtual void barrier();
 private:
 	static const int TAG_USER=1;
 	static const int TAG_SYSTEM=2;

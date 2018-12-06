@@ -3,6 +3,7 @@
 #include "comm.h"
 #include "serializable.h"
 
+// Remote pointer, i.e. node+pointer pair.
 class RPtr : public Serializable
 {
 public:

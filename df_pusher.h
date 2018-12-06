@@ -7,6 +7,20 @@
 #include "thread_pool.h"
 #include "value.h"
 
+// DataFragment Pusher model:
+//
+// Once DF is produced, it is sent to its consumers via "push" (id+val)
+//
+// Note: delivery must be done elsewhere, local node is the place to
+// where DFs are pushed, and where they are got from
+//
+// Consumer "open"s a port causing all already pushed DFs to be
+// called back. Further pushes cause callbacks.
+//
+// After all DFs are received, the port must be "closed".
+//
+// All callbacks are sent via thread pool, not directly from calls.
+// DfPusher also notifies on workload change (abstract size_t counter).
 class DfPusher
 {
 public:

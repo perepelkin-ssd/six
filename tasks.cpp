@@ -59,15 +59,15 @@ void Delivery::serialize(Buffers &bufs) const
 MonitorSignal::MonitorSignal(const RPtr &rptr, const BufferPtr &signal)
 	: rptr_(rptr), signal_(signal)
 {
-	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr.node_, rptr.ptr_);
-	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
+	//printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr.node_, rptr.ptr_);
+//	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
 }
 
 MonitorSignal::MonitorSignal(BufferPtr &buf)
 {
 	rptr_=RPtr(buf);
 	signal_=buf;
-	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
+//	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
 }
 
 void MonitorSignal::run(const EnvironPtr &env)

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "buf_handler.h"
 #include "comm.h"
 #include "df_pusher.h"
 #include "df_requester.h"
@@ -11,15 +12,6 @@
 
 class Task;
 typedef std::shared_ptr<Task> TaskPtr;
-
-// TODO: move BufHandler to a better place (file)
-class BufHandler
-{
-public:
-	virtual ~BufHandler() {}
-
-	virtual void handle(BufferPtr &)=0;
-};
 
 // Environ implementation MUST provide existence of the corresponding Task
 // instance during Environ lifetime
@@ -45,6 +37,11 @@ public:
 	
 	virtual DfRequester &df_requester()=0;
 
+	// Monitor model:
+	// when started monitor prevents Environ instance deletion (keeps
+	// a smart_pointer) and makes it able to receive messages via
+	// remote pointer (PRtr) via BufHandler interface.
+	// stop_monitor releases the smart pointer and disables handling.
 	virtual RPtr start_monitor(std::function<void(BufferPtr &)>)=0;
 	virtual void stop_monitor()=0;
 };

@@ -16,7 +16,8 @@ public:
 	// Note: must not start while stop() is in progress
 	void start(size_t threads_num=1);
 
-	// request threads stop and join them (only stops with empty queue)
+	// request threads stop and join them (also waits for the queue to
+	// become empty)
 	void stop();
 
 	// add job

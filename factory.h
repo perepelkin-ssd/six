@@ -10,6 +10,9 @@
 
 typedef std::function<Serializable *(BufferPtr &)> Constructor;
 
+// Serialization/deserialization facility using Buffers
+// Corresponding instance is deserialized-created provided its tag
+// (serialization_tag) is assigned with a constructor.
 class Factory
 {
 	std::map<STAGS, Constructor> cons_;
@@ -22,6 +25,7 @@ public:
 	// returns nullptr if none
 	Constructor get_constructor(STAGS tag) const;
 
+	// Deserialize object wrapped in a shared_ptr
 	template <class T>
 	std::shared_ptr<T> pop(BufferPtr &buf)
 	{

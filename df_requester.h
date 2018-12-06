@@ -7,6 +7,16 @@
 #include "thread_pool.h"
 #include "value.h"
 
+// DataFragment Requester model
+// After DF is produced it is stored on the node until explicit deletion
+// (put and del methods).
+// The DF can be requested from the node (request), which will cause
+// DF to be called-back.
+// If the request is made before the DF is stored, the request awaits
+// until DF will appear, and will be called-back then
+//
+// All callbacks are done via the thread pool. Workload change notification
+// is also supported.
 class DfRequester
 {
 public:

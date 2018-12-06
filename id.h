@@ -9,6 +9,11 @@
 
 typedef std::string Name;
 
+// wrapper over vector<int>. Has optional insignificant label (doesn't
+// affect comparison/equality).
+// First two indices are displayed as node_rank and node-unique_id
+// e.g.: (3.5423)label[1,5,7], where 1, 5, 7 are indices, and 3 and
+// 5423 are "prefix" indices.
 class Id : public std::vector<int>, public Serializable
 {
 public:
