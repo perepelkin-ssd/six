@@ -31,7 +31,6 @@ void DfRequester::request(const Id &id, DfRequester::Callback cb)
 
 void DfRequester::put(const Id &id, const ValuePtr &val)
 {
-	printf("\n\n\n===================PUT %s\n\n\n", id.to_string().c_str());
 	std::lock_guard<std::mutex> lk(m_);
 	wl_changer_(1);
 	
@@ -48,7 +47,6 @@ void DfRequester::put(const Id &id, const ValuePtr &val)
 		assert(requests_.find(id)==requests_.end());
 
 		dels_.erase(it3);
-		printf("\n\n\n===================DEL\n\n\n");
 		wl_changer_(-2);
 		return;
 	}
@@ -93,7 +91,6 @@ void DfRequester::del(const Id &id)
 				"DF del, but requests present for df: ") + id.to_string());
 		}
 
-		printf("\n\n\n===================DEL INSERT\n\n\n");
 		dels_.insert(id);
 		wl_changer_(1);
 		return;

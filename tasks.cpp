@@ -23,6 +23,11 @@ void DelDf::serialize(Buffers &bufs) const
 	id_.serialize(bufs);
 }
 
+std::string DelDf::to_string() const
+{
+	return "DelDf(" + id_.to_string() + ")";
+}
+
 Delivery::Delivery(const LocatorPtr &loc, const TaskPtr &task)
 	: loc_(loc), task_(task)
 {}
@@ -56,6 +61,11 @@ void Delivery::serialize(Buffers &bufs) const
 	task_->serialize(bufs);
 }
 
+std::string Delivery::to_string() const
+{
+	return "Delivery(" + loc_->to_string() + ") : " + task_->to_string();
+}
+
 MonitorSignal::MonitorSignal(const RPtr &rptr, const BufferPtr &signal)
 	: rptr_(rptr), signal_(signal)
 {
@@ -72,8 +82,6 @@ MonitorSignal::MonitorSignal(BufferPtr &buf)
 
 void MonitorSignal::run(const EnvironPtr &env)
 {
-	printf("------------\n%d: %d:%p\n----------\n",
-		(int)env->comm().get_rank(), (int)rptr_.node_, rptr_.ptr_);
 	if (env->comm().get_rank()==rptr_.node_) {
 		BufHandler *handler=(BufHandler*)rptr_.ptr_;
 		handler->handle(signal_);
@@ -89,7 +97,11 @@ void MonitorSignal::serialize(Buffers &bufs) const
 	bufs.push_back(Buffer::create(STAG_MonitorSignal));
 	rptr_.serialize(bufs);
 	bufs.push_back(signal_);
-	printf("\t\tMONITOR SERIALIZE rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
+}
+
+std::string MonitorSignal::to_string() const
+{
+	return "MonitorSignal(" + rptr_.to_string() + ")";
 }
 
 StoreDf::StoreDf(const Id &id, const ValuePtr &val,
@@ -128,6 +140,11 @@ void StoreDf::serialize(Buffers &bufs) const
 	}
 }
 
+std::string StoreDf::to_string() const
+{
+	return "StoreDf(" + id_.to_string() + ") <- " + val_->to_string();
+}
+
 SubmitDfToCf::SubmitDfToCf(const Id &dfid, const ValuePtr &val,
 		const Id &cfid)
 	: dfid_(dfid), cfid_(cfid), val_(val)
@@ -152,3 +169,10 @@ void SubmitDfToCf::serialize(Buffers &bufs) const
 	cfid_.serialize(bufs);
 	val_->serialize(bufs);
 }
+
+std::string SubmitDfToCf::to_string() const
+{
+	return "SubmitDfToCf(" + cfid_.to_string() + " <- "
+		+ dfid_.to_string() + ")";
+}
+

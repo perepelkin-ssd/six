@@ -3,7 +3,6 @@
 Constructor Factory::set_constructor(STAGS stag, Constructor c)
 {
 	std::lock_guard<std::mutex> lk(m_);
-	printf("set constructor for %d\n", (int)stag);
 
 	Constructor res=nullptr;
 

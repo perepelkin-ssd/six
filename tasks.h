@@ -18,6 +18,8 @@ public:
 	virtual void run(const EnvironPtr &);
 
 	virtual void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
 private:
 	Id id_;
 };
@@ -34,6 +36,8 @@ public:
 	virtual void run(const EnvironPtr &);
 
 	virtual void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
 private:
 	LocatorPtr loc_;
 	TaskPtr task_;
@@ -51,6 +55,8 @@ public:
 	virtual void run(const EnvironPtr &);
 
 	virtual void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
 private:
 	RPtr rptr_;
 	BufferPtr signal_;
@@ -69,6 +75,8 @@ public:
 	virtual void run(const EnvironPtr &);
 
 	virtual void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
 private:
 	Id id_;
 	ValuePtr val_;
@@ -88,6 +96,7 @@ public:
 
 	virtual void serialize(Buffers &) const;
 
+	virtual std::string to_string() const;
 private:
 	Id dfid_, cfid_;
 	ValuePtr val_;

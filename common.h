@@ -23,14 +23,4 @@
 
 void print_trace();
 
-class Printable
-{
-public:
-	virtual ~Printable() {}
-
-	virtual std::string toString() const;
-};
-
-std::ostream &operator <<(std::ostream &, const Printable &);
-
 #endif // COMMON_H_

@@ -4,11 +4,12 @@
 #include <memory>
 
 #include "comm.h"
+#include "printable.h"
 #include "serializable.h"
 
 // An object, capable of somehow finding a node of an object in a
 // distributed environment.
-class Locator : public Serializable
+class Locator : public Serializable, public Printable
 {
 public:
 	virtual ~Locator() {}
@@ -27,6 +28,8 @@ public:
 	virtual NodeId get_next_node(const Comm &) const;
 
 	virtual void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
 private:
 	int rank_;
 };

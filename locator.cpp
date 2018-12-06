@@ -34,3 +34,8 @@ void CyclicLocator::serialize(Buffers &bufs) const
 	bufs.push_back(Buffer::create(STAG_Locator_CyclicLocator));
 	bufs.push_back(Buffer::create(rank_));
 }
+
+std::string CyclicLocator::to_string() const
+{
+	return "@" + std::to_string(rank_) + "";
+}

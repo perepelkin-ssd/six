@@ -55,8 +55,8 @@ struct TaskEnv : public Environ, public BufHandler
 		comm_.send(dest, bufs, [prts]() {
 			prts->change_workload(-1);
 		});
-		printf("%d: sending %d bytes to %d\n",
-			(int)comm_.get_rank(), (int)size(data), (int)dest);
+	//	printf("%d: sending %d bytes to %d\n",
+	//		(int)comm_.get_rank(), (int)size(data), (int)dest);
 	}
 
 	virtual void submit(const TaskPtr &task)
@@ -129,7 +129,6 @@ RTS::RTS(Comm &comm)
 			});
 		},
 		[this](){
-			printf("IDLE_ALL\n");
 			comm_.send_all({
 				Buffer::create(TAG_IDLE)
 			});
@@ -160,8 +159,8 @@ void RTS::wait_all(bool is_root_node)
 
 void RTS::submit(const TaskPtr &task)
 {
-	printf("%d: RTS::submit: job submitted: %s\n",
-		(int)comm_.get_rank(), std::type_index(typeid(*task)).name());
+	printf("%d: RTS::submit: %s\n",
+		(int)comm_.get_rank(), task->to_string().c_str());
 
 	change_workload(1);
 
@@ -219,19 +218,10 @@ void RTS::on_message(const NodeId &src, BufferPtr buf)
 {
 	TAGS tag=Buffer::pop<TAGS>(buf);
 	if (tag!=TAG_IDLE_STOPPER && tag!=TAG_IDLE) {
-		printf("%d: on_message tag=%d from %d of size %d\n",
-			(int)comm_.get_rank(), (int)tag, (int)src, (int)buf->getSize());
+//		printf("%d: on_message tag=%d from %d of size %d\n",
+//			(int)comm_.get_rank(), (int)tag, (int)src, (int)buf->getSize());
 	}
 	switch (tag) {
-/*		case TAG_CF:
-			env_.receive_cf(src, buf);
-			break;
-		case TAG_DF:
-			env_.receive_df(src, buf);
-			break;
-		case TAG_DF_VALUE:
-			env_.receive_df_to_cf(src, buf);
-			break;*/
 		case TAG_TASK:
 			{
 			auto task=TaskPtr(dynamic_cast<Task*>(factory_.construct(buf)));

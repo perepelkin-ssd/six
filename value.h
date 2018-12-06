@@ -3,10 +3,11 @@
 
 #include <memory>
 
+#include "printable.h"
 #include "serializable.h"
 
 // DF value abstraction
-class Value : public Serializable
+class Value : public Serializable, public Printable
 {
 public:
 	virtual ~Value() {}
@@ -31,6 +32,8 @@ public:
 	int value() const;
 
 	void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
 private:
 	int value_;
 };

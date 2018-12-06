@@ -26,3 +26,8 @@ void IntValue::serialize(Buffers &bufs) const
 	bufs.push_back(Buffer::create(STAG_Value_IntValue));
 	bufs.push_back(Buffer::create(value_));
 }
+
+std::string IntValue::to_string() const
+{
+	return std::to_string(value_);
+}

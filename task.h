@@ -3,9 +3,10 @@
 #include <memory>
 
 #include "environ.h"
+#include "printable.h"
 #include "serializable.h"
 
-class Task : public Serializable
+class Task : public Serializable, public Printable
 {
 public:
 	virtual ~Task() {}

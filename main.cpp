@@ -4,7 +4,6 @@
 #include "common.h"
 #include "tasks.h"
 #include "environ.h"
-#include "fp.h"
 #include "locator.h"
 #include "mpi_comm.h"
 #include "rts.h"
@@ -95,7 +94,6 @@ public:
 	}
 	virtual void run(const EnvironPtr &env)
 	{
-		printf("\nEXEC A\n\n");
 		ValuePtr xval(new IntValue(10));
 
 		// store at xloc
@@ -136,13 +134,9 @@ public:
 	}
 	virtual void run(const EnvironPtr &env)
 	{
-		printf("\nEXEC B %d:%p\n\n", (int)rptr_.node_, rptr_.ptr_);
-
 		auto bid=bid_;
 		env->df_pusher().open(bid_,
 				[this, env, bid](const Id &dfid, const ValuePtr &val) {
-			printf("\n\tGOT FOR B: %s\n\n",
-				dfid.to_string().c_str());
 			exec(val);
 			env->df_pusher().close(bid);
 

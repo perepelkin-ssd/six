@@ -6,11 +6,9 @@
 #include <mutex>
 
 #include "comm.h"
-#include "context.h"
 #include "df_pusher.h"
 #include "df_requester.h"
 #include "factory.h"
-#include "fp.h"
 #include "id.h"
 #include "idle_stopper.h"
 #include "task.h"

@@ -20,19 +20,3 @@ void print_trace()
     }
 }
 
-
-std::ostream &operator <<(std::ostream &s, const Printable &obj)
-{
-	s << obj.toString();
-	return s;
-}
-
-std::string Printable::toString() const
-{
-	std::ostringstream os;
-
-	os << "Object<" << typeid(*this).name() << ">";
-
-	return os.str();
-}
-
