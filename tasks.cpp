@@ -3,6 +3,8 @@
 #include "common.h"
 #include "environ.h"
 
+#include "json.hpp"
+
 DelDf::DelDf(const Id &id)
 	: id_(id)
 {}
@@ -64,6 +66,32 @@ void Delivery::serialize(Buffers &bufs) const
 std::string Delivery::to_string() const
 {
 	return "Delivery(" + loc_->to_string() + ") : " + task_->to_string();
+}
+
+ExecJsonFp::ExecJsonFp(const std::string &json_content)
+	: json_dump_(json_content)
+{}
+
+ExecJsonFp::ExecJsonFp(BufferPtr &buf, Factory &fact)
+{
+	json_dump_=Buffer::popString(buf);
+}
+
+void ExecJsonFp::run(const EnvironPtr &env)
+{
+	nlohmann::json j=nlohmann::json::parse(json_dump_);
+	printf("EXEC_JSON_FP: %s\n", j.dump(2).c_str());
+}
+
+void ExecJsonFp::serialize(Buffers &bufs) const
+{
+	bufs.push_back(Buffer::create(STAG_ExecJsonFp));
+	bufs.push_back(Buffer::create(json_dump_));
+}
+
+std::string ExecJsonFp::to_string() const
+{
+	return "(json_fp)";
 }
 
 MonitorSignal::MonitorSignal(const RPtr &rptr, const BufferPtr &signal)
