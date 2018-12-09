@@ -4,7 +4,7 @@
 #include <cstring>
 
 #include "common.h"
-#include "serialization_tags.h"
+#include "stags.h"
 
 CyclicLocator::CyclicLocator(int rank)
 	: rank_(rank)

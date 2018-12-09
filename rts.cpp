@@ -12,7 +12,7 @@ struct TaskEnv : public Environ, public BufHandler
 	TaskPtr task_;
 	EnvironPtr self_;
 	std::weak_ptr<Environ> weak_self_;
-	std::mutex m_;
+	mutable std::mutex m_;
 	std::function<void(BufferPtr &)> monitor_handler_;
 
 	virtual void handle(BufferPtr &buf)
@@ -59,6 +59,13 @@ struct TaskEnv : public Environ, public BufHandler
 	//		(int)comm_.get_rank(), (int)size(data), (int)dest);
 	}
 
+	virtual void send_all(const Buffers &data)
+	{
+		for (auto i=0u; i<comm_.get_size(); i++) {
+			send(NodeId(i), data);
+		}
+	}
+
 	virtual void submit(const TaskPtr &task)
 	{
 		rts_.submit(task);
@@ -103,6 +110,25 @@ struct TaskEnv : public Environ, public BufHandler
 		self_.reset();
 		monitor_handler_=nullptr;
 	}
+
+	virtual void exec_extern(const Name &code,
+		const std::vector<ValuePtr> &args)
+	{
+		if (code=="c_helloworld") {
+			printf("Hello, six!\n");
+		} else {
+			fprintf(stderr, "extern code not supported: %s\n",
+				code.c_str());
+			NIMPL
+		}
+	}
+
+	virtual ValuePtr get(const Id &key) const
+	{ return rts_.get(key); }
+	virtual ValuePtr set(const Id &key, const ValuePtr &val)
+	{ return rts_.set(key, val); }
+	virtual ValuePtr del(const Id &key)
+	{ return rts_.del(key); }
 };
 
 RTS::~RTS()
@@ -214,6 +240,65 @@ Id RTS::create_id(const Name &label, const std::vector<int> &idx)
 	return Id(indices, label);
 }
 
+ValuePtr RTS::get(const Id &key) const
+{
+	std::lock_guard<std::mutex> lk(m_);
+	
+	auto it=vals_.find(key);
+
+	if (it==vals_.end()) {
+		printf("%d: get %s (n/a)\n", (int)comm_.get_rank(),
+			key.to_string().c_str());
+		return ValuePtr(nullptr);
+	} else {
+		printf("%d: get %s : %p\n", (int)comm_.get_rank(),
+			key.to_string().c_str(), it->second.get());
+		return it->second;
+	}
+}
+
+ValuePtr RTS::set(const Id &key, const ValuePtr &value)
+{
+	std::lock_guard<std::mutex> lk(m_);
+	
+	ValuePtr old_value(nullptr);
+
+	auto it=vals_.find(key);
+
+	if (it!=vals_.end()) {
+		old_value=it->second;
+	}
+
+	vals_[key]=value;
+
+	printf("%d: set %s:=%p %s\n", (int)comm_.get_rank(),
+		key.to_string().c_str(), value.get(),
+		(vals_.find(key)==vals_.end()? "end": "ok"));
+
+	if (!value) {
+		vals_.erase(key);
+	}
+
+	return old_value;
+}
+
+
+ValuePtr RTS::del(const Id &key)
+{
+	std::lock_guard<std::mutex> lk(m_);
+	
+	ValuePtr old_value(nullptr);
+
+	auto it=vals_.find(key);
+
+	if (it!=vals_.end()) {
+		old_value=it->second;
+		vals_.erase(it);
+		return old_value;
+	} else {
+		return nullptr;
+	}
+}
 void RTS::on_message(const NodeId &src, BufferPtr buf)
 {
 	TAGS tag=Buffer::pop<TAGS>(buf);

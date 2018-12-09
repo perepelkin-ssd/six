@@ -58,6 +58,11 @@ public:
 	/// const void * pointer.
 	Buffer(const void *ptr, size_t size, DeleteCb cb=nullptr);
 
+	/// Gather Buffers into a single buffer via copy. Memory is allocated
+	/// via operator new() and deallocated in delete callback via
+	/// operator delete().
+	Buffer(const Buffers &);
+
     /// Set new callback, which will be called in destructor. Previous
     /// callback is returned
     virtual DeleteCb setDeleteCb(DeleteCb cb);

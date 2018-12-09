@@ -6,7 +6,7 @@
 #include <mutex>
 
 #include "serializable.h"
-#include "serialization_tags.h"
+#include "stags.h"
 
 typedef std::function<Serializable *(BufferPtr &)> Constructor;
 

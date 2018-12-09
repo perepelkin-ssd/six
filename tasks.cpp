@@ -68,51 +68,22 @@ std::string Delivery::to_string() const
 	return "Delivery(" + loc_->to_string() + ") : " + task_->to_string();
 }
 
-ExecJsonFp::ExecJsonFp(const std::string &json_content)
-	: json_dump_(json_content)
-{}
-
-ExecJsonFp::ExecJsonFp(BufferPtr &buf, Factory &fact)
-{
-	json_dump_=Buffer::popString(buf);
-}
-
-void ExecJsonFp::run(const EnvironPtr &env)
-{
-	nlohmann::json j=nlohmann::json::parse(json_dump_);
-	printf("EXEC_JSON_FP: %s\n", j.dump(2).c_str());
-}
-
-void ExecJsonFp::serialize(Buffers &bufs) const
-{
-	bufs.push_back(Buffer::create(STAG_ExecJsonFp));
-	bufs.push_back(Buffer::create(json_dump_));
-}
-
-std::string ExecJsonFp::to_string() const
-{
-	return "(json_fp)";
-}
-
-MonitorSignal::MonitorSignal(const RPtr &rptr, const BufferPtr &signal)
+MonitorSignal::MonitorSignal(const RPtr &rptr, const Buffers &signal)
 	: rptr_(rptr), signal_(signal)
-{
-	//printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr.node_, rptr.ptr_);
-//	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
-}
+{}
 
 MonitorSignal::MonitorSignal(BufferPtr &buf)
 {
 	rptr_=RPtr(buf);
-	signal_=buf;
-//	printf("\t\tMONITOR SIGNAL rptr(%d, %p)\n", (int)rptr_.node_, rptr_.ptr_);
+	signal_={buf};
 }
 
 void MonitorSignal::run(const EnvironPtr &env)
 {
 	if (env->comm().get_rank()==rptr_.node_) {
 		BufHandler *handler=(BufHandler*)rptr_.ptr_;
-		handler->handle(signal_);
+		BufferPtr buf(new Buffer(signal_));
+		handler->handle(buf);
 	} else {
 		Buffers bufs;
 		serialize(bufs);
@@ -124,7 +95,9 @@ void MonitorSignal::serialize(Buffers &bufs) const
 {
 	bufs.push_back(Buffer::create(STAG_MonitorSignal));
 	rptr_.serialize(bufs);
-	bufs.push_back(signal_);
+	for (auto s : signal_) {
+		bufs.push_back(s);
+	}
 }
 
 std::string MonitorSignal::to_string() const

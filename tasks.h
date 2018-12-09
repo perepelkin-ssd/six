@@ -43,30 +43,13 @@ private:
 	TaskPtr task_;
 };
 
-class ExecJsonFp : public Task
-{
-public:
-	virtual ~ExecJsonFp() {}
-
-	ExecJsonFp(const std::string &json_content);
-	ExecJsonFp(BufferPtr &, Factory &);
-
-	virtual void run(const EnvironPtr &);
-
-	virtual void serialize(Buffers &) const;
-
-	virtual std::string to_string() const;
-private:
-	std::string json_dump_;
-};
-
 // Submit signal to a monitor using rptr
 class MonitorSignal : public Task
 {
 public:
 	virtual ~MonitorSignal() {}
 
-	MonitorSignal(const RPtr &, const BufferPtr &signal);
+	MonitorSignal(const RPtr &, const Buffers &signal);
 	MonitorSignal(BufferPtr &);
 
 	virtual void run(const EnvironPtr &);
@@ -76,7 +59,7 @@ public:
 	virtual std::string to_string() const;
 private:
 	RPtr rptr_;
-	BufferPtr signal_;
+	Buffers signal_;
 };
 
 // Submit DF to df_requester

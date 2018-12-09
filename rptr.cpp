@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "serialization_tags.h"
+#include "stags.h"
 
 RPtr::RPtr(const NodeId &node, void *ptr)
 	: node_(node), ptr_(ptr)

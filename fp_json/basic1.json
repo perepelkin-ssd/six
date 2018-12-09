@@ -1,0 +1,32 @@
+{
+    "hello_world": {
+        "type": "extern", 
+        "code": "c_helloworld", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": []
+    }, 
+    "main": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": ["x"]
+            }, 
+            {
+                "code": "hello_world", 
+                "rules": [], 
+                "args": [], 
+                "line": 9, 
+                "type": "exec", 
+                "id": [
+                    "_l9"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }
+}

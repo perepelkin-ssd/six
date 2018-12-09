@@ -4,13 +4,15 @@
 #include <sstream>
 
 #include "common.h"
-#include "tasks.h"
 #include "environ.h"
+#include "fp_json.h"
+#include "jfp.h"
 #include "locator.h"
 #include "mpi_comm.h"
 #include "rts.h"
-#include "serialization_tags.h"
+#include "stags.h"
 #include "task.h"
+#include "tasks.h"
 
 int rank;
 void init_stags(Factory &fact);
@@ -34,7 +36,7 @@ int main(int argc, char **argv)
 	test_all();
 
 	if (argc!=2) {
-		printf("no json specified, doing nothing else\n");
+		note("no json specified, doing nothing else\n");
 	} else {
 		MpiComm comm(MPI_COMM_WORLD);
 
@@ -52,8 +54,6 @@ int main(int argc, char **argv)
 			std::stringstream ss;
 			ss << f.rdbuf();//read the file
 			std::string j=ss.str();
-
-			printf("loaded json:\n%s\n", j.c_str());
 
 			rts->submit(TaskPtr(new ExecJsonFp(j)));
 		}
@@ -85,6 +85,8 @@ void init_stags(Factory &fact)
 	BUF(STAG_DelDf, DelDf)
 	FACT(STAG_Delivery, Delivery)
 	FACT(STAG_ExecJsonFp, ExecJsonFp)
+	FACT(STAG_JfpExec, JfpExec)
+	FACT(STAG_JfpReg, JfpReg)
 	BUF(STAG_Locator_CyclicLocator, CyclicLocator)
 	BUF(STAG_MonitorSignal, MonitorSignal)
 	FACT(STAG_StoreDf, StoreDf)

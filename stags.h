@@ -6,6 +6,8 @@ enum STAGS {
 	STAG_DelDf,
 	STAG_Delivery,
 	STAG_ExecJsonFp,
+	STAG_JfpExec,
+	STAG_JfpReg,
 	STAG_Locator_CyclicLocator,
 	STAG_MonitorSignal,
 	STAG_StoreDf,

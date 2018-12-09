@@ -46,8 +46,13 @@ public:
 
 	DfPusher &df_pusher() { return df_pusher_; }
 	DfRequester &df_requester() { return df_requester_; }
+
+	ValuePtr get(const Id &key) const;
+	ValuePtr set(const Id &key, const ValuePtr &val);
+	ValuePtr del(const Id &key);
+
 private:
-	std::mutex m_;
+	mutable std::mutex m_;
 	std::condition_variable cv_;
 	Comm &comm_;
 	IdleStopper<NodeId> *stopper_;
@@ -60,6 +65,7 @@ private:
 	int next_id_;
 	DfPusher df_pusher_;
 	DfRequester df_requester_;
+	std::map<Id, ValuePtr> vals_;
 
 	void on_message(const NodeId &src, BufferPtr);
 };

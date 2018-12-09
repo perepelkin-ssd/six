@@ -41,6 +41,26 @@ Buffer::Buffer(const void *ptr, size_t size, Buffer::DeleteCb cb)
 	}
 }
 
+Buffer::Buffer(const Buffers &bufs)
+{
+	size_=size(bufs);
+	data_=operator new(size_);
+
+	size_t ofs=0;
+
+	for (auto b : bufs)
+	{
+		memcpy(static_cast<char*>(data_)+ofs, b->data_, b->size_);
+		ofs+=b->size_;
+	}
+
+	assert(ofs==size_);
+
+	cb_=[this]() {
+		operator delete(getData());
+	};
+}
+
 Buffer::DeleteCb Buffer::setDeleteCb(Buffer::DeleteCb cb)
 {
     auto res=cb_;

@@ -3,7 +3,7 @@
 #include <cassert>
 #include <cstring>
 
-#include "serialization_tags.h"
+#include "stags.h"
 
 IntValue::IntValue(int val)
 	: value_(val)
@@ -30,4 +30,18 @@ void IntValue::serialize(Buffers &bufs) const
 std::string IntValue::to_string() const
 {
 	return std::to_string(value_);
+}
+
+JsonValue::JsonValue(const nlohmann::json &value)
+	: value_(value)
+{}
+
+const nlohmann::json &JsonValue::value() const
+{
+	return value_;
+}
+
+void JsonValue::serialize(Buffers &bufs) const
+{
+	bufs.push_back(Buffer::create(value_.dump()));
 }
