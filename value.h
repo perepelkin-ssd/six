@@ -13,6 +13,8 @@ class Value : public Serializable, public Printable
 {
 public:
 	virtual ~Value() {}
+
+	virtual operator int() const;
 };
 
 typedef std::shared_ptr<Value> ValuePtr;
@@ -36,6 +38,8 @@ public:
 	virtual void serialize(Buffers &) const;
 
 	virtual std::string to_string() const;
+
+	virtual operator int() const { return value_; }
 private:
 	int value_;
 };

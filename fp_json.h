@@ -8,7 +8,7 @@ class ExecJsonFp : public Task
 public:
 	virtual ~ExecJsonFp() {}
 
-	ExecJsonFp(const std::string &json_content);
+	ExecJsonFp(const std::string &json_content, Factory &);
 	ExecJsonFp(BufferPtr &, Factory &);
 
 	virtual void run(const EnvironPtr &);
@@ -17,6 +17,7 @@ public:
 
 	virtual std::string to_string() const;
 private:
+	Factory &fact_;
 	std::string json_dump_;
 };
 

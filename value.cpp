@@ -5,6 +5,12 @@
 
 #include "stags.h"
 
+Value::operator int() const
+{
+	fprintf(stderr, "Cast impossible (int): %s\n", to_string().c_str());
+	abort();
+}
+
 IntValue::IntValue(int val)
 	: value_(val)
 {}

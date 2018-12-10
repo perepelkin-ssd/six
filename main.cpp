@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 			ss << f.rdbuf();//read the file
 			std::string j=ss.str();
 
-			rts->submit(TaskPtr(new ExecJsonFp(j)));
+			rts->submit(TaskPtr(new ExecJsonFp(j, rts->factory())));
 		}
 
 		rts->wait_all(comm.get_rank()==0);
@@ -89,6 +89,7 @@ void init_stags(Factory &fact)
 	FACT(STAG_JfpReg, JfpReg)
 	BUF(STAG_Locator_CyclicLocator, CyclicLocator)
 	BUF(STAG_MonitorSignal, MonitorSignal)
+	FACT(STAG_RequestDf, RequestDf)
 	FACT(STAG_StoreDf, StoreDf)
 	FACT(STAG_SubmitDfToCf, SubmitDfToCf)
 	BUF(STAG_Value_IntValue, IntValue)

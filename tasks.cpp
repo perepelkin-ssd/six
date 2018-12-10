@@ -105,9 +105,47 @@ std::string MonitorSignal::to_string() const
 	return "MonitorSignal(" + rptr_.to_string() + ")";
 }
 
+RequestDf::RequestDf(const Id &dfid, const LocatorPtr &rloc,
+		const RPtr &rptr, const Id &rcbid)
+	: dfid_(dfid), rloc_(rloc), rptr_(rptr), rcbid_(rcbid)
+{}
+
+RequestDf::RequestDf(BufferPtr &buf, Factory &fact)
+{
+	dfid_=Id(buf);
+	rloc_=fact.pop<Locator>(buf);
+	rptr_=RPtr(buf);
+	rcbid_=Id(buf);
+}
+
+void RequestDf::run(const EnvironPtr &env)
+{
+	env->df_requester().request(dfid_, [this, env](const ValuePtr &val){
+		Buffers bufs;
+		rcbid_.serialize(bufs);
+		val->serialize(bufs);
+		env->submit(TaskPtr(new MonitorSignal(rptr_, bufs)));
+	});
+}
+
+void RequestDf::serialize(Buffers &bufs) const
+{
+	bufs.push_back(Buffer::create(STAG_RequestDf));
+	dfid_.serialize(bufs);
+	rloc_->serialize(bufs);
+	rptr_.serialize(bufs);
+	rcbid_.serialize(bufs);
+}
+
+std::string RequestDf::to_string() const
+{
+	return "RequestDf(" + dfid_.to_string() + " => " + rloc_->to_string()
+		+ ")";
+}
+
 StoreDf::StoreDf(const Id &id, const ValuePtr &val,
-		const TaskPtr &on_stored)
-	: id_(id), val_(val), on_stored_(on_stored)
+		const TaskPtr &on_stored, int counter)
+	: id_(id), val_(val), on_stored_(on_stored), counter_(counter)
 {}
 
 StoreDf::StoreDf(BufferPtr &buf, Factory &fact)
@@ -119,11 +157,24 @@ StoreDf::StoreDf(BufferPtr &buf, Factory &fact)
 	} else {
 		on_stored_=nullptr;
 	}
+	counter_=Buffer::pop<int>(buf);
 }
 
 void StoreDf::run(const EnvironPtr &env)
 {
-	env->df_requester().put(id_, val_);
+	if (counter_==-1) {
+		env->df_requester().put(id_, val_);
+	} else {
+		std::shared_ptr<size_t> counter(new size_t(counter_));
+		env->df_requester().put(id_, val_, [this, env, counter](){
+			assert(*counter>0);
+			(*counter)--;
+
+			if (*counter==0) {
+				env->df_requester().del(id_);
+			}
+		});
+	}
 
 	if (on_stored_) {
 		env->submit(on_stored_);
@@ -139,6 +190,7 @@ void StoreDf::serialize(Buffers &bufs) const
 	if (on_stored_) {
 		on_stored_->serialize(bufs);
 	}
+	bufs.push_back(Buffer::create<int>(counter_));
 }
 
 std::string StoreDf::to_string() const

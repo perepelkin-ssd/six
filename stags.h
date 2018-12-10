@@ -10,6 +10,7 @@ enum STAGS {
 	STAG_JfpReg,
 	STAG_Locator_CyclicLocator,
 	STAG_MonitorSignal,
+	STAG_RequestDf,
 	STAG_StoreDf,
 	STAG_SubmitDfToCf,
 	STAG_Value_IntValue,

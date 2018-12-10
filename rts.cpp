@@ -112,10 +112,26 @@ struct TaskEnv : public Environ, public BufHandler
 	}
 
 	virtual void exec_extern(const Name &code,
-		const std::vector<ValuePtr> &args)
+		std::vector<ValuePtr> &args)
 	{
+		printf("EXTERN %s:", code.c_str());
+		for (auto arg : args) {
+			if (arg) {
+				printf(" %s", arg->to_string().c_str());
+			} else {
+				printf(" (out)");
+			}
+		}
+		printf("\n");
 		if (code=="c_helloworld") {
 			printf("Hello, six!\n");
+		} else if (code=="c_init") {
+			printf("c_init\n");
+			args[1]=ValuePtr(new IntValue((int)(*args[0])));
+		} else if (code=="c_iprint") {
+			printf("c_iprint: %d\n", (int)(*args[0]));
+		} else if (code=="c_print") {
+			printf("c_print: %s\n", args[0]->to_string().c_str());
 		} else {
 			fprintf(stderr, "extern code not supported: %s\n",
 				code.c_str());
@@ -247,12 +263,8 @@ ValuePtr RTS::get(const Id &key) const
 	auto it=vals_.find(key);
 
 	if (it==vals_.end()) {
-		printf("%d: get %s (n/a)\n", (int)comm_.get_rank(),
-			key.to_string().c_str());
 		return ValuePtr(nullptr);
 	} else {
-		printf("%d: get %s : %p\n", (int)comm_.get_rank(),
-			key.to_string().c_str(), it->second.get());
 		return it->second;
 	}
 }
@@ -270,10 +282,6 @@ ValuePtr RTS::set(const Id &key, const ValuePtr &value)
 	}
 
 	vals_[key]=value;
-
-	printf("%d: set %s:=%p %s\n", (int)comm_.get_rank(),
-		key.to_string().c_str(), value.get(),
-		(vals_.find(key)==vals_.end()? "end": "ok"));
 
 	if (!value) {
 		vals_.erase(key);

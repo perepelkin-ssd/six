@@ -62,14 +62,36 @@ private:
 	Buffers signal_;
 };
 
+class RequestDf : public Task
+{
+public:
+	virtual ~RequestDf() {}
+
+	RequestDf(const Id &dfid, const LocatorPtr &requester_loc,
+		const RPtr &, const Id &rcbid);
+	RequestDf(BufferPtr &, Factory &);
+
+	virtual void run(const EnvironPtr &);
+
+	virtual void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
+private:
+	Id dfid_;
+	LocatorPtr rloc_;
+	RPtr rptr_;
+	Id rcbid_;
+};
+
 // Submit DF to df_requester
 class StoreDf : public Task
 {
 public:
 	virtual ~StoreDf() {}
 
+	// counter==-1 means no counter logic
 	StoreDf(const Id &dfid, const ValuePtr &val,
-		const TaskPtr &on_stored=nullptr);
+		const TaskPtr &on_stored=nullptr, int counter=-1);
 	StoreDf(BufferPtr &, Factory &);
 
 	virtual void run(const EnvironPtr &);
@@ -81,6 +103,7 @@ private:
 	Id id_;
 	ValuePtr val_;
 	TaskPtr on_stored_;
+	int counter_;
 };
 
 // Submit df to df_pusher
@@ -101,5 +124,3 @@ private:
 	Id dfid_, cfid_;
 	ValuePtr val_;
 };
-
-

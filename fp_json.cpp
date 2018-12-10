@@ -4,11 +4,12 @@
 
 #include "jfp.h"
 
-ExecJsonFp::ExecJsonFp(const std::string &json_content)
-	: json_dump_(nlohmann::json::parse(json_content).dump())
+ExecJsonFp::ExecJsonFp(const std::string &json_content, Factory &fact)
+	: fact_(fact), json_dump_(nlohmann::json::parse(json_content).dump())
 {}
 
 ExecJsonFp::ExecJsonFp(BufferPtr &buf, Factory &fact)
+	: fact_(fact)
 {
 	json_dump_=Buffer::popString(buf);
 }
@@ -37,7 +38,8 @@ void ExecJsonFp::run(const EnvironPtr &env)
 			env->stop_monitor();
 			env->submit(TaskPtr (new JfpExec(fp_id,
 				env->create_id("_main"),
-				"{\"type\": \"exec\",\"code\": \"main\"}"
+				"{\"type\": \"exec\", \"code\": \"main\", "
+				"\"args\": []}", fact_
 			)));
 		}
 	});

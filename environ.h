@@ -53,7 +53,7 @@ public:
 	virtual void stop_monitor()=0;
 
 	virtual void exec_extern(const Name &code,
-		const std::vector<ValuePtr> &args={})=0;
+		std::vector<ValuePtr> &args)=0;
 };
 
 typedef std::shared_ptr<Environ> EnvironPtr;

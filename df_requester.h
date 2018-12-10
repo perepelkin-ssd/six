@@ -21,11 +21,14 @@ class DfRequester
 {
 public:
 	typedef std::function<void (const ValuePtr &)> Callback;
+	typedef std::function<void ()> RequestCb;
 
 	DfRequester(ThreadPool *, std::function<void(int)> workload_changer);
 
 	void request(const Id &, Callback);
-	void put(const Id &, const ValuePtr &);
+
+	// Each request causes RequestCb invocation
+	void put(const Id &, const ValuePtr &, RequestCb cb=nullptr);
 	void del(const Id &);
 private:
 	// All callbacks are invoked via external pool
@@ -34,7 +37,7 @@ private:
 	
 	// dfs are stored infinitely (until explicit deletion), requests
 	// wait for dfs to appear
-	std::map<Id, ValuePtr> dfs_;
+	std::map<Id, std::pair<ValuePtr, RequestCb> > dfs_;
 	std::map<Id, std::queue<Callback> > requests_;
 	std::set<Id> dels_;
 

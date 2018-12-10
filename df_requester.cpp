@@ -17,11 +17,15 @@ void DfRequester::request(const Id &id, DfRequester::Callback cb)
 	}
 
 	if (it!=dfs_.end()) {
-		ValuePtr val=it->second;
+		ValuePtr val=it->second.first;
+		RequestCb rcb=it->second.second;
 
 		auto wlc=wl_changer_;
-		pool_->submit([wlc, cb, val]() {
+		pool_->submit([wlc, cb, val, rcb]() {
 			cb(val);
+			if (rcb) {
+				rcb();
+			}
 			wlc(-1);
 		});
 	} else {
@@ -29,14 +33,14 @@ void DfRequester::request(const Id &id, DfRequester::Callback cb)
 	}
 }
 
-void DfRequester::put(const Id &id, const ValuePtr &val)
+void DfRequester::put(const Id &id, const ValuePtr &val, RequestCb rcb)
 {
 	std::lock_guard<std::mutex> lk(m_);
 	wl_changer_(1);
 	
 	auto it=dfs_.find(id);
 	
-	if (it!=dfs_.end() && it->second) {
+	if (it!=dfs_.end() && it->second.first) {
 		throw std::runtime_error(
 			std::string("DF exists: " + id.to_string()));
 	}
@@ -51,7 +55,8 @@ void DfRequester::put(const Id &id, const ValuePtr &val)
 		return;
 	}
 
-	dfs_[id]=val;
+	dfs_[id]=std::make_pair(val, rcb);
+
 
 	auto it2=requests_.find(id);
 
@@ -61,8 +66,11 @@ void DfRequester::put(const Id &id, const ValuePtr &val)
 			it2->second.pop();
 
 			auto wlc=wl_changer_;
-			pool_->submit([wlc, cb, val]() {
+			pool_->submit([wlc, cb, val, rcb]() {
 				cb(val);
+				if (rcb) {
+					rcb();
+				}
 				wlc(-1);
 			});
 		}
