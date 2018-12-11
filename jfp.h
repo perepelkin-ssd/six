@@ -27,11 +27,7 @@ private:
 	json j_;
 	const json *fp_;
 	Context ctx_;
-	std::set<std::pair<Id, Id> > dfpush_simple_noidx_;
-	std::map<Id, size_t> dfreqcount_simple_noidx_;
 	bool pushed_flag_;
-	std::map<Id, std::function<void(BufferPtr &)> > rcbs_;
-	EnvironPtr env_holder_;
 
 	const json &fp() { return *fp_; }
 

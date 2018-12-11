@@ -116,7 +116,6 @@ struct TaskEnv : public Environ, public BufHandler
 	{
 		printf("EXTERN (%p) %s (..%d):", this, code.c_str(),
 			(int)args.size());
-		}
 		for (auto arg : args) {
 			if (arg) {
 				printf(" %s", arg->to_string().c_str());

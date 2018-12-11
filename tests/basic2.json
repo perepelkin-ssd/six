@@ -44,26 +44,16 @@
                     "x"
                 ]
             }, 
-			{
-				"type": "sub_rules",
-				"push_table": [
-					{
-						"type": "simple_noidx",
-						"df": "x",
-						"cf": "a"
-					}
-				],
-				"req_counts": [
-					{
-						"type": "simple_noidx",
-						"df": "x",
-						"count": 1
-					}
-				]
-			},
             {
                 "code": "print", 
-                "rules": [], 
+                "rules": [
+					{
+						"type": "request",
+						"dfs": [
+							["x"]
+						]
+					}
+				], 
                 "args": [
                     {
                         "ref": [
@@ -81,7 +71,18 @@
             }, 
             {
                 "code": "init", 
-                "rules": [], 
+                "rules": [
+					{
+						"type": "afterpush",
+						"df": ["x"],
+						"cf": ["a"]
+					},
+					{
+						"type": "req_count",
+						"df": ["x"],
+						"count": 1
+					}
+				], 
                 "args": [
                     {
                         "type": "iconst", 
@@ -104,7 +105,11 @@
             }, 
             {
                 "code": "iprint", 
-                "rules": [], 
+                "rules": [
+					{
+						"type": "has_pushes"
+					}
+				], 
                 "args": [
                     {
                         "ref": [

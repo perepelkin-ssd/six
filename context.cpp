@@ -1,5 +1,7 @@
 #include "context.h"
 
+#include <sstream>
+
 #include "common.h"
 
 Context::Context(BufferPtr &buf, Factory &fact)
@@ -111,6 +113,12 @@ void Context::pull_name(const Name &name, const Context &ctx)
 	_pull_name(name, ctx);
 }
 
+void Context::pull_names(const Context &ctx)
+{
+	std::lock_guard<std::mutex> lk(m_);
+	_pull_names(ctx);
+}
+
 void Context::_set_name(const Name &name, const Id &id)
 {
 	if (names_.find(name)!=names_.end()) {
@@ -204,7 +212,7 @@ Id Context::_eval_ref(const json &ref) const
 
 	if (it==names_.end()) {
 		fprintf(stderr, "Context::eval_ref: name %s is missing in ref %s\n",
-			ref_name.c_str(), ref.dump(2).c_str());
+			ref_name.c_str(), ref.dump().c_str());
 		abort();
 	}
 
@@ -232,6 +240,13 @@ void Context::_pull_name(const Name &name, const Context &ctx)
 	}
 }
 
+void Context::_pull_names(const Context &ctx)
+{
+	for (auto el : ctx.names_) {
+		_pull_name(el.first, ctx);
+	}
+}
+
 void Context::serialize(Buffers &bufs) const
 {
 	// names_
@@ -254,4 +269,24 @@ void Context::serialize(Buffers &bufs) const
 		el.first.serialize(bufs);
 		el.second->serialize(bufs);
 	}
+}
+
+std::string Context::to_string() const
+{
+	std::lock_guard<std::mutex> lk(m_);
+
+	std::ostringstream os;
+
+	os << "{";
+	for (auto name : names_) {
+		os << " " << name.second;
+	}
+	for (auto param : params_) {
+		os << " " << param.first << ":" << (*param.second);
+	}
+	for (auto df : dfs_) {
+		os << " " << df.first << "=" << (*df.second);
+	}
+	os << " }";
+	return os.str();
 }

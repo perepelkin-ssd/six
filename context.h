@@ -8,7 +8,7 @@
 #include "serializable.h"
 #include "value.h"
 
-class Context : public Serializable
+class Context : public Serializable, public Printable
 {
 public:
 	Context() {}
@@ -32,8 +32,11 @@ public:
 	ValuePtr eval(const json &expr) const;
 
 	void pull_name(const Name &name, const Context &);
+	void pull_names(const Context &);
 
 	virtual void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
 private:
 	mutable std::mutex m_;
 	std::map<Name, Id> names_;
@@ -49,6 +52,7 @@ private:
 	ValuePtr _get_df(const Id &) const;
 
 	void _pull_name(const Name &name, const Context &);
+	void _pull_names(const Context &);
 
 	Id _eval_ref(const json &) const;
 	ValuePtr _eval(const json &expr) const;

@@ -2,6 +2,7 @@
 #include "jfp.h"
 
 #include "common.h"
+#include "fp.h"
 #include "remote_monitor.h"
 #include "tasks.h"
 
@@ -20,27 +21,6 @@ JfpExec::JfpExec(BufferPtr &buf, Factory &fact)
 	j_=json::parse(Buffer::popString(buf));
 
 	ctx_=Context(buf, fact);
-
-	size_t count;
-	// dfpush_simple_noidx_
-	count=Buffer::pop<size_t>(buf);
-	for (auto i=0u; i<count; i++) {
-		auto df=Id(buf);
-		auto cf=Id(buf);
-		auto rec=std::make_pair(df, cf);
-		assert(dfpush_simple_noidx_.find(rec)==dfpush_simple_noidx_.end());
-		dfpush_simple_noidx_.insert(rec);
-	}
-
-	// dfreqcount_simple_noidx_
-	count=Buffer::pop<size_t>(buf);
-	for (auto i=0u; i<count; i++) {
-		auto df=Id(buf);
-		auto count=Buffer::pop<size_t>(buf);
-		assert(dfreqcount_simple_noidx_.find(df)
-			==dfreqcount_simple_noidx_.end());
-		dfreqcount_simple_noidx_[df]=count;
-	}
 }
 
 void JfpExec::run(const EnvironPtr &env)
@@ -67,19 +47,6 @@ void JfpExec::serialize(Buffers &bufs) const
 	bufs.push_back(Buffer::create(j_.dump()));
 
 	ctx_.serialize(bufs);
-	// dfpush_simple_noidx_
-	bufs.push_back(Buffer::create<size_t>(dfpush_simple_noidx_.size()));
-	for (auto el : dfpush_simple_noidx_) {
-		el.first.serialize(bufs);
-		el.second.serialize(bufs);
-	}
-
-	//dfreqcount_simple_noidx_
-	bufs.push_back(Buffer::create<size_t>(dfreqcount_simple_noidx_.size()));
-	for (auto el : dfreqcount_simple_noidx_) {
-		el.first.serialize(bufs);
-		bufs.push_back(Buffer::create<size_t>(el.second));
-	}
 }
 
 
@@ -90,42 +57,49 @@ std::string JfpExec::to_string() const
 
 void JfpExec::resolve_args(const EnvironPtr &env)
 {
+	// Main points:
+	// - Request needed dfs
+	// - Open-port for pushed dfs
+	// - Wait until all dfs are here
+	// - Close port
+	//
+	// => What we need to know from FP;
+	// - j_["request_rule"].get_requested_dfs(cf_id_)
+	// - j_["has_pushed_dfs"]
 	pushed_flag_=false;
-	bool requested_flag=false;
 
-	auto deps=get_deps();
-	for (auto d : deps) {
-		printf("DEPENDENCY: %s for %s\n", d.to_string().c_str(),
-			cf_id_.to_string().c_str());
-		auto push_rec=std::make_pair(d, cf_id_);
-		if (dfpush_simple_noidx_.find(push_rec)
-				==dfpush_simple_noidx_.end()) {
-			printf("DEPENDENCY: %s for %s - REQUESTING\n",
-				d.to_string().c_str(), cf_id_.to_string().c_str());
-			NodeId df_node=get_next_node(env, d);
-			if (df_node==env->comm().get_rank()) {
-				env->df_requester().request(d, [this, d, env](
-						const ValuePtr &val){
-					ctx_.set_df(d, val);
-					check_exec(env);
-				});
-			} else {
-				auto rptr=RPtr(env->comm().get_rank(), remote_callback(
-						[this, d, env](BufferPtr &buf) {
-					ValuePtr val=fact_.pop<Value>(buf);
-					ctx_.set_df(d, val);
-					check_exec(env);
-				}));
-				env->submit(TaskPtr(new Delivery(LocatorPtr(
-					new CyclicLocator(df_node)), TaskPtr(new RequestDf(
-					d, LocatorPtr(new CyclicLocator(env->comm()
-					.get_rank())), rptr)))));
-			}
-			requested_flag=true;
+	// Request DFs
+
+	auto req_dfs=CF::get_requested_dfs(j_, ctx_);
+
+	bool requested_flag=!req_dfs.empty();
+
+	for (auto dfid : req_dfs) {
+		NodeId df_node=get_next_node(env, dfid);
+		if (df_node==env->comm().get_rank()) {
+			env->df_requester().request(dfid, [this, dfid, env](
+					const ValuePtr &val){
+				ctx_.set_df(dfid, val);
+				check_exec(env);
+			});
 		} else {
-			pushed_flag_=true;
+			auto rptr=RPtr(env->comm().get_rank(), remote_callback(
+					[this, dfid, env](BufferPtr &buf) {
+				ValuePtr val=fact_.pop<Value>(buf);
+				ctx_.set_df(dfid, val);
+				check_exec(env);
+			}));
+			env->submit(TaskPtr(new Delivery(LocatorPtr(
+				new CyclicLocator(df_node)), TaskPtr(new RequestDf(
+				dfid, LocatorPtr(new CyclicLocator(env->comm()
+				.get_rank())), rptr)))));
 		}
 	}
+
+	// Has pushed?
+
+	pushed_flag_=CF::has_pushes(j_);
+
 	if (pushed_flag_) {
 		printf("\tOPEN %s\n", cf_id_.to_string().c_str());
 		env->df_pusher().open(cf_id_, [this, env](const Id &dfid,
@@ -134,8 +108,10 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 			check_exec(env);
 		});
 	}
-	printf("%s %s %s\n", cf_id_.to_string().c_str(), (pushed_flag_? "P": "!p"),
+	printf("%s %s %s\n", cf_id_.to_string().c_str(),
+		(pushed_flag_? "P": "!p"),
 		(requested_flag? "R": "!r"));
+
 	if (!pushed_flag_ && !requested_flag) {
 		exec(env);
 	}
@@ -218,6 +194,7 @@ NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
 
 void JfpExec::check_exec(const EnvironPtr &env)
 {
+	printf("warning: ensure no new requests are available\n");
 	if (get_deps().empty()) {
 		exec(env);
 
@@ -275,7 +252,7 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 				printf("\tDFNAME %s << %s\n", sname.c_str(),
 					dfs_names[sname].to_string().c_str());
 			}
-		} else if (bi["type"]!="sub_rules") {
+		} else {
 			// create cfs names
 			assert(bi.find("id")!=bi.end());
 			Name name=bi["id"][0].get<std::string>();
@@ -292,47 +269,7 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 	}
 
 	for (auto bi : sub["body"]) {
-		if (bi["type"]=="sub_rules") {
-			// push table
-			if (bi.find("push_table")!=bi.end()) {
-				for (auto el : bi["push_table"]) {
-					if (el["type"]=="simple_noidx") {
-						printf("dfpush insert %s=>%s in %s\n",
-							ctx_.get_name(el["df"]).to_string().c_str(),
-							ctx_.get_name(el["cf"]).to_string().c_str(),
-							cf_id_.to_string().c_str());
-						dfpush_simple_noidx_.insert(std::make_pair(
-							ctx_.get_name(el["df"]),
-							ctx_.get_name(el["cf"])));
-					} else {
-						fprintf(stderr, "JfpExec::exec_struct: "
-							"push table entry not supported: %s\n",
-							el["type"].dump().c_str());
-						abort();
-					}
-				}
-			}
-			// req_counts
-			if (bi.find("req_counts")!=bi.end()) {
-				for (auto el : bi["req_counts"]) {
-					if (el["type"]=="simple_noidx") {
-						Id dfid=ctx_.get_name(el["df"]);
-						assert(dfreqcount_simple_noidx_.find(dfid)
-							==dfreqcount_simple_noidx_.end());
-						dfreqcount_simple_noidx_[dfid]=
-							el["count"].get<int>();
-					} else {
-						fprintf(stderr, "JfpExec::exec_struct: "
-							"req_count entry not supported: %s\n",
-							el.dump().c_str());
-						abort();
-					}
-				}
-			}
-		}
-	}
-	for (auto bi : sub["body"]) {
-		if (bi["type"]!="dfs" && bi["type"]!="sub_rules") {
+		if (bi["type"]!="dfs") {
 			assert(bi.find("id") != bi.end());
 			Id item_id=ctx_.eval_ref(bi["id"]);
 			JfpExec *item=new JfpExec(fp_id_, item_id, bi.dump(), fact_);
@@ -378,6 +315,30 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 			}
 		}
 	}
+
+	// Afterpush
+	for (auto push : CF::get_afterpushes(j_, ctx_)) {
+		Id dfid=push.first;
+		Id cfid=push.second;
+		NodeId next_rank=get_next_node(env, cfid);
+		if (next_rank==env->comm().get_rank()) {
+			printf("%d: DF PUSHING LOCAL: %s = %s\n",
+				(int)env->comm().get_rank(),
+				dfid.to_string().c_str(),
+				ctx_.get_df(dfid)->to_string().c_str());
+			env->df_pusher().push(cfid, dfid, ctx_.get_df(dfid));
+		} else {
+			printf("%d: DF PUSHING DELIVERY to %d: %s = %s >> %s\n",
+				(int)env->comm().get_rank(), (int)next_rank,
+				dfid.to_string().c_str(),
+				ctx_.get_df(dfid)->to_string().c_str(),
+				cfid.to_string().c_str());
+
+			env->submit(TaskPtr(new Delivery(LocatorPtr(
+				new CyclicLocator(next_rank)), TaskPtr(
+				new SubmitDfToCf(dfid, ctx_.get_df(dfid), cfid)))));
+		}
+	}
 }
 
 void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
@@ -385,54 +346,26 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 {
 	Id id=ctx_.eval_ref(ref);
 
-	printf("%d: DF COMPUTED: %s = %s, %d by %s\n",
+	printf("%d: DF COMPUTED: %s = %s by %s\n",
 		(int)env->comm().get_rank(),
 		id.to_string().c_str(), val->to_string().c_str(),
-		(int)dfpush_simple_noidx_.size(),
 		cf_id_.to_string().c_str());
+	
+	ctx_.set_df(id, val);
 
-	std::set<std::pair<Id, Id> > to_delete;
-	// push
-	for (auto el : dfpush_simple_noidx_) {
-		printf("%s ?= %s\n", el.first.to_string().c_str(),
-			id.to_string().c_str());
-		if (el.first==id) {
-			Id dest_cfid=el.second;
-			NodeId next_rank=get_next_node(env, dest_cfid);
-			if (next_rank==env->comm().get_rank()) {
-				printf("%d: DF PUSHING LOCAL: %s = %s\n",
-					(int)env->comm().get_rank(),
-					id.to_string().c_str(), val->to_string().c_str());
-				env->df_pusher().push(dest_cfid, id, val);
-			} else {
-				printf("%d: DF PUSHING DELIVERY to %d: %s = %s >> %s\n",
-					(int)env->comm().get_rank(), (int)next_rank,
-					id.to_string().c_str(), val->to_string().c_str(),
-					dest_cfid.to_string().c_str());
-
-				env->submit(TaskPtr(new Delivery(LocatorPtr(
-					new CyclicLocator(next_rank)), TaskPtr(
-					new SubmitDfToCf(id, val, dest_cfid)))));
-			}
-			to_delete.insert(el);
-		}
-	}
-
-	for (auto el : to_delete) {
-		dfpush_simple_noidx_.erase(el);
-	}
-
-	// store requested
-	if (dfreqcount_simple_noidx_.find(id)!=dfreqcount_simple_noidx_.end()) {
-		printf("\tREQUEST COUNT for %s = %d\n",
-			id.to_string().c_str(), (int)dfreqcount_simple_noidx_[id]);
+	// store if requestable
+	printf("HERE0\n");
+	if (CF::is_df_requested(j_, ctx_, id)) {
 		NodeId store_node=get_next_node(env, id);
+	printf("HERE1\n");
+		auto req_count=CF::get_requests_count(j_, ctx_, id);
+	printf("HERE2\n");
 		if (store_node==env->comm().get_rank()) {
-			std::shared_ptr<size_t> counter(
-				new size_t(dfreqcount_simple_noidx_[id]));
+			std::shared_ptr<size_t> counter(new size_t(req_count));
 			env->df_requester().put(id, val, [counter, env, id](){
 				assert (*counter>0);
 				(*counter)--;
+				printf("warning: use mutex\n");
 
 				if (*counter==0) {
 					env->df_requester().del(id);
@@ -441,19 +374,19 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 		} else {
 			env->submit(TaskPtr(new Delivery(LocatorPtr(
 				new CyclicLocator(store_node)), TaskPtr(
-				new StoreDf(id, val, nullptr, 
-				dfreqcount_simple_noidx_[id])))));
+				new StoreDf(id, val, nullptr, req_count)))));
 		}
 	}
+	printf("HERE\n");
 }
 
 void JfpExec::init_child_context(JfpExec *child)
 {
-	printf("warning: pushing too much context %s<<%s, %d\n",
+	printf("warning: pushing too much context %s<<%s\n",
 		child->cf_id_.to_string().c_str(),
-		cf_id_.to_string().c_str(), (int)dfpush_simple_noidx_.size());
-	child->dfpush_simple_noidx_=dfpush_simple_noidx_;
-	child->dfreqcount_simple_noidx_=dfreqcount_simple_noidx_;
+		cf_id_.to_string().c_str());
+
+	child->ctx_.pull_names(ctx_);
 
 	if (child->j_["type"]=="exec") {
 		if (child->j_["args"].empty()) {
