@@ -28,6 +28,7 @@ private:
 	const json *fp_;
 	Context ctx_;
 	bool pushed_flag_;
+	std::set<Id> requested_;
 
 	const json &fp() { return *fp_; }
 
@@ -46,6 +47,8 @@ private:
 
 	void df_computed(const EnvironPtr &env, const json &ref,
 		const ValuePtr &);
+
+	void request_missing(const EnvironPtr &env);
 };
 
 class JfpReg : public Task

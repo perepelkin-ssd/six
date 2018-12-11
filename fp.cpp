@@ -11,7 +11,9 @@ std::set<Id> CF::get_requested_dfs(const json &cf, const Context &ctx)
 	for (auto rule : cf["rules"]) {
 		if (rule["type"]=="request") {
 			for (auto ref : rule["dfs"]) {
-				res.insert(ctx.eval_ref(ref));
+				if (ctx.can_eval_ref(ref)) {
+					res.insert(ctx.eval_ref(ref));
+				}
 			}
 		}
 	}
@@ -103,7 +105,7 @@ bool CF::is_ready_exec(const json &fp, const json &cf, const Context &ctx)
 		if (is_input) {
 			if (!ctx.can_eval(arg)) { return false; }
 		} else {
-			if (!ctx.can_eval_ref(arg)) { return false; }
+			if (!ctx.can_eval_ref(arg["ref"])) { return false; }
 		}
 	}
 	return true;

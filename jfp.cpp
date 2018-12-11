@@ -59,11 +59,33 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 {
 	pushed_flag_=false;
 
-	// Request DFs
+	request_missing(env);
 
+	// Has pushed?
+
+	pushed_flag_=CF::has_pushes(j_);
+
+	if (pushed_flag_) {
+		env->df_pusher().open(cf_id_, [this, env](const Id &dfid,
+				const ValuePtr &val) {
+			ctx_.set_df(dfid, val);
+			check_exec(env);
+		});
+	}
+
+	check_exec(env);
+}
+
+void JfpExec::request_missing(const EnvironPtr &env)
+{
 	auto req_dfs=CF::get_requested_dfs(j_, ctx_);
 
 	for (auto dfid : req_dfs) {
+		if (requested_.find(dfid)!=requested_.end()) {
+			continue;
+		} else {
+			requested_.insert(dfid);
+		}
 		NodeId df_node=get_next_node(env, dfid);
 		if (df_node==env->comm().get_rank()) {
 			env->df_requester().request(dfid, [this, dfid, env](
@@ -84,22 +106,6 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 				.get_rank())), rptr)))));
 		}
 	}
-
-	// Has pushed?
-
-	pushed_flag_=CF::has_pushes(j_);
-
-	if (pushed_flag_) {
-		env->df_pusher().open(cf_id_, [this, env](const Id &dfid,
-				const ValuePtr &val) {
-			ctx_.set_df(dfid, val);
-			check_exec(env);
-		});
-	}
-
-	if (!pushed_flag_ && req_dfs.empty()) {
-		exec(env);
-	}
 }
 
 NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
@@ -110,7 +116,7 @@ NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
 
 void JfpExec::check_exec(const EnvironPtr &env)
 {
-	printf("warning: ensure no new requests are available\n");
+	request_missing(env);
 	if (CF::is_ready(fp(), j_, ctx_)) {
 		exec(env);
 
