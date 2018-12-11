@@ -90,7 +90,6 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 	pushed_flag_=CF::has_pushes(j_);
 
 	if (pushed_flag_) {
-		printf("\tOPEN %s\n", cf_id_.to_string().c_str());
 		env->df_pusher().open(cf_id_, [this, env](const Id &dfid,
 				const ValuePtr &val) {
 			ctx_.set_df(dfid, val);
@@ -103,75 +102,6 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 	}
 }
 
-std::set<Id> JfpExec::get_deps()
-{
-	std::set<Id> res;
-	if (j_["type"]=="exec") {
-		for (auto i=0u; i<j_["args"].size(); i++) {
-			auto arg=j_["args"][i];
-			auto param_spec=fp()[j_["code"].get<std::string>()]["args"][i];
-			bool is_input=param_spec["type"]!="name";
-			if (is_input) {
-				extract_deps(res, arg);
-			} else {
-				extract_name_deps(res, arg["ref"]);
-			}
-		}
-		return res;
-	} else {
-		fprintf(stderr, "JfpExec::get_args: unsupported cf type: %s\n",
-			j_["type"].dump().c_str());
-		abort();
-	}
-}
-
-void JfpExec::extract_deps(std::set<Id> &deps, const json &expr)
-{
-	if (expr["type"]=="id") {
-		extract_deps_idexpr(deps, expr);
-	} else if (expr["type"]=="iconst") {
-		// no deps
-	} else {
-		fprintf(stderr, "JfpExec::extract_deps: %s\n",
-			expr.dump(2).c_str());
-		NIMPL
-	}
-}
-
-void JfpExec::extract_name_deps(std::set<Id> &deps,
-	const json &ref)
-{
-	for (auto i=1u; i<ref.size(); i++) {
-		extract_deps(deps, ref[i]);
-	}
-}
-
-void JfpExec::extract_deps_idexpr(std::set<Id> &deps,
-	const json &expr)
-{
-	assert(expr["type"]=="id");
-
-	bool indices_evaluatable=true;
-
-	for (auto i=1u; i<expr["ref"].size(); i++) {
-		std::set<Id> arg_deps;
-		extract_deps(arg_deps, expr["ref"][i]);
-		if (!arg_deps.empty()) {
-			indices_evaluatable=false;
-			deps.insert(arg_deps.begin(), arg_deps.end());
-		}
-	}
-
-	if (!indices_evaluatable) {
-		return;
-	}
-
-	Id id=ctx_.eval_ref(expr["ref"]);
-	if (!ctx_.has_df(id)) {
-		deps.insert(id);
-	}
-}
-
 NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
 {
 	assert(id.size()>=2);
@@ -181,7 +111,6 @@ NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
 void JfpExec::check_exec(const EnvironPtr &env)
 {
 	printf("warning: ensure no new requests are available\n");
-	//if (get_deps().empty()) {
 	if (CF::is_ready(fp(), j_, ctx_)) {
 		exec(env);
 
@@ -193,7 +122,6 @@ void JfpExec::check_exec(const EnvironPtr &env)
 
 void JfpExec::exec(const EnvironPtr &env)
 {
-	printf("EXEC %s\n", cf_id_.to_string().c_str());
 	assert(j_["type"]=="exec");
 
 	Name code=j_["code"].get<std::string>();
@@ -236,23 +164,17 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 					abort();
 				}
 				dfs_names[sname]=env->create_id(sname);
-				printf("\tDFNAME %s << %s\n", sname.c_str(),
-					dfs_names[sname].to_string().c_str());
 			}
 		} else {
 			// create cfs names
 			assert(bi.find("id")!=bi.end());
 			Name name=bi["id"][0].get<std::string>();
 			ctx_.set_name(name, env->create_id(name));
-			printf("\tCFNAME %s << %s\n", name.c_str(),
-				ctx_.get_name(name).to_string().c_str());
 		}
 	}
 
 	for (auto el : dfs_names) {
 		ctx_.set_name(el.first, el.second);
-		printf("\tDFNAME fwd %s << %s\n", el.first.c_str(),
-			el.second.to_string().c_str());
 	}
 
 	for (auto bi : sub["body"]) {
@@ -288,7 +210,6 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 		}
 	}
 	// Algorithm: eval args & call sub; return args save as dfs.
-	printf("ARGS SIZE=%d\n", (int)args.size());
 	env->exec_extern(ext["code"].get<std::string>(), args);
 	for (auto i=0u; i<ext["args"].size(); i++) {
 		bool is_input=fp()[code]["args"][i]["type"]!="name";
@@ -309,18 +230,8 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 		Id cfid=push.second;
 		NodeId next_rank=get_next_node(env, cfid);
 		if (next_rank==env->comm().get_rank()) {
-			printf("%d: DF PUSHING LOCAL: %s = %s\n",
-				(int)env->comm().get_rank(),
-				dfid.to_string().c_str(),
-				ctx_.get_df(dfid)->to_string().c_str());
 			env->df_pusher().push(cfid, dfid, ctx_.get_df(dfid));
 		} else {
-			printf("%d: DF PUSHING DELIVERY to %d: %s = %s >> %s\n",
-				(int)env->comm().get_rank(), (int)next_rank,
-				dfid.to_string().c_str(),
-				ctx_.get_df(dfid)->to_string().c_str(),
-				cfid.to_string().c_str());
-
 			env->submit(TaskPtr(new Delivery(LocatorPtr(
 				new CyclicLocator(next_rank)), TaskPtr(
 				new SubmitDfToCf(dfid, ctx_.get_df(dfid), cfid)))));
@@ -333,26 +244,19 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 {
 	Id id=ctx_.eval_ref(ref);
 
-	printf("%d: DF COMPUTED: %s = %s by %s\n",
-		(int)env->comm().get_rank(),
-		id.to_string().c_str(), val->to_string().c_str(),
-		cf_id_.to_string().c_str());
-	
 	ctx_.set_df(id, val);
 
 	// store if requestable
-	printf("HERE0\n");
 	if (CF::is_df_requested(j_, ctx_, id)) {
 		NodeId store_node=get_next_node(env, id);
-	printf("HERE1\n");
 		auto req_count=CF::get_requests_count(j_, ctx_, id);
-	printf("HERE2\n");
 		if (store_node==env->comm().get_rank()) {
 			std::shared_ptr<size_t> counter(new size_t(req_count));
-			env->df_requester().put(id, val, [counter, env, id](){
+			std::shared_ptr<std::mutex> m(new std::mutex());
+			env->df_requester().put(id, val, [counter, env, id, m](){
+				std::lock_guard<std::mutex> lk(*m);
 				assert (*counter>0);
 				(*counter)--;
-				printf("warning: use mutex\n");
 
 				if (*counter==0) {
 					env->df_requester().del(id);
@@ -364,15 +268,10 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 				new StoreDf(id, val, nullptr, req_count)))));
 		}
 	}
-	printf("HERE\n");
 }
 
 void JfpExec::init_child_context(JfpExec *child)
 {
-	printf("warning: pushing too much context %s<<%s\n",
-		child->cf_id_.to_string().c_str(),
-		cf_id_.to_string().c_str());
-
 	child->ctx_.pull_names(ctx_);
 
 	if (child->j_["type"]=="exec") {

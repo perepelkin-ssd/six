@@ -6,14 +6,12 @@ DfPusher::DfPusher(ThreadPool *pool, std::function<void(int)>wlc)
 
 void DfPusher::push(const Id &cfid, const Id &dfid, const ValuePtr &val)
 {
-	printf("\tDFPUSHED %s:\n", cfid.to_string().c_str());
 	std::lock_guard<std::mutex> lk(m_);
 	wl_changer_(1);
 
 	Port &port=ports_[cfid]; // will be created if none
 
 	if (port.cb_) {
-		printf("\tDFPUSHED: already opened\n");
 		// already opened
 		assert(port.queue_.empty());
 		auto cb=port.cb_;
@@ -23,7 +21,6 @@ void DfPusher::push(const Id &cfid, const Id &dfid, const ValuePtr &val)
 			wlc(-1);
 		});
 	} else {
-		printf("\tDFPUSHED: not yet opened\n");
 		// not yet opened
 		port.queue_.push(std::make_pair(dfid, val));
 	}

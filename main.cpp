@@ -8,6 +8,7 @@
 #include "fp_json.h"
 #include "jfp.h"
 #include "locator.h"
+#include "logger.h"
 #include "mpi_comm.h"
 #include "rts.h"
 #include "stags.h"
@@ -26,12 +27,15 @@ void note(const std::string &msg)
 	MPI_Barrier(MPI_COMM_WORLD);
 }
 
+std::shared_ptr<Logger> L;
+
 void test_all();
 int main(int argc, char **argv)
 {
 	int desired=MPI_THREAD_MULTIPLE, provided;
 	MPI_Init_thread(&argc, &argv, desired, &provided);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	L.reset(new Logger("log.txt", std::to_string(rank)));
 	assert(desired==provided);
 	test_all();
 

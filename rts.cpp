@@ -4,6 +4,9 @@
 
 #include "common.h"
 #include "environ.h"
+#include "logger.h"
+
+extern std::shared_ptr<Logger> L;
 
 struct TaskEnv : public Environ, public BufHandler
 {
@@ -55,8 +58,6 @@ struct TaskEnv : public Environ, public BufHandler
 		comm_.send(dest, bufs, [prts]() {
 			prts->change_workload(-1);
 		});
-	//	printf("%d: sending %d bytes to %d\n",
-	//		(int)comm_.get_rank(), (int)size(data), (int)dest);
 	}
 
 	virtual void send_all(const Buffers &data)
@@ -114,8 +115,7 @@ struct TaskEnv : public Environ, public BufHandler
 	virtual void exec_extern(const Name &code,
 		std::vector<ValuePtr> &args)
 	{
-		printf("EXTERN (%p) %s (..%d):", this, code.c_str(),
-			(int)args.size());
+		printf("EXTERN %s:", code.c_str());
 		for (auto arg : args) {
 			if (arg) {
 				printf(" %s", arg->to_string().c_str());
@@ -202,8 +202,9 @@ void RTS::wait_all(bool is_root_node)
 
 void RTS::submit(const TaskPtr &task)
 {
-	printf("%d: RTS::submit: %s\n",
-		(int)comm_.get_rank(), task->to_string().c_str());
+	L->log(task->to_string());
+	//printf("%d> %s\n",
+	//	(int)comm_.get_rank(), task->to_string().c_str());
 
 	change_workload(1);
 
@@ -213,8 +214,6 @@ void RTS::submit(const TaskPtr &task)
 	EnvironPtr env(new TaskEnv(*this, comm_, task));
 	dynamic_cast<TaskEnv*>(env.get())->init(env);
 	pool_.submit([env, task, this](){
-//		printf("%d: RTS: running job: %s\n",
-//			(int)comm_.get_rank(), std::type_index(typeid(*task)).name());
 		task->run(env);
 
 		change_workload(-1);
@@ -239,7 +238,6 @@ void RTS::change_workload(int delta)
 	}
 	workload_=(size_t)new_workload;
 
-	//printf("%d: workload: %d\n", (int)comm_.get_rank(), (int)workload_);
 }
 
 Id RTS::create_id(const Name &label, const std::vector<int> &idx)
@@ -312,8 +310,6 @@ void RTS::on_message(const NodeId &src, BufferPtr buf)
 {
 	TAGS tag=Buffer::pop<TAGS>(buf);
 	if (tag!=TAG_IDLE_STOPPER && tag!=TAG_IDLE) {
-//		printf("%d: on_message tag=%d from %d of size %d\n",
-//			(int)comm_.get_rank(), (int)tag, (int)src, (int)buf->getSize());
 	}
 	switch (tag) {
 		case TAG_TASK:

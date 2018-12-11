@@ -1,7 +1,7 @@
 #mkgen generated
 
-six: buffer.o comm.o common.o context.o df_pusher.o df_requester.o factory.o fp.o fp_json.o id.o idle_stopper.o jfp.o locator.o main.o mpi_comm.o mpi_comm_test.o printable.o remote_monitor.o rptr.o rts.o task.o tasks.o thread_pool.o thread_pool_test.o value.o
-	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror buffer.o comm.o common.o context.o df_pusher.o df_requester.o factory.o fp.o fp_json.o id.o idle_stopper.o jfp.o locator.o main.o mpi_comm.o mpi_comm_test.o printable.o remote_monitor.o rptr.o rts.o task.o tasks.o thread_pool.o thread_pool_test.o value.o -o six -I .
+six: buffer.o comm.o common.o context.o df_pusher.o df_requester.o factory.o fp.o fp_json.o id.o idle_stopper.o jfp.o locator.o logger.o main.o mpi_comm.o mpi_comm_test.o printable.o remote_monitor.o rptr.o rts.o task.o tasks.o thread_pool.o thread_pool_test.o value.o
+	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror buffer.o comm.o common.o context.o df_pusher.o df_requester.o factory.o fp.o fp_json.o id.o idle_stopper.o jfp.o locator.o logger.o main.o mpi_comm.o mpi_comm_test.o printable.o remote_monitor.o rptr.o rts.o task.o tasks.o thread_pool.o thread_pool_test.o value.o -o six -I .
 
 buffer.o: buffer.cpp ./buffer.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o buffer.o buffer.cpp -I .
@@ -42,7 +42,10 @@ jfp.o: jfp.cpp ./jfp.h ./remote_monitor.h ./common.h ./rptr.h ./df_requester.h .
 locator.o: locator.cpp ./buffer.h ./serializable.h ./stags.h ./printable.h ./common.h ./locator.h ./comm.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o locator.o locator.cpp -I .
 
-main.o: main.cpp ./idle_stopper.h ./jfp.h ./mpi_comm.h ./common.h ./thread_pool.h ./df_requester.h ./rts.h ./task.h ./buffer.h ./serializable.h ./rptr.h ./df_pusher.h ./json.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./environ.h ./fp_json.h ./tasks.h ./stags.h ./context.h ./locator.h ./id.h ./comm.h
+logger.o: logger.cpp ./logger.h
+	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o logger.o logger.cpp -I .
+
+main.o: main.cpp ./idle_stopper.h ./jfp.h ./mpi_comm.h ./common.h ./thread_pool.h ./df_requester.h ./rts.h ./task.h ./buffer.h ./serializable.h ./rptr.h ./df_pusher.h ./json.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./environ.h ./fp_json.h ./logger.h ./tasks.h ./stags.h ./context.h ./locator.h ./id.h ./comm.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o main.o main.cpp -I .
 
 mpi_comm.o: mpi_comm.cpp ./mpi_comm.h ./comm.h ./common.h ./buffer.h ./thread_pool.h
@@ -60,7 +63,7 @@ remote_monitor.o: remote_monitor.cpp ./remote_monitor.h ./buf_handler.h ./buffer
 rptr.o: rptr.cpp ./buffer.h ./serializable.h ./rptr.h ./stags.h ./printable.h ./comm.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o rptr.o rptr.cpp -I .
 
-rts.o: rts.cpp ./idle_stopper.h ./df_requester.h ./common.h ./thread_pool.h ./rts.h ./task.h ./buffer.h ./serializable.h ./rptr.h ./df_pusher.h ./json.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./environ.h ./stags.h ./id.h ./comm.h
+rts.o: rts.cpp ./idle_stopper.h ./df_requester.h ./common.h ./thread_pool.h ./rts.h ./task.h ./buffer.h ./serializable.h ./rptr.h ./df_pusher.h ./json.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./environ.h ./logger.h ./stags.h ./id.h ./comm.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o rts.o rts.cpp -I .
 
 task.o: task.cpp ./df_requester.h ./buf_handler.h ./printable.h ./common.h ./rptr.h ./environ.h ./df_pusher.h ./buffer.h ./serializable.h ./thread_pool.h ./task.h ./json.h ./comm.h ./id.h ./value.h
@@ -93,6 +96,7 @@ clean:
 	rm -f idle_stopper.o
 	rm -f jfp.o
 	rm -f locator.o
+	rm -f logger.o
 	rm -f main.o
 	rm -f mpi_comm.o
 	rm -f mpi_comm_test.o

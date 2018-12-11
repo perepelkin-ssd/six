@@ -32,11 +32,6 @@ private:
 	const json &fp() { return *fp_; }
 
 	void resolve_args(const EnvironPtr &);
-	std::set<Id> get_deps();
-	void extract_deps(std::set<Id> &deps, const json &expr);
-	void extract_name_deps(std::set<Id> &deps, const json &expr);
-	void extract_deps_idexpr(std::set<Id> &deps,
-		const json &idexpr);
 
 	void init_child_context(JfpExec *child);
 	void init_child_context_arg(JfpExec *child,

@@ -32,7 +32,6 @@ bool CF::has_pushes(const json &cf)
 std::set<std::pair<Id, Id> > CF::get_afterpushes(const json &cf,
 	const Context &ctx)
 {
-	printf("CONTEXT: %s\n", ctx.to_string().c_str());
 	if (cf.find("rules")==cf.end()) { return {}; }
 
 	std::set<std::pair<Id, Id> > res;
@@ -53,7 +52,6 @@ bool CF::is_df_requested(const json &cf, const Context &ctx,
 {
 	if (cf.find("rules")==cf.end()) { return false; }
 	for (auto rule : cf["rules"]) {
-		printf("RULE: %s\n", rule.dump(2).c_str());
 		if (rule["type"]=="req_count"
 				&& ctx.eval_ref(rule["df"])==dfid) {
 			assert(rule["count"]>0);
