@@ -17,4 +17,7 @@ public:
 		const Id &dfid);
 	static size_t get_requests_count(const json &, const Context &,
 		const Id &dfid);
+	static bool is_ready(const json &fp, const json &cf, const Context &);
+	static bool is_ready_exec(const json &fp, const json &cf,
+		const Context &);
 };

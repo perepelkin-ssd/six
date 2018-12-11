@@ -95,6 +95,18 @@ ValuePtr Context::get_df(const Id &id) const
 	return _get_df(id);
 }
 
+bool Context::can_eval(const json &expr) const
+{
+	std::lock_guard<std::mutex> lk(m_);
+	return _can_eval(expr);
+}
+
+bool Context::can_eval_ref(const json &ref) const
+{
+	std::lock_guard<std::mutex> lk(m_);
+	return _can_eval_ref(ref);
+}
+
 ValuePtr Context::eval(const json &expr) const
 {
 	std::lock_guard<std::mutex> lk(m_);
@@ -191,6 +203,28 @@ ValuePtr Context::_get_df(const Id &id) const
 	}
 }
 
+bool Context::_can_eval(const json &expr) const
+{
+	if (expr["type"]=="iconst") {
+		return true;
+	} else if (expr["type"]=="id") {
+		return _can_eval_ref(expr["ref"]) 
+			&& dfs_.find(_eval_ref(expr["ref"]))!=dfs_.end();
+	} else {
+		fprintf(stderr, "JfpExec::_can_eval: %s\n", expr.dump(2).c_str());
+		NIMPL
+	}
+}
+
+bool Context::_can_eval_ref(const json &ref) const
+{
+	for (auto i=1u; i<ref.size(); i++) {
+		if (!_can_eval(ref[i])) {
+			return false;
+		}
+	}
+	return true;
+}
 
 ValuePtr Context::_eval(const json &expr) const
 {
@@ -199,7 +233,7 @@ ValuePtr Context::_eval(const json &expr) const
 	} else if (expr["type"]=="id") {
 		return _get_df(_eval_ref(expr["ref"]));
 	} else {
-		fprintf(stderr, "JfpExec::eval: %s\n", expr.dump(2).c_str());
+		fprintf(stderr, "JfpExec::_eval: %s\n", expr.dump(2).c_str());
 		NIMPL
 	}
 }
@@ -211,7 +245,8 @@ Id Context::_eval_ref(const json &ref) const
 	auto it=names_.find(ref_name);
 
 	if (it==names_.end()) {
-		fprintf(stderr, "Context::eval_ref: name %s is missing in ref %s\n",
+		fprintf(stderr, "Context::_eval_ref: name %s is missing"
+			" in ref %s\n",
 			ref_name.c_str(), ref.dump().c_str());
 		abort();
 	}

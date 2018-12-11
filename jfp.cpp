@@ -57,22 +57,11 @@ std::string JfpExec::to_string() const
 
 void JfpExec::resolve_args(const EnvironPtr &env)
 {
-	// Main points:
-	// - Request needed dfs
-	// - Open-port for pushed dfs
-	// - Wait until all dfs are here
-	// - Close port
-	//
-	// => What we need to know from FP;
-	// - j_["request_rule"].get_requested_dfs(cf_id_)
-	// - j_["has_pushed_dfs"]
 	pushed_flag_=false;
 
 	// Request DFs
 
 	auto req_dfs=CF::get_requested_dfs(j_, ctx_);
-
-	bool requested_flag=!req_dfs.empty();
 
 	for (auto dfid : req_dfs) {
 		NodeId df_node=get_next_node(env, dfid);
@@ -108,11 +97,8 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 			check_exec(env);
 		});
 	}
-	printf("%s %s %s\n", cf_id_.to_string().c_str(),
-		(pushed_flag_? "P": "!p"),
-		(requested_flag? "R": "!r"));
 
-	if (!pushed_flag_ && !requested_flag) {
+	if (!pushed_flag_ && req_dfs.empty()) {
 		exec(env);
 	}
 }
@@ -195,7 +181,8 @@ NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
 void JfpExec::check_exec(const EnvironPtr &env)
 {
 	printf("warning: ensure no new requests are available\n");
-	if (get_deps().empty()) {
+	//if (get_deps().empty()) {
+	if (CF::is_ready(fp(), j_, ctx_)) {
 		exec(env);
 
 		if (pushed_flag_) {
@@ -397,7 +384,8 @@ void JfpExec::init_child_context(JfpExec *child)
 			}
 		}
 	} else {
-		fprintf(stderr, "JfpExec::init_child_context: type not supported,"
+		fprintf(stderr, "JfpExec::init_child_context_arg: "
+			"type not supported,"
 			" type=%s, child=%s\n", child->j_["type"].get<std::string>()
 				.c_str(), child->j_.dump(2).c_str());
 		abort();
@@ -417,7 +405,7 @@ void JfpExec::init_child_context_arg(JfpExec *child,
 	} else if (arg["type"]=="iconst") {
 		// do nothing
 	} else {
-		fprintf(stderr, "JfpExec::init_child_context: %s\n",
+		fprintf(stderr, "JfpExec::init_child_context_arg: %s\n",
 			arg.dump(2).c_str());
 		NIMPL
 	}

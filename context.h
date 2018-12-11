@@ -28,8 +28,11 @@ public:
 	ValuePtr get_param(const Name &) const;
 	ValuePtr get_df(const Id &) const;
 
+	bool can_eval(const json &) const;
+	bool can_eval_ref(const json &) const;
+
+	ValuePtr eval(const json &) const;
 	Id eval_ref(const json &) const;
-	ValuePtr eval(const json &expr) const;
 
 	void pull_name(const Name &name, const Context &);
 	void pull_names(const Context &);
@@ -51,9 +54,12 @@ private:
 	ValuePtr _get_param(const Name &) const;
 	ValuePtr _get_df(const Id &) const;
 
-	void _pull_name(const Name &name, const Context &);
-	void _pull_names(const Context &);
+	bool _can_eval(const json &) const;
+	bool _can_eval_ref(const json &) const;
 
 	Id _eval_ref(const json &) const;
 	ValuePtr _eval(const json &expr) const;
+
+	void _pull_name(const Name &name, const Context &);
+	void _pull_names(const Context &);
 };

@@ -84,3 +84,30 @@ size_t CF::get_requests_count(const json &cf, const Context &ctx,
 		dfid.to_string().c_str(), cf.dump(2).c_str());
 	abort();
 }
+
+bool CF::is_ready(const json &fp, const json &cf, const Context &ctx)
+{
+	if (cf["type"]=="exec") {
+		return CF::is_ready_exec(fp, cf, ctx);
+	} else {
+		fprintf(stderr, "JfpExec::get_args: unsupported cf type: %s\n",
+			cf["type"].dump().c_str());
+		abort();
+	}
+}
+
+bool CF::is_ready_exec(const json &fp, const json &cf, const Context &ctx)
+{
+	for (auto i=0u; i<cf["args"].size(); i++) {
+		auto arg=cf["args"][i];
+		auto param_spec=fp[cf["code"].get<std::string>()]["args"][i];
+		bool is_input=param_spec["type"]!="name";
+		if (is_input) {
+			if (!ctx.can_eval(arg)) { return false; }
+		} else {
+			if (!ctx.can_eval_ref(arg)) { return false; }
+		}
+	}
+	return true;
+}
+
