@@ -106,8 +106,8 @@ std::string MonitorSignal::to_string() const
 }
 
 RequestDf::RequestDf(const Id &dfid, const LocatorPtr &rloc,
-		const RPtr &rptr, const Id &rcbid)
-	: dfid_(dfid), rloc_(rloc), rptr_(rptr), rcbid_(rcbid)
+		const RPtr &rptr)
+	: dfid_(dfid), rloc_(rloc), rptr_(rptr)
 {}
 
 RequestDf::RequestDf(BufferPtr &buf, Factory &fact)
@@ -115,14 +115,12 @@ RequestDf::RequestDf(BufferPtr &buf, Factory &fact)
 	dfid_=Id(buf);
 	rloc_=fact.pop<Locator>(buf);
 	rptr_=RPtr(buf);
-	rcbid_=Id(buf);
 }
 
 void RequestDf::run(const EnvironPtr &env)
 {
 	env->df_requester().request(dfid_, [this, env](const ValuePtr &val){
 		Buffers bufs;
-		rcbid_.serialize(bufs);
 		val->serialize(bufs);
 		env->submit(TaskPtr(new MonitorSignal(rptr_, bufs)));
 	});
@@ -134,7 +132,6 @@ void RequestDf::serialize(Buffers &bufs) const
 	dfid_.serialize(bufs);
 	rloc_->serialize(bufs);
 	rptr_.serialize(bufs);
-	rcbid_.serialize(bufs);
 }
 
 std::string RequestDf::to_string() const

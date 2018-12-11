@@ -7,7 +7,7 @@
 #include "factory.h"
 #include "task.h"
 
-class JfpExec : public Task, public BufHandler
+class JfpExec : public Task
 {
 public:
 	virtual ~JfpExec() {}
@@ -21,8 +21,6 @@ public:
 	virtual void serialize(Buffers &bufs) const;
 
 	virtual std::string to_string() const;
-
-	virtual void handle(BufferPtr &);
 private:
 	Factory &fact_;
 	Id fp_id_, cf_id_;
@@ -62,9 +60,6 @@ private:
 
 	void df_computed(const EnvironPtr &env, const nlohmann::json &ref,
 		const ValuePtr &);
-
-	RPtr remote_callback(const EnvironPtr &, const Id &rcbid,
-		std::function<void (BufferPtr &)>);
 };
 
 class JfpReg : public Task

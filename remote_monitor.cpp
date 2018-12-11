@@ -63,3 +63,12 @@ BufHandler *create_counter(size_t count, std::function<void()> cb)
 		return !stop_flag;
 	});
 }
+
+BufHandler *remote_callback(std::function<void(BufferPtr &)> cb)
+{
+	return RemoteMonitor::create([cb](BufferPtr &buf) {
+		cb(buf);
+		return false;
+	});
+
+}

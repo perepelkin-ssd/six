@@ -2,6 +2,7 @@
 #include "jfp.h"
 
 #include "common.h"
+#include "remote_monitor.h"
 #include "tasks.h"
 
 JfpExec::JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
@@ -131,23 +132,6 @@ std::string JfpExec::to_string() const
 	return "JfpExec(" + cf_id_.to_string() + ")";
 }
 
-void JfpExec::handle(BufferPtr &buf)
-{
-	Id rcbid(buf);
-
-	auto it=rcbs_.find(rcbid);
-
-	assert(it!=rcbs_.end());
-
-	rcbs_[rcbid](buf);
-
-	rcbs_.erase(rcbid);
-
-	if (rcbs_.empty()) {
-		env_holder_.reset();
-	}
-}
-
 void JfpExec::resolve_args(const EnvironPtr &env)
 {
 	pushed_flag_=false;
@@ -171,18 +155,17 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 					check_exec(env);
 				});
 			} else {
-				auto rcbid=env->create_id("(cb)");
+				auto rptr=RPtr(env->comm().get_rank(), remote_callback(
+						[this, d, env](BufferPtr &buf) {
+					ValuePtr val=fact_.pop<Value>(buf);
+					assert(dfs_.find(d)==dfs_.end());
+					dfs_[d]=val;
+					check_exec(env);
+				}));
 				env->submit(TaskPtr(new Delivery(LocatorPtr(
 					new CyclicLocator(df_node)), TaskPtr(new RequestDf(
 					d, LocatorPtr(new CyclicLocator(env->comm()
-					.get_rank())), remote_callback(env,
-					rcbid, [this, d, env](
-							BufferPtr &buf){
-						ValuePtr val=fact_.pop<Value>(buf);
-						assert(dfs_.find(d)==dfs_.end());
-						dfs_[d]=val;
-						check_exec(env);
-					}), rcbid)))));
+					.get_rank())), rptr)))));
 			}
 			requested_flag=true;
 		} else {
@@ -601,15 +584,6 @@ ValuePtr JfpExec::eval(const nlohmann::json &expr)
 		fprintf(stderr, "JfpExec::eval: %s\n", expr.dump(2).c_str());
 		NIMPL
 	}
-}
-
-RPtr JfpExec::remote_callback(const EnvironPtr &env, const Id &rcbid,
-	std::function<void (BufferPtr &)> cb)
-{
-	assert(rcbs_.find(rcbid)==rcbs_.end());
-	rcbs_[rcbid]=cb;
-	env_holder_=env;
-	return RPtr(env->comm().get_rank(), dynamic_cast<BufHandler*>(this));
 }
 
 JfpReg::JfpReg(BufferPtr &buf, Factory &)

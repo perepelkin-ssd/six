@@ -27,3 +27,5 @@ private:
 
 // Create a counter remote monitor, which invokes cb after count invocations
 BufHandler *create_counter(size_t count, std::function<void()> cb);
+
+BufHandler *remote_callback(std::function<void(BufferPtr &)> cb);

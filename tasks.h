@@ -68,7 +68,7 @@ public:
 	virtual ~RequestDf() {}
 
 	RequestDf(const Id &dfid, const LocatorPtr &requester_loc,
-		const RPtr &, const Id &rcbid);
+		const RPtr &);
 	RequestDf(BufferPtr &, Factory &);
 
 	virtual void run(const EnvironPtr &);
@@ -80,7 +80,6 @@ private:
 	Id dfid_;
 	LocatorPtr rloc_;
 	RPtr rptr_;
-	Id rcbid_;
 };
 
 // Submit DF to df_requester

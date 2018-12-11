@@ -30,7 +30,7 @@ id.o: id.cpp ./printable.h ./id.h ./buffer.h ./common.h ./serializable.h
 idle_stopper.o: idle_stopper.cpp ./idle_stopper.h ./common.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -c -o idle_stopper.o idle_stopper.cpp -I .
 
-jfp.o: jfp.cpp ./jfp.h ./common.h ./thread_pool.h ./df_requester.h ./task.h ./buffer.h ./serializable.h ./rptr.h ./df_pusher.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./environ.h ./tasks.h ./stags.h ./locator.h ./id.h ./comm.h
+jfp.o: jfp.cpp ./jfp.h ./remote_monitor.h ./common.h ./thread_pool.h ./df_requester.h ./task.h ./buffer.h ./serializable.h ./rptr.h ./df_pusher.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./environ.h ./tasks.h ./stags.h ./locator.h ./id.h ./comm.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -c -o jfp.o jfp.cpp -I .
 
 locator.o: locator.cpp ./buffer.h ./serializable.h ./stags.h ./printable.h ./common.h ./locator.h ./comm.h
