@@ -85,4 +85,8 @@ void idle_stopper_test()
 		if (counter++>10000) 
 			NIMPL
 	}
+
+	for (auto i=0u; i<N; i++) {
+		delete s[i];
+	}
 }

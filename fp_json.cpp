@@ -3,6 +3,7 @@
 #include "json.hpp" // nlohmann @ github
 
 #include "jfp.h"
+#include "remote_monitor.h"
 
 ExecJsonFp::ExecJsonFp(const std::string &json_content, Factory &fact)
 	: fact_(fact), json_dump_(nlohmann::json::parse(json_content).dump())
@@ -24,25 +25,15 @@ void ExecJsonFp::run(const EnvironPtr &env)
 	bufs.push_back(Buffer::create(STAG_JfpReg));
 	fp_id.serialize(bufs);
 	bufs.push_back(Buffer::create(j.dump()));
-	std::shared_ptr<size_t> counter(new size_t(env->comm().get_size()));
-	std::shared_ptr<std::mutex> m(new std::mutex);
 
-	RPtr rptr=env->start_monitor([this, m, fp_id, counter, env](
-			BufferPtr &buf){
-		std::lock_guard<std::mutex> lk(*m);
-
-		assert(*counter>0);
-		*counter-=1;
-
-		if (*counter==0) {
-			env->stop_monitor();
-			env->submit(TaskPtr (new JfpExec(fp_id,
-				env->create_id("_main"),
-				"{\"type\": \"exec\", \"code\": \"main\", "
-				"\"args\": []}", fact_
-			)));
+	RPtr rptr(env->comm().get_rank(), create_counter(env->comm().get_size(),
+		[env, fp_id, this]() {
+			env->submit(TaskPtr(new JfpExec(fp_id, env->create_id("_main"),
+			"{\"type\": \"exec\", \"code\": \"main\", \"args\": []}",
+			fact_)));
 		}
-	});
+	));
+
 	rptr.serialize(bufs);
 	env->send_all(bufs);
 }
