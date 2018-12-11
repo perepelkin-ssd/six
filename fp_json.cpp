@@ -1,12 +1,12 @@
 #include "fp_json.h"
 
-#include "json.hpp" // nlohmann @ github
+#include "json.h"
 
 #include "jfp.h"
 #include "remote_monitor.h"
 
 ExecJsonFp::ExecJsonFp(const std::string &json_content, Factory &fact)
-	: fact_(fact), json_dump_(nlohmann::json::parse(json_content).dump())
+	: fact_(fact), json_dump_(json::parse(json_content).dump())
 {}
 
 ExecJsonFp::ExecJsonFp(BufferPtr &buf, Factory &fact)
@@ -19,7 +19,7 @@ void ExecJsonFp::run(const EnvironPtr &env)
 {
 	Id fp_id=env->create_id("_fp_");
 
-	nlohmann::json j=nlohmann::json::parse(json_dump_);
+	json j=json::parse(json_dump_);
 
 	Buffers bufs;
 	bufs.push_back(Buffer::create(STAG_JfpReg));

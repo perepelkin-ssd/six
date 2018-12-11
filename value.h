@@ -3,8 +3,7 @@
 
 #include <memory>
 
-#include "json.hpp"
-
+#include "json.h"
 #include "printable.h"
 #include "serializable.h"
 
@@ -49,13 +48,13 @@ class JsonValue : public Value
 public:
 	virtual ~JsonValue() {}
 
-	JsonValue(const nlohmann::json &);
+	JsonValue(const json &);
 
-	virtual const nlohmann::json &value() const;
+	virtual const json &value() const;
 
 	virtual void serialize(Buffers &) const;
 private:
-	nlohmann::json value_;
+	json value_;
 };
 
 #endif // VALUE_H_

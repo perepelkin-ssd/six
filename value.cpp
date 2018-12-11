@@ -38,11 +38,11 @@ std::string IntValue::to_string() const
 	return std::to_string(value_);
 }
 
-JsonValue::JsonValue(const nlohmann::json &value)
+JsonValue::JsonValue(const json &value)
 	: value_(value)
 {}
 
-const nlohmann::json &JsonValue::value() const
+const json &JsonValue::value() const
 {
 	return value_;
 }

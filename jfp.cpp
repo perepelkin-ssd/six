@@ -8,7 +8,7 @@
 JfpExec::JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
 	Factory &fact)
 	: fact_(fact), fp_id_(fp_id), cf_id_(cf_id),
-		j_(nlohmann::json::parse(jdump))
+		j_(json::parse(jdump))
 {
 }
 
@@ -17,35 +17,11 @@ JfpExec::JfpExec(BufferPtr &buf, Factory &fact)
 {
 	fp_id_=Id(buf);
 	cf_id_=Id(buf);
-	j_=nlohmann::json::parse(Buffer::popString(buf));
+	j_=json::parse(Buffer::popString(buf));
 
-	// names_
-	size_t count=Buffer::pop<size_t>(buf);
-	for (auto i=0u; i<count; i++) {
-		auto key=Buffer::popString(buf);
-		auto val=Id(buf);
-		assert(names_.find(key)==names_.end());
-		names_[key]=val;
-	}
+	ctx_=Context(buf, fact);
 
-	// params_
-	count=Buffer::pop<size_t>(buf);
-	for (auto i=0u; i<count; i++) {
-		auto key=Buffer::popString(buf);
-		auto val=fact.pop<Value>(buf);
-		assert(params_.find(key)==params_.end());
-		params_[key]=val;
-	}
-
-	// dfs_
-	count=Buffer::pop<size_t>(buf);
-	for (auto i=0u; i<count; i++) {
-		auto key=Id(buf);
-		auto val=fact.pop<Value>(buf);
-		assert(dfs_.find(key)==dfs_.end());
-		dfs_[key]=val;
-	}
-
+	size_t count;
 	// dfpush_simple_noidx_
 	count=Buffer::pop<size_t>(buf);
 	for (auto i=0u; i<count; i++) {
@@ -90,27 +66,7 @@ void JfpExec::serialize(Buffers &bufs) const
 	cf_id_.serialize(bufs);
 	bufs.push_back(Buffer::create(j_.dump()));
 
-	// names_
-	bufs.push_back(Buffer::create<size_t>(names_.size()));
-	for (auto el : names_) {
-		bufs.push_back(Buffer::create(el.first));
-		el.second.serialize(bufs);
-	}
-
-	// params_
-	bufs.push_back(Buffer::create<size_t>(params_.size()));
-	for (auto el : params_) {
-		bufs.push_back(Buffer::create(el.first));
-		el.second->serialize(bufs);
-	}
-
-	// dfs_
-	bufs.push_back(Buffer::create<size_t>(dfs_.size()));
-	for (auto el : dfs_) {
-		el.first.serialize(bufs);
-		el.second->serialize(bufs);
-	}
-
+	ctx_.serialize(bufs);
 	// dfpush_simple_noidx_
 	bufs.push_back(Buffer::create<size_t>(dfpush_simple_noidx_.size()));
 	for (auto el : dfpush_simple_noidx_) {
@@ -150,16 +106,14 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 			if (df_node==env->comm().get_rank()) {
 				env->df_requester().request(d, [this, d, env](
 						const ValuePtr &val){
-					assert(dfs_.find(d)==dfs_.end());
-					dfs_[d]=val;
+					ctx_.set_df(d, val);
 					check_exec(env);
 				});
 			} else {
 				auto rptr=RPtr(env->comm().get_rank(), remote_callback(
 						[this, d, env](BufferPtr &buf) {
 					ValuePtr val=fact_.pop<Value>(buf);
-					assert(dfs_.find(d)==dfs_.end());
-					dfs_[d]=val;
+					ctx_.set_df(d, val);
 					check_exec(env);
 				}));
 				env->submit(TaskPtr(new Delivery(LocatorPtr(
@@ -176,8 +130,7 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 		printf("\tOPEN %s\n", cf_id_.to_string().c_str());
 		env->df_pusher().open(cf_id_, [this, env](const Id &dfid,
 				const ValuePtr &val) {
-			assert(dfs_.find(dfid)==dfs_.end());
-			dfs_[dfid]=val;
+			ctx_.set_df(dfid, val);
 			check_exec(env);
 		});
 	}
@@ -210,7 +163,7 @@ std::set<Id> JfpExec::get_deps()
 	}
 }
 
-void JfpExec::extract_deps(std::set<Id> &deps, const nlohmann::json &expr)
+void JfpExec::extract_deps(std::set<Id> &deps, const json &expr)
 {
 	if (expr["type"]=="id") {
 		extract_deps_idexpr(deps, expr);
@@ -224,7 +177,7 @@ void JfpExec::extract_deps(std::set<Id> &deps, const nlohmann::json &expr)
 }
 
 void JfpExec::extract_name_deps(std::set<Id> &deps,
-	const nlohmann::json &ref)
+	const json &ref)
 {
 	for (auto i=1u; i<ref.size(); i++) {
 		extract_deps(deps, ref[i]);
@@ -232,7 +185,7 @@ void JfpExec::extract_name_deps(std::set<Id> &deps,
 }
 
 void JfpExec::extract_deps_idexpr(std::set<Id> &deps,
-	const nlohmann::json &expr)
+	const json &expr)
 {
 	assert(expr["type"]=="id");
 
@@ -251,22 +204,10 @@ void JfpExec::extract_deps_idexpr(std::set<Id> &deps,
 		return;
 	}
 
-	Id id=eval_ref(expr["ref"]);
-	if (dfs_.find(id)==dfs_.end()) {
+	Id id=ctx_.eval_ref(expr["ref"]);
+	if (!ctx_.has_df(id)) {
 		deps.insert(id);
 	}
-}
-
-Id JfpExec::eval_ref(const nlohmann::json &ref)
-{
-	assert(names_.find(ref[0].get<std::string>())!=names_.end());
-	Id id=names_[ref[0].get<std::string>()];
-
-	for (auto i=1u; i<ref.size(); i++) {
-		id.push_back((int)(*eval(ref[i])));
-	}
-
-	return id;
 }
 
 NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
@@ -313,7 +254,7 @@ void JfpExec::exec(const EnvironPtr &env)
 	}
 }
 
-void JfpExec::exec_struct(const EnvironPtr &env, const nlohmann::json &sub)
+void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 {
 	// create local dfs
 	std::map<Name, Id> dfs_names;
@@ -338,24 +279,14 @@ void JfpExec::exec_struct(const EnvironPtr &env, const nlohmann::json &sub)
 			// create cfs names
 			assert(bi.find("id")!=bi.end());
 			Name name=bi["id"][0].get<std::string>();
-			if (names_.find(name)!=names_.end()) {
-				fprintf(stderr, "JfpExec::exec_struct: duplicate name:"
-					" %s\n", name.c_str());
-				abort();
-			}
-			names_[name]=env->create_id(name);
+			ctx_.set_name(name, env->create_id(name));
 			printf("\tCFNAME %s << %s\n", name.c_str(),
-				names_[name].to_string().c_str());
+				ctx_.get_name(name).to_string().c_str());
 		}
 	}
 
 	for (auto el : dfs_names) {
-		if (names_.find(el.first)!=names_.end()) {
-			fprintf(stderr, "JfpExec::exec_struct: duplicate name:"
-				" %s\n", el.first.c_str());
-			abort();
-		}
-		names_[el.first]=el.second;
+		ctx_.set_name(el.first, el.second);
 		printf("\tDFNAME fwd %s << %s\n", el.first.c_str(),
 			el.second.to_string().c_str());
 	}
@@ -366,14 +297,13 @@ void JfpExec::exec_struct(const EnvironPtr &env, const nlohmann::json &sub)
 			if (bi.find("push_table")!=bi.end()) {
 				for (auto el : bi["push_table"]) {
 					if (el["type"]=="simple_noidx") {
-						assert(names_.find(el["df"])!=names_.end());
-						assert(names_.find(el["cf"])!=names_.end());
 						printf("dfpush insert %s=>%s in %s\n",
-							names_[el["df"]].to_string().c_str(),
-							names_[el["cf"]].to_string().c_str(),
+							ctx_.get_name(el["df"]).to_string().c_str(),
+							ctx_.get_name(el["cf"]).to_string().c_str(),
 							cf_id_.to_string().c_str());
 						dfpush_simple_noidx_.insert(std::make_pair(
-							names_[el["df"]], names_[el["cf"]]));
+							ctx_.get_name(el["df"]),
+							ctx_.get_name(el["cf"])));
 					} else {
 						fprintf(stderr, "JfpExec::exec_struct: "
 							"push table entry not supported: %s\n",
@@ -386,8 +316,7 @@ void JfpExec::exec_struct(const EnvironPtr &env, const nlohmann::json &sub)
 			if (bi.find("req_counts")!=bi.end()) {
 				for (auto el : bi["req_counts"]) {
 					if (el["type"]=="simple_noidx") {
-						assert(names_.find(el["df"])!=names_.end());
-						Id dfid=names_[el["df"]];
+						Id dfid=ctx_.get_name(el["df"]);
 						assert(dfreqcount_simple_noidx_.find(dfid)
 							==dfreqcount_simple_noidx_.end());
 						dfreqcount_simple_noidx_[dfid]=
@@ -404,12 +333,8 @@ void JfpExec::exec_struct(const EnvironPtr &env, const nlohmann::json &sub)
 	}
 	for (auto bi : sub["body"]) {
 		if (bi["type"]!="dfs" && bi["type"]!="sub_rules") {
-			Id item_id;
 			assert(bi.find("id") != bi.end());
-			item_id=Id(names_[bi["id"][0]]);
-			for (auto i=1u; i<bi["id"].size(); i++) {
-				item_id.push_back((int)(*eval(bi["id"][i])));
-			}
+			Id item_id=ctx_.eval_ref(bi["id"]);
 			JfpExec *item=new JfpExec(fp_id_, item_id, bi.dump(), fact_);
 			TaskPtr task(item);
 			// push context
@@ -433,12 +358,13 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 	for (auto i=0u; i<ext["args"].size(); i++) {
 		bool is_input=fp()[code]["args"][i]["type"]!="name";
 		if (is_input) {
-			args.push_back(eval(j_["args"][i]));
+			args.push_back(ctx_.eval(j_["args"][i]));
 		} else {
 			args.push_back(ValuePtr(nullptr));
 		}
 	}
 	// Algorithm: eval args & call sub; return args save as dfs.
+	printf("ARGS SIZE=%d\n", (int)args.size());
 	env->exec_extern(ext["code"].get<std::string>(), args);
 	for (auto i=0u; i<ext["args"].size(); i++) {
 		bool is_input=fp()[code]["args"][i]["type"]!="name";
@@ -454,10 +380,10 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 	}
 }
 
-void JfpExec::df_computed(const EnvironPtr &env, const nlohmann::json &ref,
+void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 	const ValuePtr &val)
 {
-	Id id=eval_ref(ref);
+	Id id=ctx_.eval_ref(ref);
 
 	printf("%d: DF COMPUTED: %s = %s, %d by %s\n",
 		(int)env->comm().get_rank(),
@@ -546,14 +472,11 @@ void JfpExec::init_child_context(JfpExec *child)
 }
 
 void JfpExec::init_child_context_arg(JfpExec *child,
-	const nlohmann::json &arg)
+	const json &arg)
 {
 	if (arg["type"]=="id") {
 		Name name=arg["ref"][0].get<std::string>();
-		assert(names_.find(name)!=names_.end());
-		assert(child->names_.find(name)==child->names_.end()
-			|| child->names_[name]==names_[name]);
-		child->names_[name]=names_[name];
+		child->ctx_.pull_name(name, ctx_);
 
 		for (auto i=1u; i<arg["ref"].size(); i++) {
 			init_child_context_arg(child, arg["ref"][i]);
@@ -567,30 +490,11 @@ void JfpExec::init_child_context_arg(JfpExec *child,
 	}
 }
 
-ValuePtr JfpExec::eval(const nlohmann::json &expr)
-{
-	if (expr["type"]=="iconst") {
-		return ValuePtr(new IntValue(expr["value"].get<int>()));
-	} else if (expr["type"]=="id") {
-		Id id=eval_ref(expr["ref"]);
-		if (dfs_.find(id)!=dfs_.end()) {
-			return dfs_[id];
-		} else {
-			fprintf(stderr, "JfpExec::eval: df not present: %s\n",
-				id.to_string().c_str());
-			abort();
-		}
-	} else {
-		fprintf(stderr, "JfpExec::eval: %s\n", expr.dump(2).c_str());
-		NIMPL
-	}
-}
-
 JfpReg::JfpReg(BufferPtr &buf, Factory &)
 {
 	fp_id_=Id(buf);
 	auto s=Buffer::popString(buf);
-	j_=nlohmann::json::parse(s);
+	j_=json::parse(s);
 	rptr_=RPtr(buf);
 }
 

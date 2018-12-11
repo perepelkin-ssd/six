@@ -114,7 +114,9 @@ struct TaskEnv : public Environ, public BufHandler
 	virtual void exec_extern(const Name &code,
 		std::vector<ValuePtr> &args)
 	{
-		printf("EXTERN %s:", code.c_str());
+		printf("EXTERN (%p) %s (..%d):", this, code.c_str(),
+			(int)args.size());
+		}
 		for (auto arg : args) {
 			if (arg) {
 				printf(" %s", arg->to_string().c_str());
