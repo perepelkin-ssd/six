@@ -40,6 +40,8 @@ public:
 	virtual void serialize(Buffers &) const;
 
 	virtual std::string to_string() const;
+	
+	static ValuePtr cast(const std::string &type, const ValuePtr &val);
 private:
 	mutable std::mutex m_;
 	std::map<Name, Id> names_;
@@ -57,8 +59,9 @@ private:
 	bool _can_eval(const json &) const;
 	bool _can_eval_ref(const json &) const;
 
-	Id _eval_ref(const json &) const;
 	ValuePtr _eval(const json &expr) const;
+	ValuePtr _eval_op(const std::string &op, const json &expr) const;
+	Id _eval_ref(const json &) const;
 
 	void _pull_name(const Name &name, const Context &);
 	void _pull_names(const Context &);

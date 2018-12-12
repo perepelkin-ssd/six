@@ -29,36 +29,40 @@
             {
                 "type": "dfs", 
                 "names": [
-                    "x", 
-                    "N"
+                    "x"
                 ]
             }, 
             {
-                "code": "init", 
+                "code": "iprint", 
                 "rules": [
-					{
-						"type": "rule",
-						"ruletype": "assign",
-						"property": "req_count",
-						"id": ["N"],
-						"val": {"type": "iconst", "value": 2}
-					}
-				], 
+                    {
+                        "flags": [
+                            "has_pushes"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
-                        "type": "iconst", 
-                        "is_expr": true, 
-                        "value": 7
-                    }, 
-                    {
                         "ref": [
-                            "N"
+                            "x", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 10
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 4
+                            }
                         ], 
                         "type": "id", 
                         "is_expr": true
                     }
                 ], 
-                "line": 12, 
+                "line": 11, 
                 "type": "exec", 
                 "id": [
                     "a"
@@ -67,80 +71,82 @@
             {
                 "code": "init", 
                 "rules": [
-					{
-						"type": "rule",
-						"ruletype": "enum",
-						"property": "request",
-						"items": [ ["N"] ]
-					},
-					{
-						"type": "rule",
-						"ruletype": "assign",
-						"property": "req_count",
-						"id": ["x", {"type": "id", "ref": ["N"]}],
-						"val": {"type": "iconst", "value": 1}
-					}
-				], 
+                    {
+                        "expr": {
+                            "ref": [
+                                "a"
+                            ], 
+                            "type": "id", 
+                            "is_expr": true
+                        }, 
+                        "ruletype": "map", 
+                        "property": "afterpush", 
+                        "type": "rule", 
+                        "id": [
+                            "x", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 10
+                            }, 
+                            {
+                                "type": "+", 
+                                "is_expr": true, 
+                                "operands": [
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 2
+                                    }, 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 2
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ], 
                 "args": [
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 15
+                        "value": 5
                     }, 
                     {
                         "ref": [
                             "x", 
                             {
-                                "ref": [
-                                    "N"
-                                ], 
-                                "type": "id", 
-                                "is_expr": true
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 10
+                            }, 
+                            {
+                                "type": "+", 
+                                "is_expr": true, 
+                                "operands": [
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 2
+                                    }, 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 2
+                                    }
+                                ]
                             }
                         ], 
                         "type": "id", 
                         "is_expr": true
                     }
                 ], 
-                "line": 13, 
+                "line": 12, 
                 "type": "exec", 
                 "id": [
                     "b"
-                ]
-            }, 
-            {
-                "code": "iprint", 
-                "rules": [
-					{
-						"type": "rule",
-						"ruletype": "enum",
-						"property": "request",
-						"items": [
-							["N"],
-							["x", {"type": "id", "ref": ["N"]}]
-						]
-					}
-				], 
-                "args": [
-                    {
-                        "ref": [
-                            "x", 
-                            {
-                                "ref": [
-                                    "N"
-                                ], 
-                                "type": "id", 
-                                "is_expr": true
-                            }
-                        ], 
-                        "type": "id", 
-                        "is_expr": true
-                    }
-                ], 
-                "line": 14, 
-                "type": "exec", 
-                "id": [
-                    "c"
                 ]
             }
         ], 
@@ -148,6 +154,7 @@
         "args": [], 
         "where": {
             "type": "luna"
-        }
+        }, 
+        "rules": []
     }
 }

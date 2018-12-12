@@ -39,8 +39,8 @@ int main(int argc, char **argv)
 	assert(desired==provided);
 	test_all();
 
-	if (argc!=2) {
-		note("no json specified, doing nothing else\n");
+	if (argc<2 || argc>3) {
+		note("Usage: %s <path/to/json> [main_arg]\n");
 	} else {
 		MpiComm comm(MPI_COMM_WORLD);
 
@@ -59,7 +59,13 @@ int main(int argc, char **argv)
 			ss << f.rdbuf();//read the file
 			std::string j=ss.str();
 
-			rts->submit(TaskPtr(new ExecJsonFp(j, rts->factory())));
+			std::string main_arg="";
+			if (argc==3) {
+				main_arg=argv[2];
+			}
+
+			rts->submit(TaskPtr(new ExecJsonFp(j, rts->factory(),
+				main_arg)));
 		}
 
 		rts->wait_all(comm.get_rank()==0);
@@ -97,6 +103,8 @@ void init_stags(Factory &fact)
 	FACT(STAG_StoreDf, StoreDf)
 	FACT(STAG_SubmitDfToCf, SubmitDfToCf)
 	BUF(STAG_Value_IntValue, IntValue)
+	BUF(STAG_Value_RealValue, RealValue)
+	BUF(STAG_Value_StringValue, StringValue)
 
 	for (int t=0; t<(int)_STAG_END; t++)
 	{

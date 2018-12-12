@@ -1,12 +1,15 @@
 #include "fp_json.h"
 
-#include "json.h"
 
+#include "common.h"
 #include "jfp.h"
+#include "json.h"
 #include "remote_monitor.h"
 
-ExecJsonFp::ExecJsonFp(const std::string &json_content, Factory &fact)
-	: fact_(fact), json_dump_(json::parse(json_content).dump())
+ExecJsonFp::ExecJsonFp(const std::string &json_content, Factory &fact,
+		const std::string &main_arg)
+	: fact_(fact), json_dump_(json::parse(json_content).dump()),
+		main_arg_(main_arg)
 {}
 
 ExecJsonFp::ExecJsonFp(BufferPtr &buf, Factory &fact)
@@ -26,10 +29,22 @@ void ExecJsonFp::run(const EnvironPtr &env)
 	fp_id.serialize(bufs);
 	bufs.push_back(Buffer::create(j.dump()));
 
+	std::string opt_arg="";
+
+	auto main_sub=j["main"];
+	if (main_sub["args"].size()!=0) {
+		assert(main_sub["args"].size()==1);
+		assert(main_sub["args"][0]["type"]=="string");
+		opt_arg="{\"type\": \"sconst\", \"value\": \"" + main_arg_
+			+ "\"}";
+	}
+
 	RPtr rptr(env->comm().get_rank(), create_counter(env->comm().get_size(),
-		[env, fp_id, this]() {
+		[env, fp_id, this, opt_arg]() {
 			env->submit(TaskPtr(new JfpExec(fp_id, env->create_id("_main"),
-			"{\"type\": \"exec\", \"code\": \"main\", \"args\": []}",
+			"{\"type\": \"exec\", \"code\": \"main\", \"args\": ["
+			+ opt_arg +
+			"]}",
 			fact_)));
 		}
 	));

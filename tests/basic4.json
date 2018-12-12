@@ -1,8 +1,8 @@
 {
     "iprint": {
-        "nocpu": "false", 
-        "code": "c_iprint", 
         "type": "extern", 
+        "code": "c_iprint", 
+        "nocpu": "false", 
         "cuda_support": "false", 
         "args": [
             {
@@ -11,9 +11,9 @@
         ]
     }, 
     "init": {
-        "nocpu": "false", 
-        "code": "c_init", 
         "type": "extern", 
+        "code": "c_init", 
+        "nocpu": "false", 
         "cuda_support": "false", 
         "args": [
             {
@@ -28,119 +28,35 @@
         "body": [
             {
                 "type": "dfs", 
-                "names": [
-                    "x", 
-                    "N"
-                ]
+                "names": []
             }, 
             {
-                "code": "init", 
-                "rules": [
-                    {
-                        "ruletype": "assign", 
-                        "property": "req_count", 
-                        "type": "rule", 
-                        "id": [
-                            "N"
-                        ], 
-                        "val": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 1
-                        }
-                    }, 
-                    {
-                        "expr": {
-                            "ref": [
-                                "c"
-                            ], 
-                            "type": "id", 
-                            "is_expr": true
-                        }, 
-                        "ruletype": "map", 
-                        "property": "afterpush", 
-                        "type": "rule", 
-                        "id": [
-                            "N"
-                        ]
-                    }
-                ], 
+                "code": "rprint", 
+                "rules": [], 
                 "args": [
                     {
-                        "type": "iconst", 
+                        "type": "rconst", 
                         "is_expr": true, 
-                        "value": 7
-                    }, 
-                    {
-                        "ref": [
-                            "N"
-                        ], 
-                        "type": "id", 
-                        "is_expr": true
+                        "value": 5.6
                     }
                 ], 
-                "line": 15, 
+                "line": 11, 
                 "type": "exec", 
                 "id": [
                     "a"
                 ]
             }, 
             {
-                "code": "init", 
-                "rules": [
-                    {
-                        "items": [
-                            [
-                                "N"
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "ruletype": "assign", 
-                        "property": "req_count", 
-                        "type": "rule", 
-                        "id": [
-                            "x", 
-                            {
-                                "ref": [
-                                    "N"
-                                ], 
-                                "type": "id", 
-                                "is_expr": true
-                            }
-                        ], 
-                        "val": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 1
-                        }
-                    }
-                ], 
+                "code": "rprint", 
+                "rules": [], 
                 "args": [
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 15
-                    }, 
-                    {
-                        "ref": [
-                            "x", 
-                            {
-                                "ref": [
-                                    "N"
-                                ], 
-                                "type": "id", 
-                                "is_expr": true
-                            }
-                        ], 
-                        "type": "id", 
-                        "is_expr": true
+                        "value": 80
                     }
                 ], 
-                "line": 19, 
+                "line": 13, 
                 "type": "exec", 
                 "id": [
                     "b"
@@ -148,134 +64,110 @@
             }, 
             {
                 "code": "iprint", 
-                "rules": [
-                    {
-                        "flags": [
-                            "has_pushes"
-                        ], 
-                        "ruletype": "flags", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "items": [
-                            [
-                                "x", 
-                                {
-                                    "ref": [
-                                        "N"
-                                    ], 
-                                    "type": "id", 
-                                    "is_expr": true
-                                }
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
-                        "ref": [
-                            "x", 
-                            {
-                                "ref": [
-                                    "N"
-                                ], 
-                                "type": "id", 
-                                "is_expr": true
-                            }
-                        ], 
-                        "type": "id", 
-                        "is_expr": true
+                        "type": "rconst", 
+                        "is_expr": true, 
+                        "value": 3.7
                     }
                 ], 
-                "line": 23, 
+                "line": 15, 
                 "type": "exec", 
                 "id": [
                     "c"
                 ]
+            }, 
+            {
+                "code": "rprint", 
+                "rules": [], 
+                "args": [
+                    {
+                        "expr": {
+                            "type": "rconst", 
+                            "is_expr": true, 
+                            "value": 7.1
+                        }, 
+                        "type": "icast", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 17, 
+                "type": "exec", 
+                "id": [
+                    "d"
+                ]
+            }, 
+            {
+                "code": "iprint", 
+                "rules": [], 
+                "args": [
+                    {
+                        "type": "/", 
+                        "is_expr": true, 
+                        "operands": [
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 5
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 2
+                            }
+                        ]
+                    }
+                ], 
+                "line": 19, 
+                "type": "exec", 
+                "id": [
+                    "_l19"
+                ]
+            }, 
+            {
+                "code": "rprint", 
+                "rules": [], 
+                "args": [
+                    {
+                        "type": "/", 
+                        "is_expr": true, 
+                        "operands": [
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 5
+                            }, 
+                            {
+                                "type": "rconst", 
+                                "is_expr": true, 
+                                "value": 2.0
+                            }
+                        ]
+                    }
+                ], 
+                "line": 20, 
+                "type": "exec", 
+                "id": [
+                    "_l20"
+                ]
             }
         ], 
+        "type": "struct", 
+        "args": [], 
         "where": {
             "type": "luna"
         }, 
-        "args": [], 
-        "type": "struct", 
-        "rules": [
+        "rules": []
+    }, 
+    "rprint": {
+        "type": "extern", 
+        "code": "c_rprint", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
             {
-                "expr": {
-                    "ref": [
-                        "i"
-                    ], 
-                    "type": "id", 
-                    "is_expr": true
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "x", 
-                    {
-                        "ref": [
-                            "i"
-                        ], 
-                        "type": "id", 
-                        "is_expr": true
-                    }
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "N"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 1
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "a"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 2
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "b"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 3
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "c"
-                ]
+                "type": "real"
             }
         ]
     }

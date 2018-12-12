@@ -1,0 +1,82 @@
+{
+    "main": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": []
+            }, 
+            {
+                "code": "hello", 
+                "rules": [], 
+                "args": [
+                    {
+                        "ref": [
+                            "arg1"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 9, 
+                "type": "exec", 
+                "id": [
+                    "_l9"
+                ]
+            }, 
+            {
+                "code": "hello", 
+                "rules": [], 
+                "args": [
+                    {
+                        "type": "sconst", 
+                        "is_expr": true, 
+                        "value": "User"
+                    }
+                ], 
+                "line": 10, 
+                "type": "exec", 
+                "id": [
+                    "_l10"
+                ]
+            }, 
+            {
+                "code": "hello", 
+                "rules": [], 
+                "args": [
+                    {
+                        "type": "sconst", 
+                        "is_expr": true, 
+                        "value": "Master"
+                    }
+                ], 
+                "line": 11, 
+                "type": "exec", 
+                "id": [
+                    "_l11"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [
+            {
+                "type": "string", 
+                "id": "arg1"
+            }
+        ], 
+        "where": {
+            "type": "luna"
+        }, 
+        "rules": []
+    }, 
+    "hello": {
+        "type": "extern", 
+        "code": "c_hello", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "string"
+            }
+        ]
+    }
+}

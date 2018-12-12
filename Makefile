@@ -27,7 +27,7 @@ factory.o: factory.cpp ./stags.h ./buffer.h ./factory.h ./serializable.h
 fp.o: fp.cpp ./fp.h ./printable.h ./common.h ./buffer.h ./serializable.h ./stags.h ./json.h ./context.h ./factory.h ./id.h ./value.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o fp.o fp.cpp -I .
 
-fp_json.o: fp_json.cpp ./jfp.h ./remote_monitor.h ./id.h ./rptr.h ./df_requester.h ./fp_json.h ./df_pusher.h ./buffer.h ./serializable.h ./thread_pool.h ./task.h ./json.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./environ.h ./stags.h ./context.h ./comm.h
+fp_json.o: fp_json.cpp ./jfp.h ./remote_monitor.h ./common.h ./thread_pool.h ./df_requester.h ./environ.h ./task.h ./buffer.h ./serializable.h ./rptr.h ./df_pusher.h ./json.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./fp_json.h ./stags.h ./context.h ./id.h ./comm.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o fp_json.o fp_json.cpp -I .
 
 id.o: id.cpp ./printable.h ./id.h ./buffer.h ./common.h ./serializable.h
@@ -78,7 +78,7 @@ thread_pool.o: thread_pool.cpp ./thread_pool.h
 thread_pool_test.o: thread_pool_test.cpp ./thread_pool.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o thread_pool_test.o thread_pool_test.cpp -I .
 
-value.o: value.cpp ./buffer.h ./serializable.h ./printable.h ./stags.h ./json.h ./value.h
+value.o: value.cpp ./buffer.h ./serializable.h ./json.h ./stags.h ./printable.h ./id.h ./value.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o value.o value.cpp -I .
 
 clean:

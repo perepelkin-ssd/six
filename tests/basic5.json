@@ -1,0 +1,32 @@
+{"hello_world" : {"type" : "extern","code" : "c_helloworld","args" : [],"cuda_support" : "false","nocpu" : "false"}
+,
+"sub4" : {"type" : "struct","where":{"type":"luna"}
+,"args" : [],"body" : [
+{"type" : "dfs","names" : []}
+,{"type" : "exec","id" : ["_l9"],"code" : "sub3","args" : [],"rules" : [],"line" :9}
+]}
+,
+"sub3" : {"type" : "struct","where":{"type":"luna"}
+,"args" : [],"body" : [
+{"type" : "dfs","names" : []}
+,{"type" : "exec","id" : ["_l14"],"code" : "sub2","args" : [],"rules" : [],"line" :14}
+]}
+,
+"sub2" : {"type" : "struct","where":{"type":"luna"}
+,"args" : [],"body" : [
+{"type" : "dfs","names" : []}
+,{"type" : "exec","id" : ["_l19"],"code" : "sub1","args" : [],"rules" : [],"line" :19}
+]}
+,
+"sub1" : {"type" : "struct","where":{"type":"luna"}
+,"args" : [],"body" : [
+{"type" : "dfs","names" : []}
+,{"type" : "exec","id" : ["_l24"],"code" : "hello_world","args" : [],"rules" : [],"line" :24}
+]}
+,
+"main" : {"type" : "struct","where":{"type":"luna"}
+,"args" : [],"body" : [
+{"type" : "dfs","names" : []}
+,{"type" : "exec","id" : ["a"],"code" : "sub4","args" : [],"rules" : [],"line" :29}
+]}
+}

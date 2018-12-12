@@ -1,0 +1,153 @@
+{
+    "iprint": {
+        "type": "extern", 
+        "code": "c_iprint", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "init": {
+        "type": "extern", 
+        "code": "c_init", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "name"
+            }
+        ]
+    }, 
+    "main": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": [
+                    "x", 
+                    "N"
+                ]
+            }, 
+            {
+                "code": "init", 
+                "rules": [
+					{
+						"type": "rule",
+						"ruletype": "assign",
+						"property": "req_count",
+						"id": ["N"],
+						"val": {"type": "iconst", "value": 2}
+					}
+				], 
+                "args": [
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 7
+                    }, 
+                    {
+                        "ref": [
+                            "N"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 12, 
+                "type": "exec", 
+                "id": [
+                    "a"
+                ]
+            }, 
+            {
+                "code": "init", 
+                "rules": [
+					{
+						"type": "rule",
+						"ruletype": "enum",
+						"property": "request",
+						"items": [ ["N"] ]
+					},
+					{
+						"type": "rule",
+						"ruletype": "assign",
+						"property": "req_count",
+						"id": ["x", {"type": "id", "ref": ["N"]}],
+						"val": {"type": "iconst", "value": 1}
+					}
+				], 
+                "args": [
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 15
+                    }, 
+                    {
+                        "ref": [
+                            "x", 
+                            {
+                                "ref": [
+                                    "N"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 13, 
+                "type": "exec", 
+                "id": [
+                    "b"
+                ]
+            }, 
+            {
+                "code": "iprint", 
+                "rules": [
+					{
+						"type": "rule",
+						"ruletype": "enum",
+						"property": "request",
+						"items": [
+							["N"],
+							["x", {"type": "id", "ref": ["N"]}]
+						]
+					}
+				], 
+                "args": [
+                    {
+                        "ref": [
+                            "x", 
+                            {
+                                "ref": [
+                                    "N"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 14, 
+                "type": "exec", 
+                "id": [
+                    "c"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }
+}

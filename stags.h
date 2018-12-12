@@ -14,5 +14,7 @@ enum STAGS {
 	STAG_StoreDf,
 	STAG_SubmitDfToCf,
 	STAG_Value_IntValue,
+	STAG_Value_RealValue,
+	STAG_Value_StringValue,
 	_STAG_END
 };

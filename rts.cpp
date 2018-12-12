@@ -131,8 +131,17 @@ struct TaskEnv : public Environ, public BufHandler
 			args[1]=ValuePtr(new IntValue((int)(*args[0])));
 		} else if (code=="c_iprint") {
 			printf("c_iprint: %d\n", (int)(*args[0]));
+		} else if (code=="c_rprint") {
+			printf("c_rprint: %lf\n", (double)(*args[0]));
 		} else if (code=="c_print") {
 			printf("c_print: %s\n", args[0]->to_string().c_str());
+		} else if (code=="c_hello") {
+			std::string name=*args[0];
+			if (name.size()>0) {
+				printf("c_Hello, %s\n", name.c_str());
+			} else {
+				printf("c_Hello!\n");
+			}
 		} else {
 			fprintf(stderr, "extern code not supported: %s\n",
 				code.c_str());

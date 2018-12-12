@@ -1,4 +1,3 @@
-// TODO: use locators instead of dfid hash
 #include "jfp.h"
 
 #include "common.h"
@@ -154,6 +153,13 @@ void JfpExec::exec(const EnvironPtr &env)
 
 void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 {
+	Context child_ctx;
+	// map sub parameters
+	for (auto i=0u; i<sub["args"].size(); i++) {
+		auto param=sub["args"][i];
+		auto arg=ctx_.eval(j_["args"][i]);
+		child_ctx.set_param(param["id"], ctx_.cast(param["type"], arg));
+	}
 	// create local dfs
 	std::map<Name, Id> dfs_names;
 
@@ -190,6 +196,7 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 			JfpExec *item=new JfpExec(fp_id_, item_id, bi.dump(), fact_);
 			TaskPtr task(item);
 			// push context
+			item->ctx_=child_ctx;
 			init_child_context(item);
 
 			NodeId item_node=get_next_node(env, item_id);
@@ -216,6 +223,7 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 		}
 	}
 	// Algorithm: eval args & call sub; return args save as dfs.
+	printf("HERE\n");
 	env->exec_extern(ext["code"].get<std::string>(), args);
 	for (auto i=0u; i<ext["args"].size(); i++) {
 		bool is_input=fp()[code]["args"][i]["type"]!="name";
@@ -302,13 +310,22 @@ void JfpExec::init_child_context_arg(JfpExec *child,
 {
 	if (arg["type"]=="id") {
 		Name name=arg["ref"][0].get<std::string>();
-		child->ctx_.pull_name(name, ctx_);
+		if (!child->ctx_.has_param(name)) {
+			child->ctx_.pull_name(name, ctx_);
+		}
 
 		for (auto i=1u; i<arg["ref"].size(); i++) {
 			init_child_context_arg(child, arg["ref"][i]);
 		}
-	} else if (arg["type"]=="iconst") {
+	} else if (arg["type"]=="iconst" || arg["type"]=="rconst"
+			|| arg["type"]=="sconst") {
 		// do nothing
+	} else if (arg["type"]=="icast") {
+		init_child_context_arg(child, arg["expr"]);
+	} else if (arg["type"]=="+" || arg["type"]=="/") {
+		for (auto op : arg["operands"]) {
+			init_child_context_arg(child, op);
+		}
 	} else {
 		fprintf(stderr, "JfpExec::init_child_context_arg: %s\n",
 			arg.dump(2).c_str());
