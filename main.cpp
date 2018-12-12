@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 	int desired=MPI_THREAD_MULTIPLE, provided;
 	MPI_Init_thread(&argc, &argv, desired, &provided);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	L.reset(new Logger("log.txt", std::to_string(rank)));
+	L.reset(new Logger("log.txt", std::to_string(rank), 1));
 	assert(desired==provided);
 	test_all();
 

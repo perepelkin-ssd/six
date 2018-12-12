@@ -9,8 +9,9 @@ std::set<Id> CF::get_requested_dfs(const json &cf, const Context &ctx)
 	if (cf.find("rules")==cf.end()) { return {}; }
 
 	for (auto rule : cf["rules"]) {
-		if (rule["type"]=="request") {
-			for (auto ref : rule["dfs"]) {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="enum" && rule["property"]=="request") {
+			for (auto ref : rule["items"]) {
 				if (ctx.can_eval_ref(ref)) {
 					res.insert(ctx.eval_ref(ref));
 				}
@@ -24,8 +25,13 @@ bool CF::has_pushes(const json &cf)
 {
 	if (cf.find("rules")==cf.end()) { return {}; }
 	for (auto rule : cf["rules"]) {
-		if (rule["type"]=="has_pushes") {
-			return true;
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="flags") {
+			for (auto flag : rule["flags"]) {
+				if (flag=="has_pushes") {
+					return true;
+				}
+			}
 		}
 	}
 	return false;
@@ -39,10 +45,12 @@ std::set<std::pair<Id, Id> > CF::get_afterpushes(const json &cf,
 	std::set<std::pair<Id, Id> > res;
 
 	for (auto rule : cf["rules"]) {
-		if (rule["type"]=="afterpush") {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="map" && rule["property"]=="afterpush") {
+			assert(rule["expr"]["type"]=="id");
 			res.insert(std::make_pair(
-				ctx.eval_ref(rule["df"]),
-				ctx.eval_ref(rule["cf"])
+				ctx.eval_ref(rule["id"]),
+				ctx.eval_ref(rule["expr"]["ref"])
 			));
 		}
 	}
@@ -54,10 +62,12 @@ bool CF::is_df_requested(const json &cf, const Context &ctx,
 {
 	if (cf.find("rules")==cf.end()) { return false; }
 	for (auto rule : cf["rules"]) {
-		if (rule["type"]=="req_count"
-				&& ctx.eval_ref(rule["df"])==dfid) {
-			assert(rule["count"]>0);
-			return rule["count"]>0;
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="assign" && rule["property"]=="req_count"
+				&& ctx.eval_ref(rule["id"])==dfid) {
+			auto count=(int)(*ctx.eval(rule["val"]));
+			assert(count>0);
+			return count>0;
 		}
 	}
 	return false;
@@ -74,10 +84,12 @@ size_t CF::get_requests_count(const json &cf, const Context &ctx,
 	}
 	
 	for (auto rule : cf["rules"]) {
-		if (rule["type"]=="req_count"
-				&& ctx.eval_ref(rule["df"])==dfid) {
-			assert(rule["count"]>0);
-			return rule["count"];
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="assign" && rule["property"]=="req_count"
+				&& ctx.eval_ref(rule["id"])==dfid) {
+			auto count=(int)(*ctx.eval(rule["val"]));
+			assert(count>0);
+			return count;
 		}
 	}
 	fprintf(stderr, "CF::get_requests_count: not available for %s in %s\n",
