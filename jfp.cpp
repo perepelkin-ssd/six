@@ -157,7 +157,14 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 	// map sub parameters
 	for (auto i=0u; i<sub["args"].size(); i++) {
 		auto param=sub["args"][i];
-		auto arg=ctx_.eval(j_["args"][i]);
+		ValuePtr arg;
+		if (param["type"]=="name") {
+			assert(j_["args"][i]["type"]=="id");
+			arg=ValuePtr(new NameValue(ctx_.eval_ref(
+				j_["args"][i]["ref"])));
+		} else {
+			arg=ctx_.eval(j_["args"][i]);
+		}
 		child_ctx.set_param(param["id"], ctx_.cast(param["type"], arg));
 	}
 	// create local dfs
@@ -223,7 +230,6 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 		}
 	}
 	// Algorithm: eval args & call sub; return args save as dfs.
-	printf("HERE\n");
 	env->exec_extern(ext["code"].get<std::string>(), args);
 	for (auto i=0u; i<ext["args"].size(); i++) {
 		bool is_input=fp()[code]["args"][i]["type"]!="name";
@@ -322,13 +328,15 @@ void JfpExec::init_child_context_arg(JfpExec *child,
 		// do nothing
 	} else if (arg["type"]=="icast") {
 		init_child_context_arg(child, arg["expr"]);
-	} else if (arg["type"]=="+" || arg["type"]=="/") {
+	} else if (arg["type"]=="+" || arg["type"]=="/"
+			|| arg["type"]=="*" || arg["type"]=="-") {
 		for (auto op : arg["operands"]) {
 			init_child_context_arg(child, op);
 		}
 	} else {
-		fprintf(stderr, "JfpExec::init_child_context_arg: %s\n",
-			arg.dump(2).c_str());
+		fprintf(stderr, "JfpExec::init_child_context_arg: arg type"
+			" not supported: %s in %s\n",
+			arg["type"].dump().c_str(), arg.dump(2).c_str());
 		NIMPL
 	}
 }

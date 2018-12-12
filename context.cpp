@@ -232,7 +232,8 @@ bool Context::_can_eval(const json &expr) const
 				return dfs_.find(_eval_ref(expr["ref"]))!=dfs_.end();
 			}
 		}
-	} else if (expr["type"]=="+" || expr["type"]=="/") {
+	} else if (expr["type"]=="+" || expr["type"]=="/"
+			|| expr["type"]=="-" || expr["type"]=="*") {
 		for (auto op : expr["operands"]) {
 			if (!_can_eval(op)) {
 				return false;
@@ -243,6 +244,7 @@ bool Context::_can_eval(const json &expr) const
 		return _can_eval(expr["expr"]);
 	} else {
 		fprintf(stderr, "Context::_can_eval: %s\n", expr.dump(2).c_str());
+		ABORT("Not implemented type: " + expr["type"].dump());
 		NIMPL
 	}
 }
@@ -288,7 +290,8 @@ ValuePtr Context::_eval(const json &expr) const
 		} else {
 			return _get_df(_eval_ref(expr["ref"]));
 		}
-	} else if (expr["type"]=="+" || expr["type"]=="/") {
+	} else if (expr["type"]=="+" || expr["type"]=="/"
+			|| expr["type"]=="-" || expr["type"]=="*") {
 		return _eval_op(expr["type"], expr["operands"]);
 	} else if (expr["type"]=="icast") {
 		return cast("int", _eval(expr["expr"]));
@@ -312,6 +315,8 @@ ValuePtr Context::_eval_op(const std::string &op, const json &ops) const
 		int res;
 		if (op=="+") { res=(int)(*op0)+(int)(*op1); }
 		else if (op=="/") { res=(int)(*op0)/(int)(*op1); }
+		else if (op=="-") { res=(int)(*op0)-(int)(*op1); }
+		else if (op=="*") { res=(int)(*op0)*(int)(*op1); }
 		else { fprintf(stderr, "OP NIMPL: %s\n", op.c_str()); NIMPL }
 		return ValuePtr(new IntValue(res));
 	} else if ((op0->type()==Integer||op0->type()==Real)
@@ -319,6 +324,8 @@ ValuePtr Context::_eval_op(const std::string &op, const json &ops) const
 		double res;
 		if (op=="+") { res=(double)(*op0)+(double)(*op1); }
 		else if (op=="/") { res=(double)(*op0)/(double)(*op1); }
+		else if (op=="-") { res=(double)(*op0)-(double)(*op1); }
+		else if (op=="*") { res=(double)(*op0)*(double)(*op1); }
 		else { fprintf(stderr, "OP NIMPL: %s\n", op.c_str()); NIMPL }
 		return ValuePtr(new RealValue(res));
 	} else {
@@ -332,16 +339,32 @@ Id Context::_eval_ref(const json &ref) const
 {
 	Name ref_name=ref[0].get<std::string>();
 
-	auto it=names_.find(ref_name);
+	Id id;
 
-	if (it==names_.end()) {
-		fprintf(stderr, "Context::_eval_ref: name %s is missing"
-			" in ref %s\n",
-			ref_name.c_str(), ref.dump().c_str());
-		abort();
+	auto itp=params_.find(ref_name);
+
+	if (itp!=params_.end()) {
+		assert(names_.find(ref_name)==names_.end()); // can't be both in
+			// names_ and params
+		if (itp->second->type()==Reference) {
+			id=*itp->second;
+		} else {
+			fprintf(stderr, "Context::_eval_ref: name %s is present"
+				" in params, but is not a name: %s\n",
+				ref_name.c_str(), itp->second->to_string().c_str());
+			abort();
+		}
+	} else {
+		auto it=names_.find(ref_name);
+
+		if (it==names_.end()) {
+			fprintf(stderr, "Context::_eval_ref: name %s is missing"
+				" in ref %s\n",
+				ref_name.c_str(), ref.dump().c_str());
+			abort();
+		}
+		id=it->second;
 	}
-
-	Id id=it->second;
 
 	for (auto i=1u; i<ref.size(); i++) {
 		id.push_back((int)(*_eval(ref[i])));
@@ -422,10 +445,12 @@ ValuePtr Context::cast(const std::string &type, const ValuePtr &val)
 		return ValuePtr(new IntValue((int)(*val)));
 	} else if (type=="string") {
 		return ValuePtr(new StringValue((std::string)(*val)));
+	} else if (type=="name") {
+		return ValuePtr(new NameValue((Id)(*val)));
 	} else {
-		fprintf(stderr, "Context::cast: invalid type (%s) for %s\n",
+		fprintf(stderr, "Context::cast: casting (%s)%s\n",
 			type.c_str(), val->to_string().c_str());
-		abort();
+		NIMPL
 	}
 }
 

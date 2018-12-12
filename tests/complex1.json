@@ -1,0 +1,293 @@
+{
+    "iprint": {
+        "type": "extern", 
+        "code": "c_iprint", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "initialize": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": []
+            }, 
+            {
+                "code": "init", 
+                "rules": [
+                    {
+                        "ruletype": "assign", 
+                        "property": "req_count", 
+                        "type": "rule", 
+                        "id": [
+                            "x", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 6
+                            }
+                        ], 
+                        "val": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 2
+                        }
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "val"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "x", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 6
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 12, 
+                "type": "exec", 
+                "id": [
+                    "_l10"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [
+            {
+                "type": "name", 
+                "id": "x"
+            }, 
+            {
+                "type": "int", 
+                "id": "val"
+            }
+        ], 
+        "where": {
+            "type": "luna"
+        }, 
+        "rules": []
+    }, 
+    "init": {
+        "type": "extern", 
+        "code": "c_init", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "name"
+            }
+        ]
+    }, 
+    "main": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": [
+                    "z"
+                ]
+            }, 
+            {
+                "code": "initialize", 
+                "rules": [], 
+                "args": [
+                    {
+                        "ref": [
+                            "z", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 10
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 5
+                    }
+                ], 
+                "line": 23, 
+                "type": "exec", 
+                "id": [
+                    "_l23"
+                ]
+            }, 
+            {
+                "code": "display", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "z", 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 10
+                                }, 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 6
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "z"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "z", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 10
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 6
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 26, 
+                "type": "exec", 
+                "id": [
+                    "_l24"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }, 
+        "rules": []
+    }, 
+    "display": {
+        "body": [
+            {
+                "code": "iprint", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "y", 
+                                {
+                                    "type": "*", 
+                                    "is_expr": true, 
+                                    "operands": [
+                                        {
+                                            "ref": [
+                                                "idx"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "type": "iconst", 
+                                            "is_expr": true, 
+                                            "value": 2
+                                        }
+                                    ]
+                                }, 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 6
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "y", 
+                            {
+                                "type": "*", 
+                                "is_expr": true, 
+                                "operands": [
+                                    {
+                                        "ref": [
+                                            "idx"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 2
+                                    }
+                                ]
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 6
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 18, 
+                "type": "exec", 
+                "id": [
+                    "_l16"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [
+            {
+                "type": "name", 
+                "id": "y"
+            }, 
+            {
+                "type": "int", 
+                "id": "idx"
+            }
+        ], 
+        "where": {
+            "type": "luna"
+        }, 
+        "rules": []
+    }
+}

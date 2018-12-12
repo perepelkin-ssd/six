@@ -110,6 +110,33 @@ std::string StringValue::to_string() const
 	return "string(\""+value_+"\")";
 }
 
+NameValue::NameValue(const Id &val)
+	: value_(val)
+{}
+
+NameValue::NameValue(BufferPtr &buf)
+{
+	value_=Id(buf);
+}
+
+ValuePtr NameValue::create(const Id &value)
+{
+	return ValuePtr(new NameValue(value));
+}
+
+const Id &NameValue::value() const { return value_; }
+
+void NameValue::serialize(Buffers &bufs) const
+{
+	bufs.push_back(Buffer::create(STAG_Value_NameValue));
+	value_.serialize(bufs);
+}
+
+std::string NameValue::to_string() const
+{
+	return "name(\""+value_.to_string()+"\")";
+}
+
 JsonValue::JsonValue(const json &value)
 	: value_(value)
 {}

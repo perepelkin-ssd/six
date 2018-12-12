@@ -15,10 +15,10 @@ common.o: common.cpp ./common.h
 context.o: context.cpp ./printable.h ./common.h ./buffer.h ./serializable.h ./stags.h ./json.h ./context.h ./factory.h ./id.h ./value.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o context.o context.cpp -I .
 
-df_pusher.o: df_pusher.cpp ./printable.h ./id.h ./buffer.h ./serializable.h ./thread_pool.h ./df_pusher.h ./json.h ./value.h
+df_pusher.o: df_pusher.cpp ./printable.h ./id.h ./buffer.h ./serializable.h ./thread_pool.h ./df_pusher.h ./json.h ./common.h ./value.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o df_pusher.o df_pusher.cpp -I .
 
-df_requester.o: df_requester.cpp ./df_requester.h ./printable.h ./id.h ./buffer.h ./serializable.h ./thread_pool.h ./json.h ./value.h
+df_requester.o: df_requester.cpp ./df_requester.h ./printable.h ./id.h ./buffer.h ./serializable.h ./thread_pool.h ./json.h ./common.h ./value.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o df_requester.o df_requester.cpp -I .
 
 factory.o: factory.cpp ./stags.h ./buffer.h ./factory.h ./serializable.h
@@ -78,7 +78,7 @@ thread_pool.o: thread_pool.cpp ./thread_pool.h
 thread_pool_test.o: thread_pool_test.cpp ./thread_pool.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o thread_pool_test.o thread_pool_test.cpp -I .
 
-value.o: value.cpp ./buffer.h ./serializable.h ./json.h ./stags.h ./printable.h ./id.h ./value.h
+value.o: value.cpp ./printable.h ./id.h ./buffer.h ./serializable.h ./stags.h ./json.h ./common.h ./value.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -g -Og -Wall -Werror -c -o value.o value.cpp -I .
 
 clean:

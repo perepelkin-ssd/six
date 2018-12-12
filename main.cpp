@@ -103,6 +103,7 @@ void init_stags(Factory &fact)
 	FACT(STAG_StoreDf, StoreDf)
 	FACT(STAG_SubmitDfToCf, SubmitDfToCf)
 	BUF(STAG_Value_IntValue, IntValue)
+	BUF(STAG_Value_NameValue, NameValue)
 	BUF(STAG_Value_RealValue, RealValue)
 	BUF(STAG_Value_StringValue, StringValue)
 

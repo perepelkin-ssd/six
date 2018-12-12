@@ -106,6 +106,29 @@ private:
 	std::string value_;
 };
 
+class NameValue : public Value
+{
+public:
+	virtual ~NameValue() {}
+
+	NameValue(const Id &);
+	NameValue(BufferPtr &buf);
+	
+	static ValuePtr create(const Id &);
+
+	const Id &value() const;
+
+	virtual void serialize(Buffers &) const;
+
+	virtual std::string to_string() const;
+
+	virtual operator Id() const { return value_; }
+
+	virtual ValueType type() const { return Reference; }
+private:
+	Id value_;
+};
+
 class JsonValue : public Value
 {
 public:
