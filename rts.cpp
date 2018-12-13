@@ -135,6 +135,9 @@ struct TaskEnv : public Environ, public BufHandler
 			printf("c_rprint: %lf\n", (double)(*args[0]));
 		} else if (code=="c_print") {
 			printf("c_print: %s\n", args[0]->to_string().c_str());
+		} else if (code=="c_show") {
+			printf("c_show: %s %d\n", ((std::string)(*args[0])).c_str(),
+				(int)(*args[1]));
 		} else if (code=="c_hello") {
 			std::string name=*args[0];
 			if (name.size()>0) {

@@ -5,6 +5,9 @@
 #include "remote_monitor.h"
 #include "tasks.h"
 
+#define ENABLE_NOTES true
+#define NOTE(msg) if (ENABLE_NOTES) printf("%s\n", std::string(msg).c_str())
+
 JfpExec::JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
 	Factory &fact)
 	: fact_(fact), fp_id_(fp_id), cf_id_(cf_id),
@@ -25,6 +28,8 @@ JfpExec::JfpExec(BufferPtr &buf, Factory &fact)
 void JfpExec::run(const EnvironPtr &env)
 {
 	fp_=&dynamic_cast<const JsonValue*>(env->get(fp_id_).get())->value();
+
+	_assert_rules();
 	
 	NodeId next_node=get_next_node(env, cf_id_);
 
@@ -56,18 +61,22 @@ std::string JfpExec::to_string() const
 
 void JfpExec::resolve_args(const EnvironPtr &env)
 {
+	NOTE("RESOLVING " + cf_id_.to_string());
 	pushed_flag_=false;
 
-	request_missing(env);
+	request_requested_dfs(env);
 
 	// Has pushed?
 
 	pushed_flag_=CF::has_pushes(j_);
 
 	if (pushed_flag_) {
+		NOTE("PUSHWAITING " + cf_id_.to_string());
 		env->df_pusher().open(cf_id_, [this, env](const Id &dfid,
 				const ValuePtr &val) {
 			ctx_.set_df(dfid, val);
+			NOTE("PUSH RECV: " + cf_id_.to_string() + " << " 
+				+ dfid.to_string());
 			check_exec(env);
 		});
 	}
@@ -75,15 +84,22 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 	check_exec(env);
 }
 
-void JfpExec::request_missing(const EnvironPtr &env)
+void JfpExec::request_requested_dfs(const EnvironPtr &env)
 {
 	auto req_dfs=CF::get_requested_dfs(j_, ctx_);
+	
+	std::string missing="";
+	for (auto df : req_dfs) {
+		missing+=" " + df.to_string();
+	}
 
 	for (auto dfid : req_dfs) {
 		if (requested_.find(dfid)!=requested_.end()) {
 			continue;
 		} else {
 			requested_.insert(dfid);
+			NOTE("REQUEST " + cf_id_.to_string()
+				+ " <= " + dfid.to_string());
 		}
 		NodeId df_node=get_next_node(env, dfid);
 		if (df_node==env->comm().get_rank()) {
@@ -115,7 +131,7 @@ NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
 
 void JfpExec::check_exec(const EnvironPtr &env)
 {
-	request_missing(env);
+	request_requested_dfs(env);
 	if (CF::is_ready(fp(), j_, ctx_)) {
 		exec(env);
 
@@ -126,6 +142,15 @@ void JfpExec::check_exec(const EnvironPtr &env)
 }
 
 void JfpExec::exec(const EnvironPtr &env)
+{
+	if (j_["type"]=="exec") { exec_exec(env); }
+	else if (j_["type"]=="for") { exec_for(env); }
+	else {
+		ABORT("Type not implemented: " + j_["type"].dump());
+	}
+}
+
+void JfpExec::exec_exec(const EnvironPtr &env)
 {
 	assert(j_["type"]=="exec");
 
@@ -151,6 +176,24 @@ void JfpExec::exec(const EnvironPtr &env)
 	}
 }
 
+void JfpExec::exec_for(const EnvironPtr &env)
+{
+	assert(j_["type"]=="for");
+
+	if (!CFFor::is_unroll_at_once(j_)) {
+		NIMPL // not unroll-at-once strategy?
+	}
+
+	int first=(int)(*ctx_.eval(j_["first"]));
+	int last=(int)(*ctx_.eval(j_["last"]));
+	for (int idx=first; idx<=last; idx++) {
+		Context child_ctx=ctx_;
+		child_ctx.set_param(j_["var"].get<std::string>(),
+			IntValue::create(idx), true);
+		spawn_body(env, j_["body"], child_ctx);
+	}
+}
+
 void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 {
 	Context child_ctx;
@@ -167,10 +210,18 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 		}
 		child_ctx.set_param(param["id"], ctx_.cast(param["type"], arg));
 	}
+
+	spawn_body(env, sub["body"], child_ctx);
+}
+
+void JfpExec::spawn_body(const EnvironPtr &env, const json &body,
+		const Context &base_ctx)
+{
+	Context ctx; ctx=base_ctx;
 	// create local dfs
 	std::map<Name, Id> dfs_names;
 
-	for (auto bi : sub["body"]) {
+	for (auto bi : body) {
 		if (bi["type"]=="dfs") {
 			// Gather & create dfs names
 			for (auto name : bi["names"]) {
@@ -186,25 +237,30 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 			}
 		} else {
 			// create cfs names
-			assert(bi.find("id")!=bi.end());
-			Name name=bi["id"][0].get<std::string>();
-			ctx_.set_name(name, env->create_id(name));
+			if (bi.find("id")!=bi.end()) {
+				Name name=bi["id"][0].get<std::string>();
+				ctx.set_name(name, env->create_id(name));
+			}
 		}
 	}
 
 	for (auto el : dfs_names) {
-		ctx_.set_name(el.first, el.second);
+		ctx.set_name(el.first, el.second);
 	}
 
-	for (auto bi : sub["body"]) {
+	for (auto bi : body) {
 		if (bi["type"]!="dfs") {
-			assert(bi.find("id") != bi.end());
-			Id item_id=ctx_.eval_ref(bi["id"]);
+			Id item_id;
+			if (bi.find("id") != bi.end()) {
+				item_id=ctx.eval_ref(bi["id"]);
+			} else {
+				item_id=env->create_id("_anon_" 
+					+ bi["type"].get<std::string>());
+			}
 			JfpExec *item=new JfpExec(fp_id_, item_id, bi.dump(), fact_);
 			TaskPtr task(item);
 			// push context
-			item->ctx_=child_ctx;
-			init_child_context(item);
+			init_child_context(item, ctx);
 
 			NodeId item_node=get_next_node(env, item_id);
 			if (item_node==env->comm().get_rank()) {
@@ -248,6 +304,8 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 	for (auto push : CF::get_afterpushes(j_, ctx_)) {
 		Id dfid=push.first;
 		Id cfid=push.second;
+		NOTE("PUSHING " + dfid.to_string() + " >> "
+			+ cfid.to_string());
 		NodeId next_rank=get_next_node(env, cfid);
 		if (next_rank==env->comm().get_rank()) {
 			env->df_pusher().push(cfid, dfid, ctx_.get_df(dfid));
@@ -290,54 +348,103 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 	}
 }
 
-void JfpExec::init_child_context(JfpExec *child)
+void JfpExec::init_child_context(JfpExec *child, const Context &ctx)
 {
-	child->ctx_.pull_names(ctx_);
+	child->ctx_.pull_names(ctx); // maybe too much, but generally every
+	// body item can address any other body item
+	child->ctx_.pull_params(ctx); // maybe too much to clone?
 
 	if (child->j_["type"]=="exec") {
 		if (child->j_["args"].empty()) {
 			return;
 		} else {
 			for (auto arg : child->j_["args"]) {
-				init_child_context_arg(child, arg);
+				init_child_context_arg(child, arg, ctx);
 			}
 		}
+	} else if (child->j_["type"]=="for" || child->j_["type"]=="while") {
+		child->ctx_=ctx;
 	} else {
 		fprintf(stderr, "JfpExec::init_child_context_arg: "
 			"type not supported,"
 			" type=%s, child=%s\n", child->j_["type"].get<std::string>()
 				.c_str(), child->j_.dump(2).c_str());
-		abort();
+		ABORT("type=" + child->j_["type"].dump());
 	}
 }
 
 void JfpExec::init_child_context_arg(JfpExec *child,
-	const json &arg)
+	const json &arg, const Context &ctx)
 {
 	if (arg["type"]=="id") {
 		Name name=arg["ref"][0].get<std::string>();
 		if (!child->ctx_.has_param(name)) {
-			child->ctx_.pull_name(name, ctx_);
+			child->ctx_.pull_name(name, ctx);
 		}
 
 		for (auto i=1u; i<arg["ref"].size(); i++) {
-			init_child_context_arg(child, arg["ref"][i]);
+			init_child_context_arg(child, arg["ref"][i], ctx);
 		}
 	} else if (arg["type"]=="iconst" || arg["type"]=="rconst"
 			|| arg["type"]=="sconst") {
 		// do nothing
 	} else if (arg["type"]=="icast") {
-		init_child_context_arg(child, arg["expr"]);
+		init_child_context_arg(child, arg["expr"], ctx);
 	} else if (arg["type"]=="+" || arg["type"]=="/"
 			|| arg["type"]=="*" || arg["type"]=="-") {
 		for (auto op : arg["operands"]) {
-			init_child_context_arg(child, op);
+			init_child_context_arg(child, op, ctx);
 		}
 	} else {
 		fprintf(stderr, "JfpExec::init_child_context_arg: arg type"
 			" not supported: %s in %s\n",
 			arg["type"].dump().c_str(), arg.dump(2).c_str());
 		NIMPL
+	}
+}
+
+void JfpExec::_assert_rules()
+{
+#ifdef NDEBUG
+	return;
+#endif
+	if (j_.find("rules")==j_.end()) { return; }
+	for (auto rule : j_["rules"]) {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="flags") {
+			assert(rule.find("flags")!=rule.end());
+			for (auto flag : rule["flags"]) {
+				if(flag!="has_pushes"
+						&& flag!="unroll_at_once"
+				) {
+					ABORT("Unknown flag: " + flag.dump());
+				}
+			}
+		} else if (rule["ruletype"]=="enum") {
+			assert(rule.find("property")!=rule.end());
+			assert(rule.find("items")!=rule.end());
+			if (rule["property"]!="request") {
+				ABORT("Unknown enum property: " + rule["property"].dump());
+			}
+		} else if (rule["ruletype"]=="assign") {
+			assert(rule.find("property")!=rule.end());
+			assert(rule.find("id")!=rule.end());
+			assert(rule.find("val")!=rule.end());
+			if (rule["property"]!="req_count") {
+				ABORT("Unknown assign property: " 
+					+ rule["property"].dump());
+			}
+		} else if (rule["ruletype"]=="map") {
+			assert(rule.find("property")!=rule.end());
+			assert(rule.find("id")!=rule.end());
+			assert(rule.find("expr")!=rule.end());
+			if (rule["property"]!="afterpush") {
+				ABORT("Unknown map property: " + rule["property"].dump());
+			}
+		} else {
+			fprintf(stderr, "rule: %s\n", rule.dump(2).c_str());
+			ABORT("Unknown rule type: " + rule["ruletype"].dump());
+		}
 	}
 }
 

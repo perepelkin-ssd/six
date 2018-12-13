@@ -8,7 +8,6 @@
 
 struct CF
 {
-public:
 	static std::set<Id> get_requested_dfs(const json &, const Context &);
 	static bool has_pushes(const json &);
 	static std::set<std::pair<Id, Id> > get_afterpushes(const json &,
@@ -20,4 +19,9 @@ public:
 	static bool is_ready(const json &fp, const json &cf, const Context &);
 	static bool is_ready_exec(const json &fp, const json &cf,
 		const Context &);
+};
+
+struct CFFor
+{
+	static bool is_unroll_at_once(const json &);
 };

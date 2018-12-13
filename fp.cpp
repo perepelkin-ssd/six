@@ -78,9 +78,7 @@ size_t CF::get_requests_count(const json &cf, const Context &ctx,
 {
 
 	if (cf.find("rules")==cf.end()) {
-		fprintf(stderr, "CF::get_requests_count: not available for %s"
-			" in %s\n", dfid.to_string().c_str(), cf.dump(2).c_str());
-		abort();
+		ABORT("no 'rules' in " + cf.dump(2));
 	}
 	
 	for (auto rule : cf["rules"]) {
@@ -94,17 +92,20 @@ size_t CF::get_requests_count(const json &cf, const Context &ctx,
 	}
 	fprintf(stderr, "CF::get_requests_count: not available for %s in %s\n",
 		dfid.to_string().c_str(), cf.dump(2).c_str());
-	abort();
+	ABORT("no req_count for " + dfid.to_string());
 }
 
 bool CF::is_ready(const json &fp, const json &cf, const Context &ctx)
 {
 	if (cf["type"]=="exec") {
 		return CF::is_ready_exec(fp, cf, ctx);
+	} else if (cf["type"]=="for") {
+		return ctx.can_eval(cf["first"]) && ctx.can_eval(cf["last"]);
+	} else if (cf["type"]=="while") {
+		return ctx.can_eval(cf["first"]) && ctx.can_eval_ref(cf["wout"]);
 	} else {
-		fprintf(stderr, "JfpExec::get_args: unsupported cf type: %s\n",
-			cf["type"].dump().c_str());
-		abort();
+		fprintf(stderr, "ERROR IN %s\n", cf.dump(2).c_str());
+		ABORT("Unsupported type: " + cf["type"].dump());
 	}
 }
 
@@ -123,3 +124,19 @@ bool CF::is_ready_exec(const json &fp, const json &cf, const Context &ctx)
 	return true;
 }
 
+
+bool CFFor::is_unroll_at_once(const json &cf)
+{
+	if (cf.find("rules")==cf.end()) { return true; }
+	
+	for (auto rule : cf["rules"]) {
+		assert(rule.find("ruletype")!=rule.end());
+		if (rule["ruletype"]!="flags") { continue; }
+		for (auto flag : rule["flags"]) {
+			if (flag=="unroll_at_once") {
+				return true;
+			}
+		}
+	}
+	return false;
+}

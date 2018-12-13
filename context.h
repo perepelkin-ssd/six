@@ -12,12 +12,14 @@ class Context : public Serializable, public Printable
 {
 public:
 	Context() {}
+	Context(const Context &);
 	Context(BufferPtr &buf, Factory &fact);
 
 	Context &operator=(const Context &);
 
 	void set_name(const Name &, const Id &);
-	void set_param(const Name &, const ValuePtr &);
+	void set_param(const Name &, const ValuePtr &,
+		bool allow_override=false);
 	void set_df(const Id &, const ValuePtr &);
 
 	bool has_name(const Name &) const;
@@ -36,6 +38,7 @@ public:
 
 	void pull_name(const Name &name, const Context &);
 	void pull_names(const Context &);
+	void pull_params(const Context &);
 
 	virtual void serialize(Buffers &) const;
 
@@ -49,7 +52,8 @@ private:
 	std::map<Id, ValuePtr> dfs_;
 
 	void _set_name(const Name &, const Id &);
-	void _set_param(const Name &, const ValuePtr &);
+	void _set_param(const Name &, const ValuePtr &,
+		bool allow_override=false);
 	void _set_df(const Id &, const ValuePtr &);
 
 	Id _get_name(const Name &) const;
@@ -65,4 +69,6 @@ private:
 
 	void _pull_name(const Name &name, const Context &);
 	void _pull_names(const Context &);
+	void _pull_param(const Name &name, const Context &);
+	void _pull_params(const Context &);
 };

@@ -4,6 +4,11 @@
 
 #include "common.h"
 
+Context::Context(const Context &ctx)
+{
+	*this=ctx;
+}
+
 Context::Context(BufferPtr &buf, Factory &fact)
 {
 	// names_
@@ -47,10 +52,11 @@ void Context::set_name(const Name &name, const Id &id)
 	_set_name(name, id);
 }
 
-void Context::set_param(const Name &name, const ValuePtr &val)
+void Context::set_param(const Name &name, const ValuePtr &val,
+	bool allow_override)
 {
 	std::lock_guard<std::mutex> lk(m_);
-	_set_param(name, val);
+	_set_param(name, val, allow_override);
 }
 
 void Context::set_df(const Id &id, const ValuePtr &val)
@@ -131,25 +137,32 @@ void Context::pull_names(const Context &ctx)
 	_pull_names(ctx);
 }
 
+void Context::pull_params(const Context &ctx)
+{
+	std::lock_guard<std::mutex> lk(m_);
+	_pull_params(ctx);
+}
+
 void Context::_set_name(const Name &name, const Id &id)
 {
 	if (names_.find(name)!=names_.end()) {
 		fprintf(stderr, "Context::_set_name: name %s redefinition attempt "
 			"from %s to %s\n", name.c_str(),
 			names_[name].to_string().c_str(), id.to_string().c_str());
-		abort();
+		ABORT("");
 	}
 
 	names_[name]=id;
 }
 
-void Context::_set_param(const Name &name, const ValuePtr &val)
+void Context::_set_param(const Name &name, const ValuePtr &val,
+	bool allow_override)
 {
-	if (params_.find(name)!=params_.end()) {
+	if (params_.find(name)!=params_.end() && !allow_override) {
 		fprintf(stderr, "Context::_set_param: param %s redefinition "
 			"attempt from %s to %s\n", name.c_str(),
 			params_[name]->to_string().c_str(), val->to_string().c_str());
-		abort();
+		ABORT("");
 	}
 
 	params_[name]=val;
@@ -161,7 +174,7 @@ void Context::_set_df(const Id &id, const ValuePtr &val)
 		fprintf(stderr, "Context::_set_df: df %s redefinition attempt "
 			"from %s to %s\n", id.to_string().c_str(),
 			dfs_[id]->to_string().c_str(), val->to_string().c_str());
-		abort();
+		ABORT("");
 	}
 
 	dfs_[id]=val;
@@ -173,7 +186,7 @@ Id Context::_get_name(const Name &name) const
 	if (it==names_.end()) {
 		fprintf(stderr, "Context::_get_name: not found: %s\n",
 			name.c_str());
-		abort();
+		ABORT("");
 	} else {
 		return it->second;
 	}
@@ -185,7 +198,7 @@ ValuePtr Context::_get_param(const Name &name) const
 	if (it==params_.end()) {
 		fprintf(stderr, "Context::_get_param: not found: %s\n",
 			name.c_str());
-		abort();
+		ABORT("");
 	} else {
 		return it->second;
 	}
@@ -197,7 +210,7 @@ ValuePtr Context::_get_df(const Id &id) const
 	if (it==dfs_.end()) {
 		fprintf(stderr, "Context::_get_df: not found: %s\n",
 			id.to_string().c_str());
-		abort();
+		ABORT("");
 	} else {
 		return it->second;
 	}
@@ -278,7 +291,7 @@ ValuePtr Context::_eval(const json &expr) const
 				} else {
 					fprintf(stderr, "Context::_eval: index in parameter: "
 						"%s\n", expr["ref"].dump(2).c_str());
-					abort();
+					ABORT("");
 				}
 			} else {
 				Id id=(*val);
@@ -352,7 +365,7 @@ Id Context::_eval_ref(const json &ref) const
 			fprintf(stderr, "Context::_eval_ref: name %s is present"
 				" in params, but is not a name: %s\n",
 				ref_name.c_str(), itp->second->to_string().c_str());
-			abort();
+			ABORT("");
 		}
 	} else {
 		auto it=names_.find(ref_name);
@@ -361,7 +374,7 @@ Id Context::_eval_ref(const json &ref) const
 			fprintf(stderr, "Context::_eval_ref: name %s is missing"
 				" in ref %s\n",
 				ref_name.c_str(), ref.dump().c_str());
-			abort();
+			ABORT("");
 		}
 		id=it->second;
 	}
@@ -380,11 +393,11 @@ void Context::_pull_name(const Name &name, const Context &ctx)
 	if (it==names_.end()) {
 		_set_name(name, id);
 	} else if (id!=names_[name]) {
-		fprintf(stderr, "Context::_get_name: name %s is already set "
+		fprintf(stderr, "Context::_pull_name: name %s is already set "
 			"to %s, but got %s from the other context\n",
 				name.c_str(), names_[name].to_string().c_str(),
 				id.to_string().c_str());
-		abort();
+		ABORT("");
 	}
 }
 
@@ -392,6 +405,28 @@ void Context::_pull_names(const Context &ctx)
 {
 	for (auto el : ctx.names_) {
 		_pull_name(el.first, ctx);
+	}
+}
+
+void Context::_pull_param(const Name &name, const Context &ctx)
+{
+	auto val=ctx.get_param(name);
+	auto it=params_.find(name);
+	if (it==params_.end()) {
+		_set_param(name, val);
+	} else {
+		fprintf(stderr, "Context::_pull_param: name %s is already set "
+			"to %s, but got %s from the other context\n",
+				name.c_str(), params_[name]->to_string().c_str(),
+				val->to_string().c_str());
+		ABORT("");
+	}
+}
+
+void Context::_pull_params(const Context &ctx)
+{
+	for (auto el : ctx.params_) {
+		_pull_param(el.first, ctx);
 	}
 }
 

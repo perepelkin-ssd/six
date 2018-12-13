@@ -34,21 +34,27 @@ private:
 
 	void resolve_args(const EnvironPtr &);
 
-	void init_child_context(JfpExec *child);
+	void init_child_context(JfpExec *child, const Context &base);
 	void init_child_context_arg(JfpExec *child,
-		const json &);
+		const json &, const Context &base);
 
 	NodeId get_next_node(const EnvironPtr &, const Id &);
 
 	void check_exec(const EnvironPtr &);
 	void exec(const EnvironPtr &);
+	void exec_exec(const EnvironPtr &);
+	void exec_for(const EnvironPtr &);
+	void exec_while(const EnvironPtr &);
 	void exec_struct(const EnvironPtr &, const json &);
 	void exec_extern(const EnvironPtr &, const Name &);
+	void spawn_body(const EnvironPtr &, const json &, const Context &);
 
 	void df_computed(const EnvironPtr &env, const json &ref,
 		const ValuePtr &);
 
-	void request_missing(const EnvironPtr &env);
+	void request_requested_dfs(const EnvironPtr &env);
+
+	void _assert_rules();
 };
 
 class JfpReg : public Task
