@@ -102,7 +102,15 @@ bool CF::is_ready(const json &fp, const json &cf, const Context &ctx)
 	} else if (cf["type"]=="for") {
 		return ctx.can_eval(cf["first"]) && ctx.can_eval(cf["last"]);
 	} else if (cf["type"]=="while") {
-		return ctx.can_eval(cf["first"]) && ctx.can_eval_ref(cf["wout"]);
+		if (!ctx.can_eval(cf["start"])
+				|| !ctx.can_eval_ref(cf["wout"]["ref"])) {
+			return false;
+		}
+		Context ctx1=ctx;
+		ctx1.set_param(cf["var"].get<std::string>(), ctx.eval(cf["start"]));
+		return ctx1.can_eval(cf["cond"]);
+	} else if (cf["type"]=="if") {
+		return ctx.can_eval(cf["cond"]);
 	} else {
 		fprintf(stderr, "ERROR IN %s\n", cf.dump(2).c_str());
 		ABORT("Unsupported type: " + cf["type"].dump());

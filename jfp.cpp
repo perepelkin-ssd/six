@@ -5,7 +5,7 @@
 #include "remote_monitor.h"
 #include "tasks.h"
 
-#define ENABLE_NOTES true
+#define ENABLE_NOTES false
 #define NOTE(msg) if (ENABLE_NOTES) printf("%s\n", std::string(msg).c_str())
 
 JfpExec::JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
@@ -145,8 +145,10 @@ void JfpExec::exec(const EnvironPtr &env)
 {
 	if (j_["type"]=="exec") { exec_exec(env); }
 	else if (j_["type"]=="for") { exec_for(env); }
+	else if (j_["type"]=="while") { exec_while(env); }
+	else if (j_["type"]=="if") { exec_if(env); }
 	else {
-		ABORT("Type not implemented: " + j_["type"].dump());
+		ABORT("CF type not implemented: " + j_["type"].dump());
 	}
 }
 
@@ -192,6 +194,59 @@ void JfpExec::exec_for(const EnvironPtr &env)
 			IntValue::create(idx), true);
 		spawn_body(env, j_["body"], child_ctx);
 	}
+	do_afterwork(env);
+}
+
+void JfpExec::exec_while(const EnvironPtr &env)
+{
+	assert(j_["type"]=="while");
+
+	if (!CFFor::is_unroll_at_once(j_)) {
+		NIMPL // not unroll-at-once strategy?
+	}
+
+	int start=(int)(*ctx_.eval(j_["start"]));
+	Context child_ctx=ctx_;
+	child_ctx.set_param(j_["var"].get<std::string>(),
+		IntValue::create(start), true);
+	int cond=(int)(*child_ctx.eval(j_["cond"]));
+	if (cond==0) {
+		df_computed(env, j_["wout"]["ref"], ValuePtr(new IntValue(start)));
+
+		do_afterwork(env);
+	} else {
+		spawn_body(env, j_["body"], child_ctx);
+
+		// TODO remove code duplication with spawnbody
+
+		Id item_id=env->create_id("_anon_"+j_["type"].get<std::string>());
+		json j1=j_;
+		j1["start"]={{"type", "iconst"}, {"value", start+1}};
+		JfpExec *item=new JfpExec(fp_id_, item_id, j1.dump(), fact_);
+		item->ctx_=ctx_;
+		TaskPtr task(item);
+		// push context
+
+		NodeId item_node=get_next_node(env, item_id);
+		if (item_node==env->comm().get_rank()) {
+			env->submit(task);
+		} else {
+			env->submit(TaskPtr(new Delivery(LocatorPtr(
+				new CyclicLocator(item_node)), task)));
+		}
+	}
+}
+
+void JfpExec::exec_if(const EnvironPtr &env)
+{
+	assert(j_["type"]=="if");
+
+	int cond=(int)(*ctx_.eval(j_["cond"]));
+	if (cond==0) {
+	} else {
+		spawn_body(env, j_["body"], ctx_);
+	}
+	do_afterwork(env);
 }
 
 void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
@@ -212,6 +267,8 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 	}
 
 	spawn_body(env, sub["body"], child_ctx);
+
+	do_afterwork(env);
 }
 
 void JfpExec::spawn_body(const EnvironPtr &env, const json &body,
@@ -227,7 +284,7 @@ void JfpExec::spawn_body(const EnvironPtr &env, const json &body,
 			for (auto name : bi["names"]) {
 				Name sname=name.get<std::string>();
 				if (dfs_names.find(name)!=dfs_names.end()) {
-					fprintf(stderr, "JfpExec::exec_struct: duplicate "
+					fprintf(stderr, "JfpExec::spawn_body: duplicate "
 						"df identifier (%s) in sub %s\n",
 						sname.c_str(),
 						j_["code"].get<std::string>().c_str());
@@ -300,6 +357,12 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 		}
 	}
 
+	do_afterwork(env);
+}
+
+void JfpExec::do_afterwork(const EnvironPtr &env)
+{
+	NOTE("AFTERWORK: " + cf_id_.to_string());
 	// Afterpush
 	for (auto push : CF::get_afterpushes(j_, ctx_)) {
 		Id dfid=push.first;
@@ -362,7 +425,8 @@ void JfpExec::init_child_context(JfpExec *child, const Context &ctx)
 				init_child_context_arg(child, arg, ctx);
 			}
 		}
-	} else if (child->j_["type"]=="for" || child->j_["type"]=="while") {
+	} else if (child->j_["type"]=="for" || child->j_["type"]=="while"
+			|| child->j_["type"]=="if") {
 		child->ctx_=ctx;
 	} else {
 		fprintf(stderr, "JfpExec::init_child_context_arg: "

@@ -245,8 +245,14 @@ bool Context::_can_eval(const json &expr) const
 				return dfs_.find(_eval_ref(expr["ref"]))!=dfs_.end();
 			}
 		}
-	} else if (expr["type"]=="+" || expr["type"]=="/"
-			|| expr["type"]=="-" || expr["type"]=="*") {
+	} else if (expr["type"]=="+"
+			|| expr["type"]=="/"
+			|| expr["type"]=="-"
+			|| expr["type"]=="*"
+			|| expr["type"]=="<"
+			|| expr["type"]=="=="
+			|| expr["type"]=="%"
+			) {
 		for (auto op : expr["operands"]) {
 			if (!_can_eval(op)) {
 				return false;
@@ -303,14 +309,20 @@ ValuePtr Context::_eval(const json &expr) const
 		} else {
 			return _get_df(_eval_ref(expr["ref"]));
 		}
-	} else if (expr["type"]=="+" || expr["type"]=="/"
-			|| expr["type"]=="-" || expr["type"]=="*") {
+	} else if (expr["type"]=="+"
+			|| expr["type"]=="/"
+			|| expr["type"]=="-"
+			|| expr["type"]=="*"
+			|| expr["type"]=="<"
+			|| expr["type"]=="=="
+			|| expr["type"]=="%"
+			) {
 		return _eval_op(expr["type"], expr["operands"]);
 	} else if (expr["type"]=="icast") {
 		return cast("int", _eval(expr["expr"]));
 	} else {
 		fprintf(stderr, "Context::_eval: %s\n", expr.dump(2).c_str());
-		NIMPL
+		ABORT("Expr type not supported: " + expr["type"].dump());
 	}
 }
 
@@ -330,7 +342,13 @@ ValuePtr Context::_eval_op(const std::string &op, const json &ops) const
 		else if (op=="/") { res=(int)(*op0)/(int)(*op1); }
 		else if (op=="-") { res=(int)(*op0)-(int)(*op1); }
 		else if (op=="*") { res=(int)(*op0)*(int)(*op1); }
-		else { fprintf(stderr, "OP NIMPL: %s\n", op.c_str()); NIMPL }
+		else if (op=="%") { res=(int)(*op0)%(int)(*op1); }
+		else if (op=="<") { res=((int)(*op0)<(int)(*op1)? 1: 0); }
+		else if (op=="==") { res=((int)(*op0)==(int)(*op1)? 1: 0); }
+		else { 
+			ABORT("Can't eval: " + op0->to_string() + op 
+			+ op1->to_string());
+		}
 		return ValuePtr(new IntValue(res));
 	} else if ((op0->type()==Integer||op0->type()==Real)
 			&& ((op1->type()==Integer||op1->type()==Real))) {
@@ -339,6 +357,10 @@ ValuePtr Context::_eval_op(const std::string &op, const json &ops) const
 		else if (op=="/") { res=(double)(*op0)/(double)(*op1); }
 		else if (op=="-") { res=(double)(*op0)-(double)(*op1); }
 		else if (op=="*") { res=(double)(*op0)*(double)(*op1); }
+		else if (op=="<") { return ValuePtr(new IntValue(
+			(double)(*op0)<(double)(*op1)? 1: 0)); }
+		else if (op=="==") { return ValuePtr(new IntValue(
+			(double)(*op0)==(double)(*op1)? 1: 0)); }
 		else { fprintf(stderr, "OP NIMPL: %s\n", op.c_str()); NIMPL }
 		return ValuePtr(new RealValue(res));
 	} else {

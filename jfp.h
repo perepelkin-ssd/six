@@ -45,6 +45,7 @@ private:
 	void exec_exec(const EnvironPtr &);
 	void exec_for(const EnvironPtr &);
 	void exec_while(const EnvironPtr &);
+	void exec_if(const EnvironPtr &);
 	void exec_struct(const EnvironPtr &, const json &);
 	void exec_extern(const EnvironPtr &, const Name &);
 	void spawn_body(const EnvironPtr &, const json &, const Context &);
@@ -53,6 +54,8 @@ private:
 		const ValuePtr &);
 
 	void request_requested_dfs(const EnvironPtr &env);
+
+	void do_afterwork(const EnvironPtr &);
 
 	void _assert_rules();
 };
