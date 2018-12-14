@@ -378,6 +378,16 @@ void JfpExec::do_afterwork(const EnvironPtr &env)
 				new SubmitDfToCf(dfid, ctx_.get_df(dfid), cfid)))));
 		}
 	}
+	for (auto dfid : CF::get_afterdels(j_, ctx_)) {
+		TaskPtr task(new DelDf(dfid));;
+		NodeId next_rank=get_next_node(env, dfid);
+		if (next_rank==env->comm().get_rank()) {
+			env->submit(task);
+		} else {
+			env->submit(TaskPtr(new Delivery(LocatorPtr(
+				new CyclicLocator(next_rank)), task)));
+		}
+	}
 }
 
 void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
@@ -390,7 +400,12 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 	// store if requestable
 	if (CF::is_df_requested(j_, ctx_, id)) {
 		NodeId store_node=get_next_node(env, id);
-		auto req_count=CF::get_requests_count(j_, ctx_, id);
+		int req_count;
+		if (CF::is_requested_unlimited(j_, ctx_, id)) {
+			req_count=-1;
+		} else {
+			req_count=CF::get_requests_count(j_, ctx_, id);
+		}
 		if (store_node==env->comm().get_rank()) {
 			std::shared_ptr<size_t> counter(new size_t(req_count));
 			std::shared_ptr<std::mutex> m(new std::mutex());
@@ -487,7 +502,8 @@ void JfpExec::_assert_rules()
 		} else if (rule["ruletype"]=="enum") {
 			assert(rule.find("property")!=rule.end());
 			assert(rule.find("items")!=rule.end());
-			if (rule["property"]!="request") {
+			if (rule["property"]!="request"
+					&&rule["property"]!="req_unlimited") {
 				ABORT("Unknown enum property: " + rule["property"].dump());
 			}
 		} else if (rule["ruletype"]=="assign") {
@@ -505,6 +521,8 @@ void JfpExec::_assert_rules()
 			if (rule["property"]!="afterpush") {
 				ABORT("Unknown map property: " + rule["property"].dump());
 			}
+		} else if (rule["ruletype"]=="indexed") {
+			assert(rule.find("dfs")!=rule.end());
 		} else {
 			fprintf(stderr, "rule: %s\n", rule.dump(2).c_str());
 			ABORT("Unknown rule type: " + rule["ruletype"].dump());

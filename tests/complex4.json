@@ -1,0 +1,396 @@
+{
+    "iprint": {
+        "type": "extern", 
+        "code": "c_iprint", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "init": {
+        "type": "extern", 
+        "code": "c_init", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "name"
+            }
+        ]
+    }, 
+    "main": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": [
+                    "x"
+                ]
+            }, 
+            {
+                "code": "init", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "x", 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "req_unlimited", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 1
+                    }, 
+                    {
+                        "ref": [
+                            "x", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 0
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 14, 
+                "type": "exec", 
+                "id": [
+                    "_l12"
+                ]
+            }, 
+            {
+                "body": [
+                    {
+                        "type": "dfs", 
+                        "names": [
+                            "y"
+                        ]
+                    }, 
+                    {
+                        "code": "init", 
+                        "rules": [
+                            {
+                                "expr": {
+                                    "ref": [
+                                        "b", 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                "ruletype": "map", 
+                                "property": "afterpush", 
+                                "type": "rule", 
+                                "id": [
+                                    "y"
+                                ]
+                            }
+                        ], 
+                        "args": [
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "y"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "line": 21, 
+                        "type": "exec", 
+                        "id": [
+                            "a", 
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ]
+                    }, 
+                    {
+                        "code": "init", 
+                        "rules": [
+                            {
+                                "ruletype": "indexed", 
+                                "type": "rule", 
+                                "dfs": [
+                                    {
+                                        "ref": [
+                                            "x", 
+                                            {
+                                                "type": "-", 
+                                                "is_expr": true, 
+                                                "operands": [
+                                                    {
+                                                        "ref": [
+                                                            "i"
+                                                        ], 
+                                                        "type": "id", 
+                                                        "is_expr": true
+                                                    }, 
+                                                    {
+                                                        "type": "iconst", 
+                                                        "is_expr": true, 
+                                                        "value": 1
+                                                    }
+                                                ]
+                                            }
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ]
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "x", 
+                                        {
+                                            "type": "-", 
+                                            "is_expr": true, 
+                                            "operands": [
+                                                {
+                                                    "ref": [
+                                                        "i"
+                                                    ], 
+                                                    "type": "id", 
+                                                    "is_expr": true
+                                                }, 
+                                                {
+                                                    "type": "iconst", 
+                                                    "is_expr": true, 
+                                                    "value": 1
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "request", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "flags": [
+                                    "has_pushes"
+                                ], 
+                                "ruletype": "flags", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "x", 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "req_unlimited", 
+                                "type": "rule"
+                            }
+                        ], 
+                        "args": [
+                            {
+                                "type": "*", 
+                                "is_expr": true, 
+                                "operands": [
+                                    {
+                                        "ref": [
+                                            "y"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "x", 
+                                            {
+                                                "type": "-", 
+                                                "is_expr": true, 
+                                                "operands": [
+                                                    {
+                                                        "ref": [
+                                                            "i"
+                                                        ], 
+                                                        "type": "id", 
+                                                        "is_expr": true
+                                                    }, 
+                                                    {
+                                                        "type": "iconst", 
+                                                        "is_expr": true, 
+                                                        "value": 1
+                                                    }
+                                                ]
+                                            }
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ]
+                            }, 
+                            {
+                                "ref": [
+                                    "x", 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "line": 26, 
+                        "type": "exec", 
+                        "id": [
+                            "b", 
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ]
+                    }
+                ], 
+                "last": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 3
+                }, 
+                "where": {
+                    "type": "luna"
+                }, 
+                "var": "i", 
+                "type": "for", 
+                "first": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 1
+                }
+            }, 
+            {
+                "code": "show", 
+                "rules": [
+                    {
+                        "ruletype": "indexed", 
+                        "type": "rule", 
+                        "dfs": [
+                            {
+                                "ref": [
+                                    "x", 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 3
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ]
+                    }, 
+                    {
+                        "items": [
+                            [
+                                "x", 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 3
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "type": "sconst", 
+                        "is_expr": true, 
+                        "value": "final: "
+                    }, 
+                    {
+                        "ref": [
+                            "x", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 3
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 28, 
+                "type": "exec", 
+                "id": [
+                    "_l28"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "show": {
+        "type": "extern", 
+        "code": "c_show", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "string"
+            }, 
+            {
+                "type": "int"
+            }
+        ]
+    }
+}

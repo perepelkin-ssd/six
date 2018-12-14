@@ -62,12 +62,16 @@ private:
 	// The pool_ is used for some slave services, such as df_pusher
 	ThreadPool pool_;
 	size_t workload_;
+	size_t wl_pusher_, wl_requester_;
 	int next_id_;
 	DfPusher df_pusher_;
 	DfRequester df_requester_;
 	std::map<Id, ValuePtr> vals_;
 
 	void on_message(const NodeId &src, BufferPtr);
+
+	void change_workload_pusher(int delta);
+	void change_workload_requester(int delta);
 };
 
 #endif // RTS_H_

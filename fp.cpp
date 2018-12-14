@@ -70,6 +70,27 @@ bool CF::is_df_requested(const json &cf, const Context &ctx,
 			return count>0;
 		}
 	}
+	return false || is_requested_unlimited(cf, ctx, dfid);
+}
+
+bool CF::is_requested_unlimited(const json &cf, const Context &ctx,
+	const Id &dfid)
+{
+
+	if (cf.find("rules")==cf.end()) {
+		ABORT("no 'rules' in " + cf.dump(2));
+	}
+	
+	for (auto rule : cf["rules"]) {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="enum" && rule["property"]=="req_unlimited") {
+			for (auto ref : rule["items"]) {
+				if (ctx.eval_ref(ref)==dfid) {
+					return true;
+				}
+			}
+		}
+	}
 	return false;
 }
 
@@ -132,6 +153,22 @@ bool CF::is_ready_exec(const json &fp, const json &cf, const Context &ctx)
 	return true;
 }
 
+
+std::set<Id> CF::get_afterdels(const json &cf, const Context &ctx)
+{
+	if (cf.find("rules")==cf.end()) { return {}; }
+
+	std::set<Id> res;
+	for (auto rule : cf["rules"]) {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="indexed") {
+			for (auto ref : rule["dfs"]) {
+				res.insert(ctx.eval_ref(ref["ref"]));
+			}
+		}
+	}
+	return res;
+}
 
 bool CFFor::is_unroll_at_once(const json &cf)
 {

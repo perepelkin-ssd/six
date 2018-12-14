@@ -1,0 +1,158 @@
+{
+    "main": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": [
+                    "dummy"
+                ]
+            }, 
+            {
+                "body": [
+                    {
+                        "body": [
+                            {
+                                "code": "show", 
+                                "rules": [], 
+                                "args": [
+                                    {
+                                        "type": "sconst", 
+                                        "is_expr": true, 
+                                        "value": "It:"
+                                    }, 
+                                    {
+                                        "type": "+", 
+                                        "is_expr": true, 
+                                        "operands": [
+                                            {
+                                                "type": "*", 
+                                                "is_expr": true, 
+                                                "operands": [
+                                                    {
+                                                        "ref": [
+                                                            "i"
+                                                        ], 
+                                                        "type": "id", 
+                                                        "is_expr": true
+                                                    }, 
+                                                    {
+                                                        "type": "iconst", 
+                                                        "is_expr": true, 
+                                                        "value": 100
+                                                    }
+                                                ]
+                                            }, 
+                                            {
+                                                "ref": [
+                                                    "j"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }
+                                        ]
+                                    }
+                                ], 
+                                "line": 12, 
+                                "type": "exec", 
+                                "id": [
+                                    "a", 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "j"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ]
+                            }
+                        ], 
+                        "start": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 1
+                        }, 
+                        "type": "while", 
+                        "wout": {
+                            "ref": [
+                                "dummy", 
+                                {
+                                    "ref": [
+                                        "i"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }
+                            ], 
+                            "type": "id"
+                        }, 
+                        "cond": {
+                            "type": "<", 
+                            "is_expr": true, 
+                            "operands": [
+                                {
+                                    "ref": [
+                                        "j"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                {
+                                    "ref": [
+                                        "i"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }
+                            ]
+                        }, 
+                        "var": "j", 
+                        "where": {
+                            "type": "luna"
+                        }
+                    }
+                ], 
+                "last": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 5
+                }, 
+                "where": {
+                    "type": "luna"
+                }, 
+                "var": "i", 
+                "type": "for", 
+                "first": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 1
+                }
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "show": {
+        "type": "extern", 
+        "code": "c_show", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "string"
+            }, 
+            {
+                "type": "int"
+            }
+        ]
+    }
+}

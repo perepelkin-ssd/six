@@ -1,10 +1,46 @@
 #include "rts.h"
 
+#include <sstream>
 #include <typeindex>
 
 #include "common.h"
 #include "environ.h"
 #include "logger.h"
+
+namespace {
+	std::string _prefix;
+	std::string _suffix;
+	std::map<int, std::string> _active;
+	int _next_id=0;
+	std::mutex m;
+	bool _echo=false;
+	void _do_echo()
+	{
+		std::ostringstream os;
+		os << "ACTIVE: {";
+		for (auto what : _active) {
+			os << " " << what.second;
+		}
+		os << "}";
+		printf("%s: %s %s\n", _prefix.c_str(), os.str().c_str(),
+			_suffix.c_str());
+	}
+	int _add_job(const std::string &what)
+	{
+		std::lock_guard<std::mutex> lk(m);
+		_active[_next_id]=what;
+		if (_echo) {
+			_do_echo();
+		}
+		return _next_id++;
+	}
+	void _rm_job(int id)
+	{
+		std::lock_guard<std::mutex> lk(m);
+		_active.erase(id);
+		if (_echo) { _do_echo(); }
+	}
+}
 
 extern std::shared_ptr<Logger> L;
 
@@ -51,12 +87,14 @@ struct TaskEnv : public Environ, public BufHandler
 
 	virtual void send(const NodeId &dest, const Buffers &data)
 	{
+		int task_id=_add_job("send to " + std::to_string(dest));
 		rts_.change_workload(1);
 		RTS *prts=&rts_;
 		Buffers bufs=data;
 		bufs.push_front(Buffer::create<TAGS>(TAG_TASK));
-		comm_.send(dest, bufs, [prts]() {
+		comm_.send(dest, bufs, [prts, task_id]() {
 			prts->change_workload(-1);
+			_rm_job(task_id);
 		});
 	}
 
@@ -168,12 +206,14 @@ RTS::~RTS()
 }
 
 RTS::RTS(Comm &comm)
-	: comm_(comm), idle_flag_(false), workload_(0), next_id_(0),
+	: comm_(comm), idle_flag_(false), workload_(0), wl_pusher_(0),
+		wl_requester_(0), next_id_(0),
 		df_pusher_(&pool_,
-			[this](int delta) {change_workload(delta); }),
+			[this](int delta) {change_workload_pusher(delta); }),
 		df_requester_(&pool_,
-			[this](int delta) {change_workload(delta); })
+			[this](int delta) {change_workload_requester(delta); })
 {
+	_prefix=std::to_string(comm_.get_rank());
 	stopper_=new IdleStopper<NodeId>(
 		comm_.get_rank(),
 		[this](const NodeId &id) {
@@ -219,22 +259,26 @@ void RTS::submit(const TaskPtr &task)
 	//	(int)comm_.get_rank(), task->to_string().c_str());
 
 	change_workload(1);
+	int task_id=_add_job(task->to_string());
 
 	std::lock_guard<std::mutex> lk(m_);
 		//(int)comm_.get_rank(), std::type_index(typeid(*task)).name());
 
 	EnvironPtr env(new TaskEnv(*this, comm_, task));
 	dynamic_cast<TaskEnv*>(env.get())->init(env);
-	pool_.submit([env, task, this](){
+	pool_.submit([env, task, this, task_id](){
 		task->run(env);
 
 		change_workload(-1);
+		_rm_job(task_id);
 	});
 }
 
 void RTS::change_workload(int delta)
 {
 	if (!delta) {
+		_suffix=std::to_string(workload_)+" "+std::to_string(wl_pusher_)
+			+ " " + std::to_string(wl_requester_);
 		return;
 	}
 	std::lock_guard<std::mutex> lk(m_);
@@ -249,7 +293,8 @@ void RTS::change_workload(int delta)
 		stopper_->set_idle(true);
 	}
 	workload_=(size_t)new_workload;
-
+	_suffix=std::to_string(workload_)+" "+std::to_string(wl_pusher_)
+		+ " " + std::to_string(wl_requester_);
 }
 
 Id RTS::create_id(const Name &label, const std::vector<int> &idx)
@@ -348,3 +393,22 @@ void RTS::on_message(const NodeId &src, BufferPtr buf)
 	}
 }
 
+void RTS::change_workload_pusher(int delta)
+{
+	{
+		std::lock_guard<std::mutex> lk(m_);
+		assert ((int)wl_pusher_>=-delta);
+		wl_pusher_+=delta;
+	}
+	change_workload(delta);
+}
+
+void RTS::change_workload_requester(int delta)
+{
+	{
+		std::lock_guard<std::mutex> lk(m_);
+		assert ((int)wl_requester_>=-delta);
+		wl_requester_+=delta;
+	}
+	change_workload(delta);
+}

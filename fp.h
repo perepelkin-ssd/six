@@ -14,11 +14,15 @@ struct CF
 		const Context &);
 	static bool is_df_requested(const json &, const Context &,
 		const Id &dfid);
+	static bool is_requested_unlimited(const json &, const Context &,
+		const Id &dfid);
 	static size_t get_requests_count(const json &, const Context &,
 		const Id &dfid);
 	static bool is_ready(const json &fp, const json &cf, const Context &);
 	static bool is_ready_exec(const json &fp, const json &cf,
 		const Context &);
+	static std::set<Id> get_afterdels(const json &cf, const Context &);
+
 };
 
 struct CFFor
