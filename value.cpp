@@ -29,6 +29,12 @@ Value::operator Id() const
 	abort();
 }
 
+size_t Value::size() const
+{
+	fprintf(stderr, "Cannot get size: %s\n", to_string().c_str());
+	abort();
+}
+
 IntValue::IntValue(int val)
 	: value_(val)
 {}
@@ -135,6 +141,124 @@ void NameValue::serialize(Buffers &bufs) const
 std::string NameValue::to_string() const
 {
 	return "name(\""+value_.to_string()+"\")";
+}
+
+CustomValue::~CustomValue()
+{
+	if (!buf_) {
+		return;
+	}
+	std::lock_guard<std::mutex> lk(buf_->m);
+
+	assert(buf_->refs>0);
+	buf_->refs--;
+
+	if (buf_->refs==0) {
+		delete_();
+	}
+}
+
+CustomValue::CustomValue(const Value &val)
+{
+	if (val.type()==Integer) {
+		buf_.reset(new SharedBuffer());
+		std::lock_guard<std::mutex> lk(buf_->m);
+		buf_->data=operator new(sizeof(int));
+		buf_->size=sizeof(int);
+		buf_->refs=1;
+		*static_cast<int*>(buf_->data)=(int)(val);
+	} else if (val.type()==Real) {
+		buf_.reset(new SharedBuffer());
+		std::lock_guard<std::mutex> lk(buf_->m);
+		buf_->data=operator new(sizeof(double));
+		buf_->size=sizeof(double);
+		buf_->refs=1;
+		*static_cast<double*>(buf_->data)=(double)(val);
+	} else if (val.type()==String) {
+		buf_.reset(new SharedBuffer());
+		std::lock_guard<std::mutex> lk(buf_->m);
+		std::string s=(std::string)(val);
+		buf_->data=operator new(s.size()+1);
+		buf_->size=s.size()+1;
+		buf_->refs=1;
+		memcpy(buf_->data, s.c_str(), buf_->size);
+	} else if (val.type()==Custom) {
+		buf_=dynamic_cast<const CustomValue&>(val).buf_;
+		std::lock_guard<std::mutex> lk(buf_->m);
+		buf_->refs++;
+	} else {
+		ABORT("Type not supported: " + std::to_string(val.type()));
+	}
+	delete_=[this](){
+		default_delete();
+	};
+}
+
+CustomValue::CustomValue(BufferPtr &buf)
+{
+	buf_.reset(new SharedBuffer());
+	std::lock_guard<std::mutex> lk(buf_->m);
+	buf_->size=Buffer::pop<size_t>(buf);
+	buf_->data=operator new(buf_->size);
+	buf_->refs=1;
+	memcpy(buf_->data, buf->getData(), buf_->size);
+	buf=Buffer::createSubBuffer(buf, buf_->size);
+	delete_=[this](){default_delete();};
+}
+
+void CustomValue::default_delete()
+{
+	if (!buf_) { return; }
+	std::lock_guard<std::mutex> lk(buf_->m);
+	assert(buf_->refs==0);
+	operator delete(buf_->data);
+	buf_->data=nullptr;
+	buf_->size=0;
+}
+
+void CustomValue::serialize(Buffers &bufs) const
+{
+	if (!buf_) { ABORT("No buffer"); }
+	std::lock_guard<std::mutex> lk(buf_->m);
+	bufs.push_back(Buffer::create(STAG_Value_CustomValue));
+	bufs.push_back(Buffer::create(buf_->size));
+	bufs.push_back(BufferPtr(new Buffer(buf_->data, buf_->size)));
+}
+
+std::pair<void *, size_t> CustomValue::grab_buffer()
+{
+	if (!buf_) { ABORT("No buffer"); }
+	std::lock_guard<std::mutex> lk(buf_->m);
+	assert(buf_->refs>0);
+	buf_->refs--;
+	if (buf_->refs==0) {
+		auto res=std::make_pair(buf_->data, buf_->size);
+		buf_.reset();
+		return res;
+	} else {
+		// need to make a copy
+		void *data=operator new(buf_->size);
+		memcpy(data, buf_->data, buf_->size);
+		return std::make_pair(data, buf_->size);
+	}
+}
+
+CustomValue *CustomValue::create_take(void *data, size_t size,
+	std::function<void()> deleter)
+{
+	auto *res=new CustomValue();
+	res->buf_.reset(new SharedBuffer());
+	std::lock_guard<std::mutex> lk(res->buf_->m);
+	res->buf_->size=size;
+	res->buf_->data=operator new(res->buf_->size);
+	res->buf_->refs=1;
+	memcpy(res->buf_->data, data, res->buf_->size);
+	if (!deleter) {
+		res->delete_=[res](){ res->default_delete(); };
+	} else {
+		res->delete_=deleter;
+	}
+	return res;
 }
 
 JsonValue::JsonValue(const json &value)

@@ -332,23 +332,45 @@ void JfpExec::spawn_body(const EnvironPtr &env, const json &body,
 
 void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 {
-	std::vector<ValuePtr> args;
+	std::vector<CodeLib::Argument> args;
 	auto ext=fp()[code];
 	for (auto i=0u; i<ext["args"].size(); i++) {
-		bool is_input=fp()[code]["args"][i]["type"]!="name";
-		if (is_input) {
-			args.push_back(ctx_.eval(j_["args"][i]));
+		auto param=fp()[code]["args"][i];
+		auto arg=j_["args"][i];
+		if (param["type"]=="name") {
+			args.push_back(std::make_tuple(
+				Reference,
+				ValuePtr(nullptr),
+				ctx_.eval_ref(arg["ref"])
+			));
+		} else if (param["type"]=="value") {
+			args.push_back(std::make_tuple(
+				Custom,
+				ctx_.cast("value", ctx_.eval(arg)),
+				ctx_.eval_ref(arg["ref"])
+			));
 		} else {
-			args.push_back(ValuePtr(nullptr));
+			auto val=ctx_.cast(param["type"], ctx_.eval(arg));
+			args.push_back(std::make_tuple(
+				val->type(),
+				val, Id()));
 		}
 	}
 	// Algorithm: eval args & call sub; return args save as dfs.
 	env->exec_extern(ext["code"].get<std::string>(), args);
+
 	for (auto i=0u; i<ext["args"].size(); i++) {
-		bool is_input=fp()[code]["args"][i]["type"]!="name";
-		if (!is_input) {
-			if (args[i]) {
-				df_computed(env, j_["args"][i]["ref"], args[i]);
+		auto param=fp()[code]["args"][i];
+		auto arg=j_["args"][i];
+		if (param["type"]=="value") {
+			// check if grabbed:
+			if (!std::get<1>(args[i])) {
+				ABORT("Input was grabbed, gotta do something here: "
+					+ std::get<2>(args[i]).to_string());
+			}
+		} else if (param["type"]=="name") {
+			if (std::get<1>(args[i])) {
+				df_computed(env, arg["ref"], std::get<1>(args[i]));
 			} else {
 				fprintf(stderr, "extern %s: output parameter %d not set\n",
 					code.c_str(), (int)i);

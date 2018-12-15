@@ -11,6 +11,7 @@
 #include "logger.h"
 #include "mpi_comm.h"
 #include "rts.h"
+#include "so_lib.h"
 #include "stags.h"
 #include "task.h"
 #include "tasks.h"
@@ -39,20 +40,22 @@ int main(int argc, char **argv)
 	assert(desired==provided);
 	test_all();
 
-	if (argc<2 || argc>3) {
-		note("Usage: %s <path/to/json> [main_arg]\n");
+	if (argc<3 || argc>4) {
+		note("Usage: %s <path/to/json> <path/to/so> [main_arg]\n");
 	} else {
 		MpiComm comm(MPI_COMM_WORLD);
 
 		rank=comm.get_rank();
 
-		RTS *rts=new RTS(comm);
+		SoLib solib(argv[2]);
+
+		RTS *rts=new RTS(comm, solib);
 		init_stags(rts->factory());
 		comm.barrier();
 
 		if (comm.get_rank()==0) {
 			std::string path(argv[1]);
-			printf("executing path: %s\n", path.c_str());
+			//printf("executing path: %s\n", path.c_str());
 
 			std::ifstream f(path);
 			std::stringstream ss;
@@ -60,8 +63,8 @@ int main(int argc, char **argv)
 			std::string j=ss.str();
 
 			std::string main_arg="";
-			if (argc==3) {
-				main_arg=argv[2];
+			if (argc==4) {
+				main_arg=argv[3];
 			}
 
 			rts->submit(TaskPtr(new ExecJsonFp(j, rts->factory(),
@@ -106,6 +109,7 @@ void init_stags(Factory &fact)
 	BUF(STAG_Value_NameValue, NameValue)
 	BUF(STAG_Value_RealValue, RealValue)
 	BUF(STAG_Value_StringValue, StringValue)
+	BUF(STAG_Value_CustomValue, CustomValue)
 
 	for (int t=0; t<(int)_STAG_END; t++)
 	{
@@ -128,20 +132,20 @@ void test_mpi_factory();
 void test_all()
 {
 #ifndef NDEBUG
-	note("ThreadPool: ...");
+//	note("ThreadPool: ...");
 	for (int i=0; i<2; i++) 
 		thread_pool_test();
-	note("OK\n");
-	note("IdleStopper: ...");
+//	note("OK\n");
+//	note("IdleStopper: ...");
 	idle_stopper_test();
-	note("OK\n");
-	note("MpiComm: ...");
+//	note("OK\n");
+//	note("MpiComm: ...");
 	for (int i=0; i<2; i++) {
 		mpi_comm_test();
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
-	note("OK\n");
-	note("All tests passed.\n");
+//	note("OK\n");
+//	note("All tests passed.\n");
 #endif // NDEBUG
 }
 

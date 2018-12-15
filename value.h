@@ -2,6 +2,7 @@
 #define VALUE_H_
 
 #include <memory>
+#include <mutex>
 
 #include "id.h"
 #include "json.h"
@@ -14,8 +15,12 @@ enum ValueType
 	Real,
 	String,
 	Reference,
+	Custom,
 	Other
 };
+
+class Value;
+typedef std::shared_ptr<Value> ValuePtr;
 
 // DF value abstraction
 class Value : public Serializable, public Printable
@@ -29,9 +34,10 @@ public:
 	virtual operator Id() const;
 
 	virtual ValueType type() const=0;
+
+	virtual size_t size() const;
 };
 
-typedef std::shared_ptr<Value> ValuePtr;
 
 class IntValue : public Value
 {
@@ -54,6 +60,8 @@ public:
 	virtual operator std::string() const { return std::to_string(value_); }
 
 	virtual ValueType type() const { return Integer; }
+
+	virtual size_t size() const { return sizeof(value_); }
 private:
 	int value_;
 };
@@ -79,6 +87,8 @@ public:
 	virtual operator std::string() const { return std::to_string(value_); }
 
 	virtual ValueType type() const { return Real; }
+
+	virtual size_t size() const { return sizeof(value_); }
 private:
 	double value_;
 };
@@ -127,6 +137,42 @@ public:
 	virtual ValueType type() const { return Reference; }
 private:
 	Id value_;
+};
+
+class CustomValue : public Value
+{
+	void operator=(const CustomValue &);
+	CustomValue(){}
+public:
+	virtual ~CustomValue();
+
+	CustomValue(const Value &);
+	CustomValue(BufferPtr &);
+
+	virtual void serialize(Buffers &) const;
+	virtual ValueType type() const { return Custom; }
+
+	std::pair<void *, size_t> grab_buffer(); // will make copy
+		// if this is not the only reference
+
+	static CustomValue *create_copy(const void *, size_t);
+	static CustomValue *create_take(void *, size_t,
+		std::function<void()> delete_func=nullptr);
+private:
+	struct SharedBuffer
+	{
+		void *data;
+		size_t size;
+		size_t refs;
+		std::mutex m;
+	};
+
+	typedef std::shared_ptr<SharedBuffer> SharedBufferPtr;
+	BufferPtr buf_holder_; // TODO: optimize BufferPtr usage
+
+	SharedBufferPtr buf_;
+	std::function<void()> delete_;
+	void default_delete();
 };
 
 class JsonValue : public Value

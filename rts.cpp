@@ -48,6 +48,7 @@ struct TaskEnv : public Environ, public BufHandler
 {
 	RTS &rts_;
 	Comm &comm_;
+	CodeLib &clib_;
 	TaskPtr task_;
 	EnvironPtr self_;
 	std::weak_ptr<Environ> weak_self_;
@@ -71,8 +72,8 @@ struct TaskEnv : public Environ, public BufHandler
 
 	virtual ~TaskEnv() {}
 
-	TaskEnv(RTS &rts, Comm &comm, const TaskPtr &task)
-		: rts_(rts), comm_(comm), task_(task), self_(nullptr),
+	TaskEnv(RTS &rts, Comm &comm, CodeLib &clib, const TaskPtr &task)
+		: rts_(rts), comm_(comm), clib_(clib), task_(task), self_(nullptr),
 			monitor_handler_(nullptr)
 	{}
 
@@ -151,43 +152,27 @@ struct TaskEnv : public Environ, public BufHandler
 	}
 
 	virtual void exec_extern(const Name &code,
-		std::vector<ValuePtr> &args)
+		std::vector<CodeLib::Argument> &args)
 	{
-		printf("EXTERN %s:", code.c_str());
+		/*
+		bool need_comma=true;
+		printf("EXTERN %s(", code.c_str());
 		for (auto arg : args) {
-			if (arg) {
-				printf(" %s", arg->to_string().c_str());
+			if (need_comma) {
+				printf(", ");
+			} else { need_comma=true; }
+			if (std::get<0>(arg)==Reference) {
+				printf(" %s", std::get<2>(arg).to_string().c_str());
 			} else {
-				printf(" (out)");
+				if (std::get<0>(arg)==Custom) {
+					printf("%s=", std::get<2>(arg).to_string().c_str());
+				}
+				printf("%s", std::get<1>(arg)->to_string().c_str());
 			}
 		}
-		printf("\n");
-		if (code=="c_helloworld") {
-			printf("Hello, six!\n");
-		} else if (code=="c_init") {
-			printf("c_init\n");
-			args[1]=ValuePtr(new IntValue((int)(*args[0])));
-		} else if (code=="c_iprint") {
-			printf("c_iprint: %d\n", (int)(*args[0]));
-		} else if (code=="c_rprint") {
-			printf("c_rprint: %lf\n", (double)(*args[0]));
-		} else if (code=="c_print") {
-			printf("c_print: %s\n", args[0]->to_string().c_str());
-		} else if (code=="c_show") {
-			printf("c_show: %s %d\n", ((std::string)(*args[0])).c_str(),
-				(int)(*args[1]));
-		} else if (code=="c_hello") {
-			std::string name=*args[0];
-			if (name.size()>0) {
-				printf("c_Hello, %s\n", name.c_str());
-			} else {
-				printf("c_Hello!\n");
-			}
-		} else {
-			fprintf(stderr, "extern code not supported: %s\n",
-				code.c_str());
-			NIMPL
-		}
+		printf(")\n");
+		*/
+		clib_.execute(code, args);
 	}
 
 	virtual ValuePtr get(const Id &key) const
@@ -205,9 +190,9 @@ RTS::~RTS()
 	delete stopper_;
 }
 
-RTS::RTS(Comm &comm)
-	: comm_(comm), idle_flag_(false), workload_(0), wl_pusher_(0),
-		wl_requester_(0), next_id_(0),
+RTS::RTS(Comm &comm, CodeLib &clib)
+	: comm_(comm), clib_(clib), idle_flag_(false), workload_(0),
+		wl_pusher_(0), wl_requester_(0), next_id_(0),
 		df_pusher_(&pool_,
 			[this](int delta) {change_workload_pusher(delta); }),
 		df_requester_(&pool_,
@@ -264,7 +249,7 @@ void RTS::submit(const TaskPtr &task)
 	std::lock_guard<std::mutex> lk(m_);
 		//(int)comm_.get_rank(), std::type_index(typeid(*task)).name());
 
-	EnvironPtr env(new TaskEnv(*this, comm_, task));
+	EnvironPtr env(new TaskEnv(*this, comm_, clib_, task));
 	dynamic_cast<TaskEnv*>(env.get())->init(env);
 	pool_.submit([env, task, this, task_id](){
 		task->run(env);

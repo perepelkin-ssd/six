@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "buf_handler.h"
+#include "code_lib.h"
 #include "comm.h"
 #include "df_pusher.h"
 #include "df_requester.h"
@@ -52,8 +53,8 @@ public:
 	virtual RPtr start_monitor(std::function<void(BufferPtr &)>)=0;
 	virtual void stop_monitor()=0;
 
-	virtual void exec_extern(const Name &code,
-		std::vector<ValuePtr> &args)=0;
+	virtual void exec_extern(const std::string &code,
+		std::vector<CodeLib::Argument> &args)=0;
 };
 
 typedef std::shared_ptr<Environ> EnvironPtr;

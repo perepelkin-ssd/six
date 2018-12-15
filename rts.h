@@ -5,6 +5,7 @@
 #include <map>
 #include <mutex>
 
+#include "code_lib.h"
 #include "comm.h"
 #include "df_pusher.h"
 #include "df_requester.h"
@@ -25,7 +26,7 @@ class RTS
 {
 public:
 	~RTS();
-	RTS(Comm &);
+	RTS(Comm &, CodeLib &);
 
 	// Root node is the first node to wait (the node, which initializes
 	// idleness check via idle_stopper). Make sure wait_all is called
@@ -55,6 +56,7 @@ private:
 	mutable std::mutex m_;
 	std::condition_variable cv_;
 	Comm &comm_;
+	CodeLib &clib_;
 	IdleStopper<NodeId> *stopper_;
 	bool idle_flag_;
 	Factory factory_;

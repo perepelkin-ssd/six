@@ -17,5 +17,6 @@ enum STAGS {
 	STAG_Value_NameValue,
 	STAG_Value_RealValue,
 	STAG_Value_StringValue,
+	STAG_Value_CustomValue,
 	_STAG_END
 };

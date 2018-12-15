@@ -504,6 +504,10 @@ ValuePtr Context::cast(const std::string &type, const ValuePtr &val)
 		return ValuePtr(new StringValue((std::string)(*val)));
 	} else if (type=="name") {
 		return ValuePtr(new NameValue((Id)(*val)));
+	} else if (type=="value") {
+		return ValuePtr(new CustomValue(*val));
+	} else if (type=="real") {
+		return ValuePtr(new RealValue(*val));
 	} else {
 		fprintf(stderr, "Context::cast: casting (%s)%s\n",
 			type.c_str(), val->to_string().c_str());
