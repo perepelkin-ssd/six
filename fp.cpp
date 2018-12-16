@@ -8,12 +8,37 @@ std::set<Id> CF::get_requested_dfs(const json &cf, const Context &ctx)
 
 	if (cf.find("rules")==cf.end()) { return {}; }
 
-	for (auto rule : cf["rules"]) {
-		assert(rule["type"]=="rule");
-		if (rule["ruletype"]=="enum" && rule["property"]=="request") {
-			for (auto ref : rule["items"]) {
-				if (ctx.can_eval_ref(ref)) {
-					res.insert(ctx.eval_ref(ref));
+	if (cf["type"]=="while") {
+		if (ctx.can_eval(cf["start"])) {
+			Context ctx1=ctx;
+			ctx1.set_param(cf["var"], ctx.eval(cf["start"]), true);
+			for (auto rule : cf["rules"]) {
+				assert(rule["type"]=="rule");
+				if (rule["ruletype"]=="enum" && rule["property"]
+						=="request") {
+					for (auto ref : rule["items"]) {
+						if (ctx1.can_eval_ref(ref)) {
+							res.insert(ctx1.eval_ref(ref));
+						}
+					}
+				}
+			}
+		} else {
+			ABORT("Not supported: start expr in value is not evaluatable yet");
+		}
+		// Algorithm:
+		// If it is while, then try to obtain everything, but be ready,
+		// that while variable may be not yet computable
+		// In this case reques everything possible, then compute initial
+		// parameter, and add it to context to evaluate new requested dfs
+	} else {
+		for (auto rule : cf["rules"]) {
+			assert(rule["type"]=="rule");
+			if (rule["ruletype"]=="enum" && rule["property"]=="request") {
+				for (auto ref : rule["items"]) {
+					if (ctx.can_eval_ref(ref)) {
+						res.insert(ctx.eval_ref(ref));
+					}
 				}
 			}
 		}

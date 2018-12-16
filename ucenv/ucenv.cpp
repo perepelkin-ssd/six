@@ -91,6 +91,19 @@ void DF::setValue(const std::string &val) {
 	size_=val.size()+1;
 }
 
+void *DF::create(size_t size)
+{
+	if (type_!=Unset) {
+		fprintf(stderr, "DF::create: already created: %s\n",
+			getCName());
+		abort();
+	}
+	type_=Value;
+	data_=operator new(size);
+	size_=size;
+	return data_;
+}
+
 void DF::grabBuffer(const DF &idf)
 {
 	if (type_!=Unset) {
@@ -106,6 +119,25 @@ void DF::grabBuffer(const DF &idf)
 
 	type_=Value;
 	std::tie(data_, size_)=idf.grabBuffer();
+}
+
+void DF::copy(const DF &idf)
+{
+	if (type_!=Unset) {
+		fprintf(stderr, "DF::copy: DF is already set\n");
+		abort();
+	}
+
+	if (idf.type_!=Value) {
+		fprintf(stderr, "DF::copy: Can only copy from "
+			"Value DFs\n");
+		abort();
+	}
+
+	type_=Value;
+	data_=operator new(idf.getSize());
+	size_=idf.getSize();
+	memcpy(data_, idf.getData(), size_);
 }
 
 int DF::getInt() const
@@ -148,6 +180,24 @@ std::string DF::getString() const
 
 	assert(data_);
 	return std::string(static_cast<const char*>(data_));
+}
+
+const void *DF::getData() const
+{
+	if (type_!=Value) {
+		throw std::runtime_error("Not a value");
+	}
+
+	return static_cast<const void*>(data_);
+}
+
+void *DF::getData()
+{
+	if (type_!=Value) {
+		throw std::runtime_error("Not a value");
+	}
+
+	return static_cast<void*>(data_);
 }
 
 std::tuple<void *, size_t> DF::grabBuffer() const

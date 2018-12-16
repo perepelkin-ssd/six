@@ -250,7 +250,9 @@ bool Context::_can_eval(const json &expr) const
 			|| expr["type"]=="-"
 			|| expr["type"]=="*"
 			|| expr["type"]=="<"
+			|| expr["type"]==">"
 			|| expr["type"]=="=="
+			|| expr["type"]=="&&"
 			|| expr["type"]=="%"
 			) {
 		for (auto op : expr["operands"]) {
@@ -314,7 +316,9 @@ ValuePtr Context::_eval(const json &expr) const
 			|| expr["type"]=="-"
 			|| expr["type"]=="*"
 			|| expr["type"]=="<"
+			|| expr["type"]==">"
 			|| expr["type"]=="=="
+			|| expr["type"]=="&&"
 			|| expr["type"]=="%"
 			) {
 		return _eval_op(expr["type"], expr["operands"]);
@@ -345,6 +349,7 @@ ValuePtr Context::_eval_op(const std::string &op, const json &ops) const
 		else if (op=="%") { res=(int)(*op0)%(int)(*op1); }
 		else if (op=="<") { res=((int)(*op0)<(int)(*op1)? 1: 0); }
 		else if (op=="==") { res=((int)(*op0)==(int)(*op1)? 1: 0); }
+		else if (op=="&&") { res=((int)(*op0)&&(int)(*op1)? 1: 0); }
 		else { 
 			ABORT("Can't eval: " + op0->to_string() + op 
 			+ op1->to_string());
@@ -359,6 +364,8 @@ ValuePtr Context::_eval_op(const std::string &op, const json &ops) const
 		else if (op=="*") { res=(double)(*op0)*(double)(*op1); }
 		else if (op=="<") { return ValuePtr(new IntValue(
 			(double)(*op0)<(double)(*op1)? 1: 0)); }
+		else if (op==">") { return ValuePtr(new IntValue(
+			(double)(*op0)>(double)(*op1)? 1: 0)); }
 		else if (op=="==") { return ValuePtr(new IntValue(
 			(double)(*op0)==(double)(*op1)? 1: 0)); }
 		else { fprintf(stderr, "OP NIMPL: %s\n", op.c_str()); NIMPL }

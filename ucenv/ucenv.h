@@ -27,18 +27,48 @@ public:
 	// create bound to an existing buffer
 	DF(const std::string &name, void *data, size_t size);
 
+	std::string getName() const { return name_; }
 	const char *getCName() const;
 	size_t getSize() const;
 
 	void setValue(int);
 	void setValue(double);
 	void setValue(const std::string &);
-	//void *createValue(size_t size);
+
+	template<class T>
+	void setValue(const T& val)
+	{
+		if (type_!=Unset) {
+			throw std::runtime_error("DF already set: "
+				+ std::string(getCName()));
+		}
+		if (std::is_same<T, int>::value
+			|| std::is_same<T, double>::value
+			|| std::is_same<T, std::string>::value
+		) {
+			setValue(val);
+		} else {
+			throw std::runtime_error("Unsupported type in setValue");
+		}
+	}
+
+	void *create(size_t size);
+	
+	template<class T>
+	T *create(size_t size)
+	{
+		return static_cast<T *>(create(size*sizeof(T)));
+	}
+
 	void grabBuffer(const DF &input_df);
+	void copy(const DF &);
 
 	int getInt() const;
 	double getReal() const;
 	std::string getString() const;
+
+	const void *getData() const;
+	void *getData();
 
 	template<class T>
 	const T *getData() const
@@ -48,6 +78,16 @@ public:
 		}
 
 		return static_cast<const T*>(data_);
+	}
+
+	template<class T>
+	T *getData()
+	{
+		if (type_!=Value) {
+			throw std::runtime_error("Not a value");
+		}
+
+		return static_cast<T*>(data_);
 	}
 
 	template<class T>

@@ -1,0 +1,2411 @@
+{
+    "change_border": {
+        "type": "extern", 
+        "code": "c_change_border", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "ps": {
+        "type": "extern", 
+        "code": "c_ps", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "set_int": {
+        "type": "extern", 
+        "code": "c_set_int", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "find_maxdiff": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": [
+                    "mxc"
+                ]
+            }, 
+            {
+                "body": [
+                    {
+                        "type": "dfs", 
+                        "names": []
+                    }, 
+                    {
+                        "code": "calc_maxdiff", 
+                        "rules": [
+                            {
+                                "items": [
+                                    [
+                                        "dim"
+                                    ], 
+                                    [
+                                        "sft"
+                                    ], 
+                                    [
+                                        "FF", 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "request", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "mxc", 
+                                        {
+                                            "type": "iconst", 
+                                            "is_expr": true, 
+                                            "value": 0
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "req_unlimited", 
+                                "type": "rule"
+                            }
+                        ], 
+                        "args": [
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "dim"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "sft"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "FF", 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "mxc", 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 0
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "type": "%", 
+                                "is_expr": true, 
+                                "operands": [
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 2
+                                    }
+                                ]
+                            }
+                        ], 
+                        "line": 61, 
+                        "type": "exec", 
+                        "id": [
+                            "maxdiff", 
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ]
+                    }
+                ], 
+                "last": {
+                    "type": "-", 
+                    "is_expr": true, 
+                    "operands": [
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 32
+                        }, 
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 1
+                        }
+                    ]
+                }, 
+                "rules": [
+                    {
+                        "flags": [
+                            "unroll_at_once"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }
+                ], 
+                "where": {
+                    "type": "luna"
+                }, 
+                "var": "i", 
+                "type": "for", 
+                "first": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }
+            }, 
+            {
+                "code": "calc_max", 
+                "rules": [], 
+                "args": [
+                    {
+                        "type": "-", 
+                        "is_expr": true, 
+                        "operands": [
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 32
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 1
+                            }
+                        ]
+                    }, 
+                    {
+                        "ref": [
+                            "mxc"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "mxd"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 65, 
+                "type": "exec", 
+                "id": [
+                    "_l65"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [
+            {
+                "type": "int", 
+                "id": "it"
+            }, 
+            {
+                "type": "name", 
+                "id": "dim"
+            }, 
+            {
+                "type": "name", 
+                "id": "sft"
+            }, 
+            {
+                "type": "name", 
+                "id": "FF"
+            }, 
+            {
+                "type": "name", 
+                "id": "mxd"
+            }
+        ], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "calc_maxdiff": {
+        "type": "extern", 
+        "code": "c_calc_maxdiff", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "print_int": {
+        "type": "extern", 
+        "code": "c_print_int", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "puasson": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": [
+                    "FF", 
+                    "down", 
+                    "up", 
+                    "mx"
+                ]
+            }, 
+            {
+                "body": [
+                    {
+                        "type": "dfs", 
+                        "names": []
+                    }, 
+                    {
+                        "code": "ps", 
+                        "rules": [
+                            {
+                                "ruletype": "indexed", 
+                                "type": "rule", 
+                                "dfs": [
+                                    {
+                                        "ref": [
+                                            "F", 
+                                            {
+                                                "ref": [
+                                                    "it"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }, 
+                                            {
+                                                "ref": [
+                                                    "i"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ]
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "sft"
+                                    ], 
+                                    [
+                                        "dim"
+                                    ], 
+                                    [
+                                        "F", 
+                                        {
+                                            "ref": [
+                                                "it"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "request", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "FF", 
+                                        {
+                                            "ref": [
+                                                "it"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ], 
+                                    [
+                                        "down", 
+                                        {
+                                            "ref": [
+                                                "it"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "type": "%", 
+                                            "is_expr": true, 
+                                            "operands": [
+                                                {
+                                                    "type": "+", 
+                                                    "is_expr": true, 
+                                                    "operands": [
+                                                        {
+                                                            "type": "-", 
+                                                            "is_expr": true, 
+                                                            "operands": [
+                                                                {
+                                                                    "ref": [
+                                                                        "i"
+                                                                    ], 
+                                                                    "type": "id", 
+                                                                    "is_expr": true
+                                                                }, 
+                                                                {
+                                                                    "type": "iconst", 
+                                                                    "is_expr": true, 
+                                                                    "value": 1
+                                                                }
+                                                            ]
+                                                        }, 
+                                                        {
+                                                            "type": "iconst", 
+                                                            "is_expr": true, 
+                                                            "value": 32
+                                                        }
+                                                    ]
+                                                }, 
+                                                {
+                                                    "type": "iconst", 
+                                                    "is_expr": true, 
+                                                    "value": 32
+                                                }
+                                            ]
+                                        }
+                                    ], 
+                                    [
+                                        "up", 
+                                        {
+                                            "ref": [
+                                                "it"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "type": "%", 
+                                            "is_expr": true, 
+                                            "operands": [
+                                                {
+                                                    "type": "+", 
+                                                    "is_expr": true, 
+                                                    "operands": [
+                                                        {
+                                                            "ref": [
+                                                                "i"
+                                                            ], 
+                                                            "type": "id", 
+                                                            "is_expr": true
+                                                        }, 
+                                                        {
+                                                            "type": "iconst", 
+                                                            "is_expr": true, 
+                                                            "value": 1
+                                                        }
+                                                    ]
+                                                }, 
+                                                {
+                                                    "type": "iconst", 
+                                                    "is_expr": true, 
+                                                    "value": 32
+                                                }
+                                            ]
+                                        }
+                                    ], 
+                                    [
+                                        "mx", 
+                                        {
+                                            "ref": [
+                                                "it"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "type": "iconst", 
+                                            "is_expr": true, 
+                                            "value": 0
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "req_unlimited", 
+                                "type": "rule"
+                            }
+                        ], 
+                        "args": [
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "sft"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "dim"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "F", 
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "FF", 
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "down", 
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "type": "%", 
+                                        "is_expr": true, 
+                                        "operands": [
+                                            {
+                                                "type": "+", 
+                                                "is_expr": true, 
+                                                "operands": [
+                                                    {
+                                                        "type": "-", 
+                                                        "is_expr": true, 
+                                                        "operands": [
+                                                            {
+                                                                "ref": [
+                                                                    "i"
+                                                                ], 
+                                                                "type": "id", 
+                                                                "is_expr": true
+                                                            }, 
+                                                            {
+                                                                "type": "iconst", 
+                                                                "is_expr": true, 
+                                                                "value": 1
+                                                            }
+                                                        ]
+                                                    }, 
+                                                    {
+                                                        "type": "iconst", 
+                                                        "is_expr": true, 
+                                                        "value": 32
+                                                    }
+                                                ]
+                                            }, 
+                                            {
+                                                "type": "iconst", 
+                                                "is_expr": true, 
+                                                "value": 32
+                                            }
+                                        ]
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "up", 
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "type": "%", 
+                                        "is_expr": true, 
+                                        "operands": [
+                                            {
+                                                "type": "+", 
+                                                "is_expr": true, 
+                                                "operands": [
+                                                    {
+                                                        "ref": [
+                                                            "i"
+                                                        ], 
+                                                        "type": "id", 
+                                                        "is_expr": true
+                                                    }, 
+                                                    {
+                                                        "type": "iconst", 
+                                                        "is_expr": true, 
+                                                        "value": 1
+                                                    }
+                                                ]
+                                            }, 
+                                            {
+                                                "type": "iconst", 
+                                                "is_expr": true, 
+                                                "value": 32
+                                            }
+                                        ]
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "mx", 
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 0
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "it"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "line": 82, 
+                        "type": "exec", 
+                        "id": [
+                            "ps", 
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ]
+                    }
+                ], 
+                "last": {
+                    "type": "-", 
+                    "is_expr": true, 
+                    "operands": [
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 32
+                        }, 
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 1
+                        }
+                    ]
+                }, 
+                "rules": [
+                    {
+                        "flags": [
+                            "unroll_at_once"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }
+                ], 
+                "where": {
+                    "type": "luna"
+                }, 
+                "var": "i", 
+                "type": "for", 
+                "first": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }
+            }, 
+            {
+                "body": [
+                    {
+                        "type": "dfs", 
+                        "names": []
+                    }, 
+                    {
+                        "code": "change_border", 
+                        "rules": [
+                            {
+                                "ruletype": "indexed", 
+                                "type": "rule", 
+                                "dfs": [
+                                    {
+                                        "ref": [
+                                            "FF", 
+                                            {
+                                                "ref": [
+                                                    "it"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }, 
+                                            {
+                                                "ref": [
+                                                    "i"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ]
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "dim"
+                                    ], 
+                                    [
+                                        "up", 
+                                        {
+                                            "ref": [
+                                                "it"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ], 
+                                    [
+                                        "down", 
+                                        {
+                                            "ref": [
+                                                "it"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ], 
+                                    [
+                                        "FF", 
+                                        {
+                                            "ref": [
+                                                "it"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "request", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "F", 
+                                        {
+                                            "type": "+", 
+                                            "is_expr": true, 
+                                            "operands": [
+                                                {
+                                                    "ref": [
+                                                        "it"
+                                                    ], 
+                                                    "type": "id", 
+                                                    "is_expr": true
+                                                }, 
+                                                {
+                                                    "type": "iconst", 
+                                                    "is_expr": true, 
+                                                    "value": 1
+                                                }
+                                            ]
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "req_unlimited", 
+                                "type": "rule"
+                            }
+                        ], 
+                        "args": [
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "dim"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "up", 
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "down", 
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "FF", 
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "F", 
+                                    {
+                                        "type": "+", 
+                                        "is_expr": true, 
+                                        "operands": [
+                                            {
+                                                "ref": [
+                                                    "it"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }, 
+                                            {
+                                                "type": "iconst", 
+                                                "is_expr": true, 
+                                                "value": 1
+                                            }
+                                        ]
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "type": "%", 
+                                "is_expr": true, 
+                                "operands": [
+                                    {
+                                        "type": "+", 
+                                        "is_expr": true, 
+                                        "operands": [
+                                            {
+                                                "ref": [
+                                                    "it"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }, 
+                                            {
+                                                "type": "iconst", 
+                                                "is_expr": true, 
+                                                "value": 1
+                                            }
+                                        ]
+                                    }, 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 2
+                                    }
+                                ]
+                            }
+                        ], 
+                        "line": 93, 
+                        "type": "exec", 
+                        "id": [
+                            "border", 
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ]
+                    }
+                ], 
+                "last": {
+                    "type": "-", 
+                    "is_expr": true, 
+                    "operands": [
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 32
+                        }, 
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 1
+                        }
+                    ]
+                }, 
+                "rules": [
+                    {
+                        "flags": [
+                            "unroll_at_once"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }
+                ], 
+                "where": {
+                    "type": "luna"
+                }, 
+                "var": "i", 
+                "type": "for", 
+                "first": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }
+            }, 
+            {
+                "code": "calc_max", 
+                "rules": [], 
+                "args": [
+                    {
+                        "type": "-", 
+                        "is_expr": true, 
+                        "operands": [
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 32
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 1
+                            }
+                        ]
+                    }, 
+                    {
+                        "ref": [
+                            "mx", 
+                            {
+                                "ref": [
+                                    "it"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "maxdif", 
+                            {
+                                "type": "+", 
+                                "is_expr": true, 
+                                "operands": [
+                                    {
+                                        "ref": [
+                                            "it"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 1
+                                    }
+                                ]
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 98, 
+                "type": "exec", 
+                "id": [
+                    "_l98"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [
+            {
+                "type": "int", 
+                "id": "it"
+            }, 
+            {
+                "type": "name", 
+                "id": "sft"
+            }, 
+            {
+                "type": "name", 
+                "id": "dim"
+            }, 
+            {
+                "type": "name", 
+                "id": "F"
+            }, 
+            {
+                "type": "name", 
+                "id": "maxdif"
+            }
+        ], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "rmax": {
+        "type": "extern", 
+        "code": "c_rmax", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "real"
+            }, 
+            {
+                "type": "real"
+            }, 
+            {
+                "type": "name"
+            }
+        ]
+    }, 
+    "set_real": {
+        "type": "extern", 
+        "code": "c_set_real", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "real"
+            }
+        ]
+    }, 
+    "calc_max": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": []
+            }, 
+            {
+                "code": "set_real", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "mx", 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }, 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "items": [
+                            [
+                                "mx", 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 1
+                                }, 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "req_unlimited", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "mx", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 1
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 0
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "mx", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 0
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 0
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 36, 
+                "type": "exec", 
+                "id": [
+                    "_l33"
+                ]
+            }, 
+            {
+                "body": [
+                    {
+                        "type": "dfs", 
+                        "names": []
+                    }, 
+                    {
+                        "code": "rmax", 
+                        "rules": [
+                            {
+                                "items": [
+                                    [
+                                        "mx", 
+                                        {
+                                            "type": "iconst", 
+                                            "is_expr": true, 
+                                            "value": 0
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ], 
+                                    [
+                                        "mx", 
+                                        {
+                                            "type": "iconst", 
+                                            "is_expr": true, 
+                                            "value": 1
+                                        }, 
+                                        {
+                                            "type": "-", 
+                                            "is_expr": true, 
+                                            "operands": [
+                                                {
+                                                    "ref": [
+                                                        "i"
+                                                    ], 
+                                                    "type": "id", 
+                                                    "is_expr": true
+                                                }, 
+                                                {
+                                                    "type": "iconst", 
+                                                    "is_expr": true, 
+                                                    "value": 1
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "request", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "mx", 
+                                        {
+                                            "type": "iconst", 
+                                            "is_expr": true, 
+                                            "value": 1
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "req_unlimited", 
+                                "type": "rule"
+                            }
+                        ], 
+                        "args": [
+                            {
+                                "ref": [
+                                    "mx", 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 0
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "mx", 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 1
+                                    }, 
+                                    {
+                                        "type": "-", 
+                                        "is_expr": true, 
+                                        "operands": [
+                                            {
+                                                "ref": [
+                                                    "i"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }, 
+                                            {
+                                                "type": "iconst", 
+                                                "is_expr": true, 
+                                                "value": 1
+                                            }
+                                        ]
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "mx", 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 1
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "line": 42, 
+                        "type": "exec", 
+                        "id": [
+                            "rmax", 
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ]
+                    }
+                ], 
+                "last": {
+                    "ref": [
+                        "count"
+                    ], 
+                    "type": "id", 
+                    "is_expr": true
+                }, 
+                "rules": [
+                    {
+                        "flags": [
+                            "unroll_at_once"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }
+                ], 
+                "where": {
+                    "type": "luna"
+                }, 
+                "var": "i", 
+                "type": "for", 
+                "first": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 1
+                }
+            }, 
+            {
+                "code": "set_real", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "mx", 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 1
+                                }, 
+                                {
+                                    "ref": [
+                                        "count"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "items": [
+                            [
+                                "maxdif"
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "req_unlimited", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "maxdif"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "mx", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 1
+                            }, 
+                            {
+                                "ref": [
+                                    "count"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 49, 
+                "type": "exec", 
+                "id": [
+                    "_l46"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [
+            {
+                "type": "int", 
+                "id": "count"
+            }, 
+            {
+                "type": "name", 
+                "id": "mx"
+            }, 
+            {
+                "type": "name", 
+                "id": "maxdif"
+            }
+        ], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "init_dist": {
+        "type": "extern", 
+        "code": "c_init_distribution", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "name"
+            }, 
+            {
+                "type": "name"
+            }
+        ]
+    }, 
+    "print_info": {
+        "type": "extern", 
+        "code": "c_print_info", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }
+        ]
+    }, 
+    "init_F": {
+        "type": "extern", 
+        "code": "c_init_F", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "name"
+            }
+        ]
+    }, 
+    "print": {
+        "type": "extern", 
+        "code": "c_print_as_real", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "value", 
+                "reuse": "False"
+            }
+        ]
+    }, 
+    "print_F": {
+        "type": "extern", 
+        "code": "c_print_F", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }
+        ]
+    }, 
+    "main": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": [
+                    "dft", 
+                    "sft", 
+                    "dim", 
+                    "F", 
+                    "mx", 
+                    "iter", 
+                    "maxdif"
+                ]
+            }, 
+            {
+                "code": "print_info", 
+                "rules": [], 
+                "args": [
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 200
+                    }, 
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 200
+                    }, 
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 200
+                    }, 
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 32
+                    }, 
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 100
+                    }
+                ], 
+                "line": 105, 
+                "type": "exec", 
+                "id": [
+                    "_l105"
+                ]
+            }, 
+            {
+                "code": "init_dist", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "dft"
+                            ], 
+                            [
+                                "sft"
+                            ], 
+                            [
+                                "dim"
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "req_unlimited", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 200
+                    }, 
+                    {
+                        "type": "iconst", 
+                        "is_expr": true, 
+                        "value": 32
+                    }, 
+                    {
+                        "ref": [
+                            "dft"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "sft"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "dim"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 109, 
+                "type": "exec", 
+                "id": [
+                    "_l107"
+                ]
+            }, 
+            {
+                "body": [
+                    {
+                        "type": "dfs", 
+                        "names": []
+                    }, 
+                    {
+                        "code": "init_F", 
+                        "rules": [
+                            {
+                                "items": [
+                                    [
+                                        "sft"
+                                    ], 
+                                    [
+                                        "dim"
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "request", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "items": [
+                                    [
+                                        "F", 
+                                        {
+                                            "type": "iconst", 
+                                            "is_expr": true, 
+                                            "value": 0
+                                        }, 
+                                        {
+                                            "ref": [
+                                                "i"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }
+                                    ]
+                                ], 
+                                "ruletype": "enum", 
+                                "property": "req_unlimited", 
+                                "type": "rule"
+                            }
+                        ], 
+                        "args": [
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 200
+                            }, 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 32
+                            }, 
+                            {
+                                "ref": [
+                                    "sft"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "dim"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "F", 
+                                    {
+                                        "type": "iconst", 
+                                        "is_expr": true, 
+                                        "value": 0
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "i"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "line": 116, 
+                        "type": "exec", 
+                        "id": [
+                            "init_f", 
+                            {
+                                "ref": [
+                                    "i"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ]
+                    }
+                ], 
+                "last": {
+                    "type": "-", 
+                    "is_expr": true, 
+                    "operands": [
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 32
+                        }, 
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 1
+                        }
+                    ]
+                }, 
+                "rules": [
+                    {
+                        "flags": [
+                            "unroll_at_once"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }
+                ], 
+                "where": {
+                    "type": "luna"
+                }, 
+                "var": "i", 
+                "type": "for", 
+                "first": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }
+            }, 
+            {
+                "code": "set_real", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "maxdif", 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "req_unlimited", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "maxdif", 
+                            {
+                                "type": "iconst", 
+                                "is_expr": true, 
+                                "value": 0
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "rconst", 
+                        "is_expr": true, 
+                        "value": 1.0
+                    }
+                ], 
+                "line": 121, 
+                "type": "exec", 
+                "id": [
+                    "_l119"
+                ]
+            }, 
+            {
+                "body": [
+                    {
+                        "type": "dfs", 
+                        "names": []
+                    }, 
+                    {
+                        "code": "puasson", 
+                        "rules": [], 
+                        "args": [
+                            {
+                                "ref": [
+                                    "it"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "sft"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "dim"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "F"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }, 
+                            {
+                                "ref": [
+                                    "maxdif"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "line": 125, 
+                        "type": "exec", 
+                        "id": [
+                            "_l125"
+                        ]
+                    }
+                ], 
+                "start": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "maxdif", 
+                                {
+                                    "ref": [
+                                        "it"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "items": [
+                            [
+                                "iter"
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "req_unlimited", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "flags": [
+                            "unroll_at_once"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }
+                ], 
+                "type": "while", 
+                "wout": {
+                    "ref": [
+                        "iter"
+                    ], 
+                    "type": "id"
+                }, 
+                "cond": {
+                    "type": "&&", 
+                    "is_expr": true, 
+                    "operands": [
+                        {
+                            "expr": {
+                                "type": ">", 
+                                "is_expr": true, 
+                                "operands": [
+                                    {
+                                        "ref": [
+                                            "maxdif", 
+                                            {
+                                                "ref": [
+                                                    "it"
+                                                ], 
+                                                "type": "id", 
+                                                "is_expr": true
+                                            }
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }, 
+                                    {
+                                        "type": "rconst", 
+                                        "is_expr": true, 
+                                        "value": 0.01
+                                    }
+                                ]
+                            }, 
+                            "type": "icast", 
+                            "is_expr": true
+                        }, 
+                        {
+                            "type": "<", 
+                            "is_expr": true, 
+                            "operands": [
+                                {
+                                    "ref": [
+                                        "it"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 100
+                                }
+                            ]
+                        }
+                    ]
+                }, 
+                "var": "it", 
+                "where": {
+                    "type": "luna"
+                }
+            }, 
+            {
+                "code": "print_int", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "iter"
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "iter"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 133, 
+                "type": "exec", 
+                "id": [
+                    "_l133"
+                ]
+            }, 
+            {
+                "code": "print", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "iter"
+                            ], 
+                            [
+                                "maxdif", 
+                                {
+                                    "ref": [
+                                        "iter"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "maxdif", 
+                            {
+                                "ref": [
+                                    "iter"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 134, 
+                "type": "exec", 
+                "id": [
+                    "_l134"
+                ]
+            }, 
+            {
+                "code": "find_maxdiff", 
+                "rules": [
+                    {
+                        "items": [
+                            [
+                                "iter"
+                            ]
+                        ], 
+                        "ruletype": "enum", 
+                        "property": "request", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [
+                    {
+                        "ref": [
+                            "iter"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "dim"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "sft"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "F", 
+                            {
+                                "ref": [
+                                    "iter"
+                                ], 
+                                "type": "id", 
+                                "is_expr": true
+                            }
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }, 
+                    {
+                        "ref": [
+                            "mx"
+                        ], 
+                        "type": "id", 
+                        "is_expr": true
+                    }
+                ], 
+                "line": 137, 
+                "type": "exec", 
+                "id": [
+                    "_l135"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "copy_arr": {
+        "type": "extern", 
+        "code": "c_fwd", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "value", 
+                "reuse": "False"
+            }, 
+            {
+                "type": "name"
+            }
+        ]
+    }, 
+    "print_border": {
+        "type": "extern", 
+        "code": "c_print_border", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": [
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "int"
+            }, 
+            {
+                "type": "value", 
+                "reuse": "False"
+            }
+        ]
+    }
+}

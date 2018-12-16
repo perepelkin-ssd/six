@@ -5,7 +5,7 @@
 #include "remote_monitor.h"
 #include "tasks.h"
 
-#define ENABLE_NOTES false
+#define ENABLE_NOTES true
 #define NOTE(msg) if (ENABLE_NOTES) printf("%s\n", std::string(msg).c_str())
 
 JfpExec::JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
@@ -202,7 +202,8 @@ void JfpExec::exec_while(const EnvironPtr &env)
 	assert(j_["type"]=="while");
 
 	if (!CFFor::is_unroll_at_once(j_)) {
-		NIMPL // not unroll-at-once strategy?
+		printf("%s\n", j_.dump(2).c_str());
+		ABORT("Not an unroll-at-once strategy?");
 	}
 
 	int start=(int)(*ctx_.eval(j_["start"]));
@@ -492,7 +493,9 @@ void JfpExec::init_child_context_arg(JfpExec *child,
 	} else if (arg["type"]=="icast") {
 		init_child_context_arg(child, arg["expr"], ctx);
 	} else if (arg["type"]=="+" || arg["type"]=="/"
-			|| arg["type"]=="*" || arg["type"]=="-") {
+			|| arg["type"]=="*" || arg["type"]=="-"
+			|| arg["type"]=="%"
+	) {
 		for (auto op : arg["operands"]) {
 			init_child_context_arg(child, op, ctx);
 		}
@@ -500,7 +503,7 @@ void JfpExec::init_child_context_arg(JfpExec *child,
 		fprintf(stderr, "JfpExec::init_child_context_arg: arg type"
 			" not supported: %s in %s\n",
 			arg["type"].dump().c_str(), arg.dump(2).c_str());
-		NIMPL
+		ABORT("Type not supported: " + arg["type"].dump());
 	}
 }
 
