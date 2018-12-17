@@ -143,6 +143,7 @@ class CustomValue : public Value
 {
 	void operator=(const CustomValue &);
 	CustomValue(){}
+	CustomValue(const CustomValue &);
 public:
 	virtual ~CustomValue();
 
@@ -155,9 +156,12 @@ public:
 	std::pair<void *, size_t> grab_buffer(); // will make copy
 		// if this is not the only reference
 
+	virtual std::string to_string() const;
+
 	static CustomValue *create_copy(const void *, size_t);
 	static CustomValue *create_take(void *, size_t,
 		std::function<void()> delete_func=nullptr);
+
 private:
 	struct SharedBuffer
 	{

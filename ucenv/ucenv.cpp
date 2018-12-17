@@ -208,7 +208,7 @@ std::tuple<void *, size_t> DF::grabBuffer() const
 	}
 
 	type_=Unset;
-	auto res=std::make_tuple(data_, size_);
+	std::tuple<void *, size_t> res=std::make_tuple(data_, size_);
 	data_=nullptr; size_=0;
 	return res;
 }

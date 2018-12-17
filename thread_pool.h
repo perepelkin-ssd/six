@@ -7,7 +7,9 @@
 #include <queue>
 #include <thread>
 
-class ThreadPool
+#include "printable.h"
+
+class ThreadPool : public Printable
 {
 public:
 	ThreadPool();
@@ -23,8 +25,10 @@ public:
 	// add job
 	void submit(std::function<void()>);
 
+	virtual std::string to_string() const;
+
 private:
-	std::mutex m_;
+	mutable std::mutex m_;
 	std::condition_variable cv_;
 	std::vector<std::thread*> threads_;
 	std::queue<std::function<void()> > jobs_;

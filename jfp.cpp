@@ -5,8 +5,6 @@
 #include "remote_monitor.h"
 #include "tasks.h"
 
-#define ENABLE_NOTES true
-#define NOTE(msg) if (ENABLE_NOTES) printf("%s\n", std::string(msg).c_str())
 
 JfpExec::JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
 	Factory &fact)
@@ -103,17 +101,28 @@ void JfpExec::request_requested_dfs(const EnvironPtr &env)
 		}
 		NodeId df_node=get_next_node(env, dfid);
 		if (df_node==env->comm().get_rank()) {
+			NOTE("REQUEST LOCAL " + cf_id_.to_string()
+				+ " <= " + dfid.to_string());
 			env->df_requester().request(dfid, [this, dfid, env](
 					const ValuePtr &val){
 				ctx_.set_df(dfid, val);
+				NOTE("REQUEST FULFILLED " + cf_id_.to_string() +
+					" <= " + dfid.to_string());
 				check_exec(env);
 			});
 		} else {
+			NOTE("REQUEST REMOTE " + cf_id_.to_string()
+				+ " <= " + dfid.to_string());
 			auto rptr=RPtr(env->comm().get_rank(), remote_callback(
 					[this, dfid, env](BufferPtr &buf) {
+				NOTE("REQUEST REMOTE FF START");
 				ValuePtr val=fact_.pop<Value>(buf);
 				ctx_.set_df(dfid, val);
+				NOTE("REQUEST REMOTE FF " + cf_id_.to_string() +
+				" <= " + dfid.to_string());
+
 				check_exec(env);
+				NOTE("REQUEST REMOTE FF STOP");
 			}));
 			env->submit(TaskPtr(new Delivery(LocatorPtr(
 				new CyclicLocator(df_node)), TaskPtr(new RequestDf(
@@ -131,18 +140,24 @@ NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
 
 void JfpExec::check_exec(const EnvironPtr &env)
 {
+	NOTE("1");
 	request_requested_dfs(env);
+	NOTE("2");
 	if (CF::is_ready(fp(), j_, ctx_)) {
+		NOTE("3");
 		exec(env);
+		NOTE("4");
 
 		if (pushed_flag_) {
 			env->df_pusher().close(cf_id_);
 		}
+		NOTE("5");
 	}
 }
 
 void JfpExec::exec(const EnvironPtr &env)
 {
+	NOTE("JfpExec::exec " + to_string());
 	if (j_["type"]=="exec") { exec_exec(env); }
 	else if (j_["type"]=="for") { exec_for(env); }
 	else if (j_["type"]=="while") { exec_while(env); }
@@ -150,10 +165,12 @@ void JfpExec::exec(const EnvironPtr &env)
 	else {
 		ABORT("CF type not implemented: " + j_["type"].dump());
 	}
+	NOTE("JfpExec::exec done " + to_string());
 }
 
 void JfpExec::exec_exec(const EnvironPtr &env)
 {
+	NOTE("JfpExec::exec_exec " + to_string());
 	assert(j_["type"]=="exec");
 
 	Name code=j_["code"].get<std::string>();
@@ -170,12 +187,15 @@ void JfpExec::exec_exec(const EnvironPtr &env)
 	if (sub["type"]=="struct") {
 		exec_struct(env, sub);
 	} else if (sub["type"]=="extern") {
+		NOTE("JfpExec::exec_exec exec_extern>> " + to_string());
 		exec_extern(env, code);
+		NOTE("JfpExec::exec_exec exec_extern<< " + to_string());
 	} else {
 		fprintf(stderr, "JfpExec::exec: invalid sub type (%s) in sub %s\n",
 			sub["type"].dump().c_str(), sub.dump(2).c_str());
 		abort();
 	}
+	NOTE("JfpExec::exec_exec done " + to_string());
 }
 
 void JfpExec::exec_for(const EnvironPtr &env)
@@ -194,7 +214,7 @@ void JfpExec::exec_for(const EnvironPtr &env)
 			IntValue::create(idx), true);
 		spawn_body(env, j_["body"], child_ctx);
 	}
-	do_afterwork(env);
+	do_afterwork(env, ctx_);
 }
 
 void JfpExec::exec_while(const EnvironPtr &env)
@@ -214,7 +234,7 @@ void JfpExec::exec_while(const EnvironPtr &env)
 	if (cond==0) {
 		df_computed(env, j_["wout"]["ref"], ValuePtr(new IntValue(start)));
 
-		do_afterwork(env);
+		do_afterwork(env, child_ctx);
 	} else {
 		spawn_body(env, j_["body"], child_ctx);
 
@@ -247,7 +267,7 @@ void JfpExec::exec_if(const EnvironPtr &env)
 	} else {
 		spawn_body(env, j_["body"], ctx_);
 	}
-	do_afterwork(env);
+	do_afterwork(env, ctx_);
 }
 
 void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
@@ -269,7 +289,7 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 
 	spawn_body(env, sub["body"], child_ctx);
 
-	do_afterwork(env);
+	do_afterwork(env, ctx_);
 }
 
 void JfpExec::spawn_body(const EnvironPtr &env, const json &body,
@@ -358,7 +378,9 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 		}
 	}
 	// Algorithm: eval args & call sub; return args save as dfs.
+	NOTE("EXEC_EXTERN " + cf_id_.to_string());
 	env->exec_extern(ext["code"].get<std::string>(), args);
+	NOTE("EXEC_EXTERN done" + cf_id_.to_string());
 
 	for (auto i=0u; i<ext["args"].size(); i++) {
 		auto param=fp()[code]["args"][i];
@@ -380,14 +402,29 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 		}
 	}
 
-	do_afterwork(env);
+	do_afterwork(env, ctx_);
+	NOTE("afterwork done1 " + to_string() + " of " + std::to_string(args.size()));
+	for (auto arg : args) {
+		NOTE(std::string("ARG: ") + std::to_string(std::get<0>(arg))
+			+ " " + std::get<1>(arg)->to_string()
+			+ " " + std::get<2>(arg).to_string());
+	}
+	while (!args.empty()) {
+		auto arg=args.back();
+		NOTE(std::string("ARG: ") + std::to_string(std::get<0>(arg))
+			+ " " + std::get<1>(arg)->to_string()
+			+ " " + std::get<2>(arg).to_string());
+		args.pop_back();
+		NOTE("deleted");
+	}
+	NOTE("afterwork done2 " + to_string());
 }
 
-void JfpExec::do_afterwork(const EnvironPtr &env)
+void JfpExec::do_afterwork(const EnvironPtr &env, const Context &ctx)
 {
 	NOTE("AFTERWORK: " + cf_id_.to_string());
 	// Afterpush
-	for (auto push : CF::get_afterpushes(j_, ctx_)) {
+	for (auto push : CF::get_afterpushes(j_, ctx)) {
 		Id dfid=push.first;
 		Id cfid=push.second;
 		NOTE("PUSHING " + dfid.to_string() + " >> "
@@ -401,7 +438,7 @@ void JfpExec::do_afterwork(const EnvironPtr &env)
 				new SubmitDfToCf(dfid, ctx_.get_df(dfid), cfid)))));
 		}
 	}
-	for (auto dfid : CF::get_afterdels(j_, ctx_)) {
+	for (auto dfid : CF::get_afterdels(j_, ctx)) {
 		TaskPtr task(new DelDf(dfid));;
 		NodeId next_rank=get_next_node(env, dfid);
 		if (next_rank==env->comm().get_rank()) {
@@ -411,12 +448,14 @@ void JfpExec::do_afterwork(const EnvironPtr &env)
 				new CyclicLocator(next_rank)), task)));
 		}
 	}
+	NOTE("AFTERWORK DONE: " + cf_id_.to_string());
 }
 
 void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 	const ValuePtr &val)
 {
 	Id id=ctx_.eval_ref(ref);
+	NOTE("DF COMPUTED: " + id.to_string() + ": " + val->to_string());
 
 	ctx_.set_df(id, val);
 
@@ -430,6 +469,7 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 			req_count=CF::get_requests_count(j_, ctx_, id);
 		}
 		if (store_node==env->comm().get_rank()) {
+			NOTE("REQ_STORE LOCALLY " + id.to_string());
 			std::shared_ptr<size_t> counter(new size_t(req_count));
 			std::shared_ptr<std::mutex> m(new std::mutex());
 			env->df_requester().put(id, val, [counter, env, id, m](){
@@ -442,6 +482,8 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 				}
 			});
 		} else {
+			NOTE("REQ_STORE REMOTELY " + id.to_string() + " at "
+				+ std::to_string(store_node));
 			env->submit(TaskPtr(new Delivery(LocatorPtr(
 				new CyclicLocator(store_node)), TaskPtr(
 				new StoreDf(id, val, nullptr, req_count)))));
@@ -528,6 +570,7 @@ void JfpExec::_assert_rules()
 			assert(rule.find("property")!=rule.end());
 			assert(rule.find("items")!=rule.end());
 			if (rule["property"]!="request"
+					&&rule["property"]!="delete"
 					&&rule["property"]!="req_unlimited") {
 				ABORT("Unknown enum property: " + rule["property"].dump());
 			}

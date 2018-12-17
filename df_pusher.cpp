@@ -1,5 +1,7 @@
 #include "df_pusher.h"
 
+#include <sstream>
+
 DfPusher::DfPusher(ThreadPool *pool, std::function<void(int)>wlc)
 	: pool_(pool), wl_changer_(wlc)
 {}
@@ -22,7 +24,7 @@ void DfPusher::push(const Id &cfid, const Id &dfid, const ValuePtr &val)
 		});
 	} else {
 		// not yet opened
-		port.queue_.push(std::make_pair(dfid, val));
+		port.queue_.push_back(std::make_pair(dfid, val));
 	}
 }
 
@@ -42,7 +44,7 @@ void DfPusher::open(const Id &cfid, Callback cb)
 
 	while (!port.queue_.empty()) {
 		auto item=port.queue_.front();
-		port.queue_.pop();
+		port.queue_.pop_front();
 
 		auto wlc=wl_changer_;
 		pool_->submit([wlc, cb, item](){
@@ -70,3 +72,24 @@ void DfPusher::close(const Id &cfid)
 	wl_changer_(-1);
 }
 
+std::string DfPusher::to_string() const
+{
+	std::lock_guard<std::mutex> lk(m_);
+
+	std::ostringstream os;
+
+	for (auto p : ports_) {
+		os << p.first << "(";
+		bool need_comma=false;
+		for (auto i : p.second.queue_) {
+			if (need_comma) {
+				os << ", ";
+			} else {
+				need_comma=true;
+			}
+			os << i.first;
+		}
+		os << ")";
+	}
+	return os.str();
+}

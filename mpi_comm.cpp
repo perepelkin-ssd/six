@@ -181,6 +181,17 @@ void MpiComm::barrier()
 	MPI_Barrier(comm_);
 }
 
+std::string MpiComm::to_string() const
+{
+	std::lock_guard<std::mutex> lk(m_);
+	
+	return "msg: " + msg_pool_.to_string()
+		+ " req: " + req_pool_.to_string()
+		+ " send: " + send_pool_.to_string()
+		+ " recv: " + recv_pool_.to_string()
+		+ " SF: " + (stop_flag_? "Yes": "No");
+}
+
 void MpiComm::receiver_routine()
 {
 	MPI_Status status;

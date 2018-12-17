@@ -252,7 +252,9 @@ void RTS::submit(const TaskPtr &task)
 	EnvironPtr env(new TaskEnv(*this, comm_, clib_, task));
 	dynamic_cast<TaskEnv*>(env.get())->init(env);
 	pool_.submit([env, task, this, task_id](){
+		NOTE("Starting: " + task->to_string());
 		task->run(env);
+		NOTE("Finished: " + task->to_string());
 
 		change_workload(-1);
 		_rm_job(task_id);
@@ -396,4 +398,26 @@ void RTS::change_workload_requester(int delta)
 		wl_requester_+=delta;
 	}
 	change_workload(delta);
+}
+
+std::string RTS::to_string() const
+{
+	std::ostringstream os;
+
+	_do_echo();
+
+	os << "RTS" << std::endl
+		<< "Comm: " << comm_.to_string() << std::endl
+		<< "Stopper: " << stopper_->to_string() << std::endl
+		<< "Pool: " << pool_.to_string() << std::endl
+		<< "Workload: " << workload_ << " (p: " << wl_pusher_
+			<< ", r: " << wl_requester_ << ")" << std::endl
+		<< "Pusher: " << df_pusher_.to_string() << std::endl
+		<< "Requester: " << df_requester_.to_string() << std::endl
+		<< "vals_(" << vals_.size() << "): ";
+	for (auto it : vals_) {
+		os << it.first << "=" << (*it.second) << " ";
+	}
+	os << std::endl;
+	return os.str();
 }

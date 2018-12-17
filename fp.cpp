@@ -190,6 +190,10 @@ std::set<Id> CF::get_afterdels(const json &cf, const Context &ctx)
 			for (auto ref : rule["dfs"]) {
 				res.insert(ctx.eval_ref(ref["ref"]));
 			}
+		} else if (rule["ruletype"]=="enum" && rule["property"]=="delete") {
+			for (auto ref : rule["items"]) {
+				res.insert(ctx.eval_ref(ref));
+			}
 		}
 	}
 	return res;

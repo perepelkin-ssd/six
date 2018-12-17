@@ -82,7 +82,9 @@ void MonitorSignal::run(const EnvironPtr &env)
 	if (env->comm().get_rank()==rptr_.node_) {
 		BufHandler *handler=(BufHandler*)rptr_.ptr_;
 		BufferPtr buf(new Buffer(signal_));
+		NOTE("MONITOR: SIGNALING " + rptr_.to_string());
 		handler->handle(buf);
+		NOTE("MONITOR: SIGNALED " + rptr_.to_string());
 	} else {
 		Buffers bufs;
 		serialize(bufs);
@@ -119,6 +121,8 @@ RequestDf::RequestDf(BufferPtr &buf, Factory &fact)
 void RequestDf::run(const EnvironPtr &env)
 {
 	env->df_requester().request(dfid_, [this, env](const ValuePtr &val){
+		NOTE("SENDBACK RESPONSE: " + dfid_.to_string() + " @ "
+			+ rptr_.to_string());
 		Buffers bufs;
 		val->serialize(bufs);
 		env->submit(TaskPtr(new MonitorSignal(rptr_, bufs)));

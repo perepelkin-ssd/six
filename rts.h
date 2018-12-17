@@ -22,7 +22,7 @@ enum TAGS {
 	TAG_IDLE
 };
 
-class RTS
+class RTS : public Printable
 {
 public:
 	~RTS();
@@ -51,6 +51,8 @@ public:
 	ValuePtr get(const Id &key) const;
 	ValuePtr set(const Id &key, const ValuePtr &val);
 	ValuePtr del(const Id &key);
+
+	virtual std::string to_string() const;
 
 private:
 	mutable std::mutex m_;

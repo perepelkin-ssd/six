@@ -55,7 +55,7 @@ private:
 
 	void request_requested_dfs(const EnvironPtr &env);
 
-	void do_afterwork(const EnvironPtr &);
+	void do_afterwork(const EnvironPtr &, const Context &);
 
 	void _assert_rules();
 };

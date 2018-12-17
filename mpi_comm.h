@@ -36,13 +36,15 @@ public:
 	virtual MsgHandler set_handler(MsgHandler);
 
 	virtual void barrier();
+
+	virtual std::string to_string() const;
 private:
 	static const int TAG_USER=1;
 	static const int TAG_SYSTEM=2;
 	NodeId rank_;
 	size_t size_;
 	MsgHandler handler_;
-	std::mutex m_;
+	mutable std::mutex m_;
 	size_t handler_threads_, send_threads_, recv_threads_, req_threads_;
 	bool stop_flag_;
 	ThreadPool msg_pool_, req_pool_, send_pool_, recv_pool_;

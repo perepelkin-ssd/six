@@ -4,6 +4,7 @@
 #include <map>
 
 #include "id.h"
+#include "printable.h"
 #include "thread_pool.h"
 #include "value.h"
 
@@ -21,7 +22,7 @@
 //
 // All callbacks are sent via thread pool, not directly from calls.
 // DfPusher also notifies on workload change (abstract size_t counter).
-class DfPusher
+class DfPusher : public Printable
 {
 public:
 	typedef std::function<void (const Id &dfid, const ValuePtr &val)>
@@ -34,15 +35,16 @@ public:
 	void open(const Id &cfid, Callback);
 	void close(const Id &cfid);
 
+	virtual std::string to_string() const;
 private:
 	struct Port
 	{
-		std::queue<std::pair<Id, ValuePtr> > queue_;
+		std::deque<std::pair<Id, ValuePtr> > queue_;
 		Callback cb_;
 
 		Port() : cb_(nullptr) {}
 	};
-	std::mutex m_;
+	mutable std::mutex m_;
 	ThreadPool *pool_;
 	std::map<Id, Port> ports_;
 	std::function<void(int)> wl_changer_;

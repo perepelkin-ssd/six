@@ -1,5 +1,7 @@
 #include "remote_monitor.h"
 
+#include "common.h"
+
 RemoteMonitor::RemoteMonitor(){}
 
 BufHandler *RemoteMonitor::create(std::function<bool (BufferPtr &)> handler)
@@ -14,6 +16,7 @@ void RemoteMonitor::handle(BufferPtr &buf)
 {
 	auto self=self_; // to prevent self destruction immediately 
 	// after self_.reset()
+	NOTE("RemoteMonitor: start handle");
 	{
 		std::lock_guard<std::mutex> lk(m_);
 
@@ -25,7 +28,9 @@ void RemoteMonitor::handle(BufferPtr &buf)
 		auto handler=handler_;
 	}
 
+	NOTE("RemoteMonitor: user handle start");
 	bool keep_alive=handler_(buf);
+	NOTE("RemoteMonitor: user handle finish");
 
 	if (!keep_alive) {
 		std::lock_guard<std::mutex> lk(m_);
@@ -37,6 +42,7 @@ void RemoteMonitor::handle(BufferPtr &buf)
 		self_.reset(); // destroy pointer to self
 		handler_=nullptr; // destroy closure
 	}
+	NOTE("RemoteMonitor: stop handle");
 }
 
 BufHandler *create_counter(size_t count, std::function<void()> cb)

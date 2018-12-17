@@ -59,6 +59,16 @@ void ThreadPool::submit(std::function<void()> job)
 	cv_.notify_one();
 }
 
+std::string ThreadPool::to_string() const
+{
+	std::lock_guard<std::mutex> lk(m_);
+
+	return std::to_string(threads_.size()) + "Th "
+		+ std::to_string(jobs_.size()) + "Jb "
+		+ std::to_string(running_jobs_) + " RJ "
+		+ (stop_flag_? "S": "");
+}
+
 void ThreadPool::routine()
 {
 	std::unique_lock<std::mutex> lk(m_);

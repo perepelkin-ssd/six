@@ -5,6 +5,8 @@
 #include <functional>
 #include <mutex>
 
+#include "printable.h"
+
 // TODO: maybe should call on_all_idle_ on all nodes? m.b. optionally?
 
 /*
@@ -27,7 +29,7 @@
 		eliminated).
 */
 template <class NodeIdType>
-class IdleStopper
+class IdleStopper : public Printable
 {
 	NodeIdType current_node_id_;
 	std::function<void (const NodeIdType &node_id)> on_send_next_;
@@ -36,7 +38,7 @@ class IdleStopper
 	NodeIdType marker_id_;
 	size_t passed_counter_;
 	bool dirty_, idle_;
-	std::mutex m_;
+	mutable std::mutex m_;
 
 public:
 	// Starts in idle state
@@ -137,6 +139,14 @@ public:
 		lk.lock();
 	}
 
+	virtual std::string to_string() const
+	{
+		std::lock_guard<std::mutex> lk(m_);
+		return std::string("Marker: ")
+			+ (marker_here_? "here ": "not here ")
+			+ (dirty_? "D": "")
+			+ (idle_? "I": "");
+	}
 };
 
 #endif // IDLE_STOPPER_H_

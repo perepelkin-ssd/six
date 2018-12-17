@@ -4,6 +4,7 @@
 #include <set>
 
 #include "id.h"
+#include "printable.h"
 #include "thread_pool.h"
 #include "value.h"
 
@@ -17,7 +18,7 @@
 //
 // All callbacks are done via the thread pool. Workload change notification
 // is also supported.
-class DfRequester
+class DfRequester : public Printable
 {
 public:
 	typedef std::function<void (const ValuePtr &)> Callback;
@@ -30,10 +31,12 @@ public:
 	// Each request causes RequestCb invocation
 	void put(const Id &, const ValuePtr &, RequestCb cb=nullptr);
 	void del(const Id &);
+
+	virtual std::string to_string() const;
 private:
 	// All callbacks are invoked via external pool
 	ThreadPool *pool_;
-	std::mutex m_;
+	mutable std::mutex m_;
 	
 	// dfs are stored infinitely (until explicit deletion), requests
 	// wait for dfs to appear

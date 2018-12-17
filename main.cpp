@@ -1,4 +1,5 @@
 #include <cassert>
+#include <csignal>
 #include <cstring>
 #include <fstream>
 #include <sstream>
@@ -17,6 +18,7 @@
 #include "tasks.h"
 
 int rank;
+std::string note_prefix;
 void init_stags(Factory &fact);
 void note(const std::string &msg)
 {
@@ -29,6 +31,15 @@ void note(const std::string &msg)
 }
 
 std::shared_ptr<Logger> L;
+
+RTS *rts;
+
+void signal_handler(int signal)
+{
+	NOTE("Signaled " + std::to_string(signal));
+	NOTE(rts->to_string());
+	ABORT("SIGNALED");
+}
 
 void test_all();
 int main(int argc, char **argv)
@@ -47,11 +58,15 @@ int main(int argc, char **argv)
 
 		rank=comm.get_rank();
 
+		note_prefix=std::to_string(rank)+": ";
+
 		SoLib solib(argv[2]);
 
-		RTS *rts=new RTS(comm, solib);
+		rts=new RTS(comm, solib);
 		init_stags(rts->factory());
 		comm.barrier();
+
+		std::signal(SIGINT, signal_handler);
 
 		if (comm.get_rank()==0) {
 			std::string path(argv[1]);
@@ -61,6 +76,9 @@ int main(int argc, char **argv)
 			std::stringstream ss;
 			ss << f.rdbuf();//read the file
 			std::string j=ss.str();
+			if (j.size()==0) {
+				ABORT("JSON file not found: " + path);
+			}
 
 			std::string main_arg="";
 			if (argc==4) {

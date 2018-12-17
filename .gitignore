@@ -2,3 +2,4 @@
 vgcore.*
 core
 log.txt
+*.so

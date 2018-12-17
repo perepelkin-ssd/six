@@ -1,5 +1,7 @@
 #include "df_requester.h"
 
+#include <sstream>
+
 DfRequester::DfRequester(ThreadPool *pool, std::function<void(int)> wlc)
 	: pool_(pool), wl_changer_(wlc)
 {}
@@ -7,6 +9,7 @@ DfRequester::DfRequester(ThreadPool *pool, std::function<void(int)> wlc)
 void DfRequester::request(const Id &id, DfRequester::Callback cb)
 {
 	std::lock_guard<std::mutex> lk(m_);
+	NOTE("DfRequester::request " + id.to_string());
 	wl_changer_(1);
 
 	auto it=dfs_.find(id);
@@ -17,6 +20,7 @@ void DfRequester::request(const Id &id, DfRequester::Callback cb)
 	}
 
 	if (it!=dfs_.end()) {
+		NOTE("DfRequester::request " + id.to_string() + " - immediate");
 		ValuePtr val=it->second.first;
 		RequestCb rcb=it->second.second;
 
@@ -29,13 +33,16 @@ void DfRequester::request(const Id &id, DfRequester::Callback cb)
 			wlc(-1);
 		});
 	} else {
+		NOTE("DfRequester::request " + id.to_string() + " - pending");
 		requests_[id].push(cb);
 	}
 }
 
 void DfRequester::put(const Id &id, const ValuePtr &val, RequestCb rcb)
 {
+	NOTE("DfRequester::putting " + id.to_string() + "");
 	std::lock_guard<std::mutex> lk(m_);
+	NOTE("DfRequester::put " + id.to_string() + "");
 	wl_changer_(1);
 	
 	auto it=dfs_.find(id);
@@ -48,6 +55,7 @@ void DfRequester::put(const Id &id, const ValuePtr &val, RequestCb rcb)
 	auto it3=dels_.find(id);
 
 	if (it3!=dels_.end()) {
+		NOTE("DfRequester::put " + id.to_string() + " - del present");
 		assert(requests_.find(id)==requests_.end());
 
 		dels_.erase(it3);
@@ -61,6 +69,8 @@ void DfRequester::put(const Id &id, const ValuePtr &val, RequestCb rcb)
 	auto it2=requests_.find(id);
 
 	if (it2!=requests_.end()) {
+		NOTE("DfRequester::put " + id.to_string() + " - have " +
+			std::to_string(it2->second.size()) + " requests");
 		while (!it2->second.empty()) {
 			auto cb=it2->second.front();
 			it2->second.pop();
@@ -113,3 +123,42 @@ void DfRequester::del(const Id &id)
 	}
 }
 
+std::string DfRequester::to_string() const
+{
+	std::lock_guard<std::mutex> lk(m_);
+
+	std::ostringstream os;
+
+	os << "DFs(" << dfs_.size() << "): ";
+	bool need_comma=false;
+	for (auto it : dfs_) {
+		if (need_comma) {
+			os << ", ";
+		} else {
+			need_comma=true;
+		}
+		os << it.first;
+	}
+
+	os << " Req(" << requests_.size() << "): ";
+	need_comma=false;
+	for (auto it : requests_) {
+		if (need_comma) {
+			os << ", ";
+		} else {
+			need_comma=true;
+		}
+		os << it.first << ":" << it.second.size();
+	}
+	os << " Dels(" << dels_.size() << "): ";
+	need_comma=false;
+	for (auto it : dels_) {
+		if (need_comma) {
+			os << ", ";
+		} else {
+			need_comma=true;
+		}
+		os << it;
+	}
+	return os.str();
+}

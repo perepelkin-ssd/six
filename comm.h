@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "buffer.h"
+#include "printable.h"
 
 // Node identifier abstraction. Must be castable to int and constructable
 // from int in [0; size) range
@@ -15,7 +16,7 @@ typedef std::function<void (const NodeId &src, const BufferPtr &data)>
 typedef std::function<void ()> Callback;
 
 // Communication abstraction. Suits both sockets and MPI.
-class Comm
+class Comm : public Printable
 {
 public:
 	virtual ~Comm() {};

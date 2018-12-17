@@ -145,17 +145,31 @@ std::string NameValue::to_string() const
 
 CustomValue::~CustomValue()
 {
+	NOTE("~Custom start");
 	if (!buf_) {
 		return;
 	}
-	std::lock_guard<std::mutex> lk(buf_->m);
+	bool deletion_flag=false;
+	{
+		NOTE("locking");
+		auto id=to_string();
+		std::lock_guard<std::mutex> lk(buf_->m);
+		NOTE("locked");
 
-	assert(buf_->refs>0);
-	buf_->refs--;
+		NOTE("XXX" + id);
+		assert(buf_->refs>0);
+		buf_->refs--;
 
-	if (buf_->refs==0) {
-		delete_();
+		if (buf_->refs==0) {
+			deletion_flag=true;
+		}
 	}
+	if (deletion_flag) {
+	NOTE("deleting");
+		delete_();
+	NOTE("deleted");
+	}
+	NOTE("~Custom end");
 }
 
 CustomValue::CustomValue(const Value &val)
@@ -184,7 +198,11 @@ CustomValue::CustomValue(const Value &val)
 		memcpy(buf_->data, s.c_str(), buf_->size);
 	} else if (val.type()==Custom) {
 		buf_=dynamic_cast<const CustomValue&>(val).buf_;
+		if (!buf_) {
+			ABORT("Value not set");
+		}
 		std::lock_guard<std::mutex> lk(buf_->m);
+		assert (buf_->refs>0);
 		buf_->refs++;
 	} else {
 		ABORT("Type not supported: " + std::to_string(val.type()));
@@ -209,11 +227,14 @@ CustomValue::CustomValue(BufferPtr &buf)
 void CustomValue::default_delete()
 {
 	if (!buf_) { return; }
-	std::lock_guard<std::mutex> lk(buf_->m);
-	assert(buf_->refs==0);
-	operator delete(buf_->data);
-	buf_->data=nullptr;
-	buf_->size=0;
+	{
+		std::lock_guard<std::mutex> lk(buf_->m);
+		assert(buf_->refs==0);
+		operator delete(buf_->data);
+		buf_->data=nullptr;
+		buf_->size=0;
+	}
+	buf_.reset();
 }
 
 void CustomValue::serialize(Buffers &bufs) const
@@ -228,19 +249,32 @@ void CustomValue::serialize(Buffers &bufs) const
 std::pair<void *, size_t> CustomValue::grab_buffer()
 {
 	if (!buf_) { ABORT("No buffer"); }
-	std::lock_guard<std::mutex> lk(buf_->m);
+	std::unique_lock<std::mutex> lk(buf_->m);
 	assert(buf_->refs>0);
 	buf_->refs--;
 	if (buf_->refs==0) {
 		auto res=std::make_pair(buf_->data, buf_->size);
+		lk.unlock();
 		buf_.reset();
 		return res;
 	} else {
 		// need to make a copy
 		void *data=operator new(buf_->size);
 		memcpy(data, buf_->data, buf_->size);
-		return std::make_pair(data, buf_->size);
+		auto res=std::make_pair(data, buf_->size);
+		buf_.reset();
+		return res;
 	}
+}
+
+std::string CustomValue::to_string() const
+{
+	if (!buf_) {
+		return "value(nil)";
+	}
+	std::lock_guard<std::mutex> lk(buf_->m);
+	return "value(" + std::to_string(buf_->size) + ": &"
+		+ std::to_string(buf_->refs) + ")";
 }
 
 CustomValue *CustomValue::create_take(void *data, size_t size,
