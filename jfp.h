@@ -13,7 +13,7 @@ public:
 	virtual ~JfpExec() {}
 
 	JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
-		Factory &);
+		const LocatorPtr &, Factory &);
 	JfpExec(BufferPtr &, Factory &);
 
 	virtual void run(const EnvironPtr &);
@@ -29,6 +29,7 @@ private:
 	Context ctx_;
 	bool pushed_flag_;
 	std::set<Id> requested_;
+	LocatorPtr loc_;
 
 	const json &fp() { return *fp_; }
 

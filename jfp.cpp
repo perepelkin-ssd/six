@@ -7,9 +7,9 @@
 
 
 JfpExec::JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
-	Factory &fact)
+	const LocatorPtr &loc, Factory &fact)
 	: fact_(fact), fp_id_(fp_id), cf_id_(cf_id),
-		j_(json::parse(jdump))
+		j_(json::parse(jdump)), loc_(loc)
 {
 }
 
@@ -19,6 +19,7 @@ JfpExec::JfpExec(BufferPtr &buf, Factory &fact)
 	fp_id_=Id(buf);
 	cf_id_=Id(buf);
 	j_=json::parse(Buffer::popString(buf));
+	loc_=fact.pop<Locator>(buf);
 
 	ctx_=Context(buf, fact);
 }
@@ -47,6 +48,7 @@ void JfpExec::serialize(Buffers &bufs) const
 	fp_id_.serialize(bufs);
 	cf_id_.serialize(bufs);
 	bufs.push_back(Buffer::create(j_.dump()));
+	loc_->serialize(bufs)
 
 	ctx_.serialize(bufs);
 }
@@ -134,6 +136,7 @@ void JfpExec::request_requested_dfs(const EnvironPtr &env)
 
 NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
 {
+	ABORT(id.to_string());
 	assert(id.size()>=2);
 	return (id[1]) % env->comm().get_size();
 }
