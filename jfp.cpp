@@ -243,6 +243,10 @@ void JfpExec::exec_while(const EnvironPtr &env)
 		j1["start"]={{"type", "iconst"}, {"value", start+1}};
 		JfpExec *item=new JfpExec(fp_id_, item_id, j1.dump(), loc_, fact_);
 		item->ctx_=ctx_;
+		item->loc_=CF::get_locator(item->j_, loc_, ctx_);
+		if (!item->loc_) {
+			ABORT("While item does not have local locator on respawn? o_O");
+		}
 		item->locators_=locators_;
 		TaskPtr task(item);
 		env->submit(task);
