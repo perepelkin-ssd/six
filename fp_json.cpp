@@ -44,7 +44,7 @@ void ExecJsonFp::run(const EnvironPtr &env)
 			env->submit(TaskPtr(new JfpExec(fp_id, env->create_id("_main"),
 			"{\"type\": \"exec\", \"code\": \"main\", \"args\": ["
 			+ opt_arg +
-			"]}",
+			"]}", LocatorPtr(new CyclicLocator(0)),
 			fact_)));
 		}
 	));

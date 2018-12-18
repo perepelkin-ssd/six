@@ -155,6 +155,75 @@
         "where": {
             "type": "luna"
         }, 
-        "rules": []
+        "rules": [
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "a"
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 1
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "b"
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "+", 
+                    "is_expr": true, 
+                    "operands": [
+                        {
+                            "type": "id", 
+                            "ref": [
+                                "i"
+                            ], 
+                            "is_expr": true
+                        }, 
+                        {
+                            "type": "id", 
+                            "ref": [
+                                "j"
+                            ], 
+                            "is_expr": true
+                        }
+                    ]
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "x", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "j"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }
+        ]
     }
 }

@@ -87,3 +87,17 @@ void Id::serialize(Buffers &bufs) const
 	bufs.push_back(Buffer::create(label_));
 }
 
+bool Id::starts_with(const Id &prefix) const
+{
+	if (prefix.size()>size()) {
+		return false;
+	}
+
+	for (auto i=0u; i<prefix.size(); i++) {
+		if (prefix.at(i)!=at(i)) {
+			return false;
+		}
+	}
+
+	return true;
+}

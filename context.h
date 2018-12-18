@@ -2,6 +2,7 @@
 
 #include <map>
 #include <mutex>
+#include <set>
 
 #include "factory.h"
 #include "id.h"
@@ -45,6 +46,10 @@ public:
 	virtual std::string to_string() const;
 	
 	static ValuePtr cast(const std::string &type, const ValuePtr &val);
+
+	// get all base names, through which given ID is accessible
+	std::set<std::pair<Name, std::vector<int> > > 
+		get_names(const Id &) const;
 private:
 	mutable std::mutex m_;
 	std::map<Name, Id> names_;

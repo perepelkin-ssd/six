@@ -154,24 +154,24 @@ struct TaskEnv : public Environ, public BufHandler
 	virtual void exec_extern(const Name &code,
 		std::vector<CodeLib::Argument> &args)
 	{
-		/*
-		bool need_comma=true;
-		printf("EXTERN %s(", code.c_str());
+		std::ostringstream os;
+		bool need_comma=false;
+		os << "EXTERN " << code << "(";
 		for (auto arg : args) {
 			if (need_comma) {
-				printf(", ");
+				os<< ", ";
 			} else { need_comma=true; }
 			if (std::get<0>(arg)==Reference) {
-				printf(" %s", std::get<2>(arg).to_string().c_str());
+				os << std::get<2>(arg);
 			} else {
 				if (std::get<0>(arg)==Custom) {
-					printf("%s=", std::get<2>(arg).to_string().c_str());
+					os << std::get<2>(arg) << "=";
 				}
-				printf("%s", std::get<1>(arg)->to_string().c_str());
+				os << *std::get<1>(arg);
 			}
 		}
-		printf(")\n");
-		*/
+		os<<")";
+		LOG(os.str());
 		clib_.execute(code, args);
 	}
 

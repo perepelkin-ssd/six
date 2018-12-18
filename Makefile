@@ -24,10 +24,10 @@ df_requester.o: df_requester.cpp ./df_requester.h ./printable.h ./id.h ./buffer.
 factory.o: factory.cpp ./stags.h ./buffer.h ./factory.h ./serializable.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -ldl -ldyncall_s -g -Og -Wall -Werror -c -o factory.o factory.cpp -I .
 
-fp.o: fp.cpp ./fp.h ./printable.h ./common.h ./buffer.h ./serializable.h ./stags.h ./json.h ./context.h ./factory.h ./id.h ./value.h
+fp.o: fp.cpp ./fp.h ./locator.h ./printable.h ./common.h ./buffer.h ./serializable.h ./stags.h ./json.h ./context.h ./factory.h ./id.h ./value.h ./comm.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -ldl -ldyncall_s -g -Og -Wall -Werror -c -o fp.o fp.cpp -I .
 
-fp_json.o: fp_json.cpp ./jfp.h ./remote_monitor.h ./common.h ./rptr.h ./df_requester.h ./fp_json.h ./df_pusher.h ./buffer.h ./serializable.h ./thread_pool.h ./task.h ./json.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./environ.h ./code_lib.h ./stags.h ./context.h ./id.h ./comm.h
+fp_json.o: fp_json.cpp ./jfp.h ./remote_monitor.h ./common.h ./thread_pool.h ./df_requester.h ./environ.h ./task.h ./buffer.h ./serializable.h ./rptr.h ./df_pusher.h ./json.h ./factory.h ./value.h ./buf_handler.h ./printable.h ./fp_json.h ./code_lib.h ./stags.h ./context.h ./locator.h ./id.h ./comm.h
 	MPICH_CXX=g++5 /home/perepelkin/local/bin/mpicxx -std=c++11 -lpthread -ldl -ldyncall_s -g -Og -Wall -Werror -c -o fp_json.o fp_json.cpp -I .
 
 id.o: id.cpp ./printable.h ./id.h ./buffer.h ./common.h ./serializable.h

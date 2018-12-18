@@ -60,7 +60,20 @@
                     }, 
                     {
                         "code": "show", 
-                        "rules": [], 
+                        "rules": [
+                            {
+                                "expr": {
+                                    "ref": [
+                                        "i"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
+                                "type": "rule"
+                            }
+                        ], 
                         "args": [
                             {
                                 "type": "sconst", 
@@ -86,28 +99,10 @@
                                 ]
                             }
                         ], 
-                        "line": 17, 
+                        "line": 19, 
                         "type": "exec", 
                         "id": [
-                            "a", 
-                            {
-                                "type": "*", 
-                                "is_expr": true, 
-                                "operands": [
-                                    {
-                                        "ref": [
-                                            "i"
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }, 
-                                    {
-                                        "type": "iconst", 
-                                        "is_expr": true, 
-                                        "value": 2
-                                    }
-                                ]
-                            }
+                            "_l17"
                         ]
                     }
                 ], 
@@ -135,6 +130,16 @@
                         ], 
                         "ruletype": "flags", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "where": {
@@ -149,21 +154,104 @@
                 }
             }, 
             {
-                "code": "init", 
-                "rules": [
+                "body": [
                     {
-                        "ruletype": "assign", 
-                        "property": "req_count", 
-                        "type": "rule", 
-                        "id": [
-                            "N"
-                        ], 
-                        "val": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 1
-                        }
+                        "type": "dfs", 
+                        "names": []
                     }, 
+                    {
+                        "body": [
+                            {
+                                "type": "dfs", 
+                                "names": []
+                            }, 
+                            {
+                                "code": "show", 
+                                "rules": [
+                                    {
+                                        "expr": {
+                                            "ref": [
+                                                "j"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        "ruletype": "expr", 
+                                        "property": "locator_cyclic", 
+                                        "type": "rule"
+                                    }
+                                ], 
+                                "args": [
+                                    {
+                                        "type": "sconst", 
+                                        "is_expr": true, 
+                                        "value": "div by 3:"
+                                    }, 
+                                    {
+                                        "ref": [
+                                            "j"
+                                        ], 
+                                        "type": "id", 
+                                        "is_expr": true
+                                    }
+                                ], 
+                                "line": 29, 
+                                "type": "exec", 
+                                "id": [
+                                    "_l29"
+                                ]
+                            }
+                        ], 
+                        "cond": {
+                            "type": "==", 
+                            "is_expr": true, 
+                            "operands": [
+                                {
+                                    "type": "%", 
+                                    "is_expr": true, 
+                                    "operands": [
+                                        {
+                                            "ref": [
+                                                "j"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        {
+                                            "type": "iconst", 
+                                            "is_expr": true, 
+                                            "value": 3
+                                        }
+                                    ]
+                                }, 
+                                {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }
+                            ]
+                        }, 
+                        "type": "if", 
+                        "rules": [
+                            {
+                                "expr": {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
+                                "type": "rule"
+                            }
+                        ]
+                    }
+                ], 
+                "start": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 1
+                }, 
+                "rules": [
                     {
                         "expr": {
                             "ref": [
@@ -178,34 +266,104 @@
                         "id": [
                             "N"
                         ]
-                    }
-                ], 
-                "args": [
-                    {
-                        "type": "iconst", 
-                        "is_expr": true, 
-                        "value": 3
                     }, 
                     {
-                        "ref": [
+                        "ruletype": "assign", 
+                        "property": "req_count", 
+                        "type": "rule", 
+                        "id": [
                             "N"
                         ], 
-                        "type": "id", 
-                        "is_expr": true
+                        "val": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 1
+                        }
+                    }, 
+                    {
+                        "flags": [
+                            "unroll_at_once"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "ref": [
+                                "j"
+                            ], 
+                            "type": "id", 
+                            "is_expr": true
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
-                "line": 26, 
-                "type": "exec", 
-                "id": [
-                    "init"
-                ]
+                "type": "while", 
+                "wout": {
+                    "ref": [
+                        "N"
+                    ], 
+                    "type": "id"
+                }, 
+                "cond": {
+                    "type": "<", 
+                    "is_expr": true, 
+                    "operands": [
+                        {
+                            "ref": [
+                                "j"
+                            ], 
+                            "type": "id", 
+                            "is_expr": true
+                        }, 
+                        {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 15
+                        }
+                    ]
+                }, 
+                "var": "j", 
+                "where": {
+                    "type": "luna"
+                }
             }
         ], 
         "type": "struct", 
         "args": [], 
         "where": {
             "type": "luna"
-        }
+        }, 
+        "rules": [
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "show"
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 1
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "N"
+                ]
+            }
+        ]
     }, 
     "show": {
         "type": "extern", 

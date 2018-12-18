@@ -1,32 +1,179 @@
-{"hello_world" : {"type" : "extern","code" : "c_helloworld","args" : [],"cuda_support" : "false","nocpu" : "false"}
-,
-"sub4" : {"type" : "struct","where":{"type":"luna"}
-,"args" : [],"body" : [
-{"type" : "dfs","names" : []}
-,{"type" : "exec","id" : ["_l9"],"code" : "sub3","args" : [],"rules" : [],"line" :9}
-]}
-,
-"sub3" : {"type" : "struct","where":{"type":"luna"}
-,"args" : [],"body" : [
-{"type" : "dfs","names" : []}
-,{"type" : "exec","id" : ["_l14"],"code" : "sub2","args" : [],"rules" : [],"line" :14}
-]}
-,
-"sub2" : {"type" : "struct","where":{"type":"luna"}
-,"args" : [],"body" : [
-{"type" : "dfs","names" : []}
-,{"type" : "exec","id" : ["_l19"],"code" : "sub1","args" : [],"rules" : [],"line" :19}
-]}
-,
-"sub1" : {"type" : "struct","where":{"type":"luna"}
-,"args" : [],"body" : [
-{"type" : "dfs","names" : []}
-,{"type" : "exec","id" : ["_l24"],"code" : "hello_world","args" : [],"rules" : [],"line" :24}
-]}
-,
-"main" : {"type" : "struct","where":{"type":"luna"}
-,"args" : [],"body" : [
-{"type" : "dfs","names" : []}
-,{"type" : "exec","id" : ["a"],"code" : "sub4","args" : [],"rules" : [],"line" :29}
-]}
+{
+    "sub4": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": []
+            }, 
+            {
+                "code": "sub3", 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [], 
+                "line": 9, 
+                "type": "exec", 
+                "id": [
+                    "_l9"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "sub2": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": []
+            }, 
+            {
+                "code": "sub1", 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [], 
+                "line": 19, 
+                "type": "exec", 
+                "id": [
+                    "_l19"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "sub3": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": []
+            }, 
+            {
+                "code": "sub2", 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [], 
+                "line": 14, 
+                "type": "exec", 
+                "id": [
+                    "_l14"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "sub1": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": []
+            }, 
+            {
+                "code": "hello_world", 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [], 
+                "line": 24, 
+                "type": "exec", 
+                "id": [
+                    "_l24"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }, 
+    "hello_world": {
+        "type": "extern", 
+        "code": "c_helloworld", 
+        "nocpu": "false", 
+        "cuda_support": "false", 
+        "args": []
+    }, 
+    "main": {
+        "body": [
+            {
+                "type": "dfs", 
+                "names": []
+            }, 
+            {
+                "code": "sub4", 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
+                "args": [], 
+                "line": 29, 
+                "type": "exec", 
+                "id": [
+                    "a"
+                ]
+            }
+        ], 
+        "type": "struct", 
+        "args": [], 
+        "where": {
+            "type": "luna"
+        }
+    }
 }

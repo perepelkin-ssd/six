@@ -522,3 +522,39 @@ ValuePtr Context::cast(const std::string &type, const ValuePtr &val)
 	}
 }
 
+std::set<std::pair<Name, std::vector<int> > > Context::get_names(
+	const Id &id) const
+{
+	std::set<std::pair<Name, std::vector<int> > > res;
+	// process names_
+	for (auto it : names_) {
+		auto name=it.first;
+		auto id_prefix=it.second;
+		printf("MATCH %s ?= %s: %s\n",
+			id.to_string().c_str(),
+			id_prefix.to_string().c_str(), (id.starts_with(id_prefix)?
+				"Yes": "No"));
+		if (id.starts_with(id_prefix)) {
+			res.insert(std::make_pair(name, std::vector<int>(
+				id.begin()+id_prefix.size(), id.end())));
+		}
+	}
+	// process params
+	for (auto it : params_) {
+		if (it.second->type()!=Reference) {
+			continue;
+		}
+		auto name=it.first;
+		auto id_prefix=(Id)(*it.second);
+		printf("P_MATCH %s ?= %s: %s\n",
+			id.to_string().c_str(),
+			id_prefix.to_string().c_str(), (id.starts_with(id_prefix)?
+				"Yes": "No"));
+		if (id.starts_with(id_prefix)) {
+			WARN("result: " + name);
+			res.insert(std::make_pair(name, std::vector<int>(
+				id.begin()+id_prefix.size(), id.end())));
+		}
+	}
+	return res;
+}

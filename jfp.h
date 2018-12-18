@@ -5,6 +5,7 @@
 #include "context.h"
 #include "factory.h"
 #include "json.h"
+#include "locator.h"
 #include "task.h"
 
 class JfpExec : public Task
@@ -13,7 +14,7 @@ public:
 	virtual ~JfpExec() {}
 
 	JfpExec(const Id &fp_id, const Id &cf_id, const std::string &jdump,
-		Factory &);
+		const LocatorPtr &, Factory &);
 	JfpExec(BufferPtr &, Factory &);
 
 	virtual void run(const EnvironPtr &);
@@ -29,6 +30,13 @@ private:
 	Context ctx_;
 	bool pushed_flag_;
 	std::set<Id> requested_;
+	LocatorPtr loc_;
+	std::map<Id, json> locators_;
+	// e.g.: "x": {
+	//	"ref": ["x", {..i..}],
+	//	"expr": {..i..}
+	//	"type": "locator_cyclic"
+	// }
 
 	const json &fp() { return *fp_; }
 
@@ -37,8 +45,6 @@ private:
 	void init_child_context(JfpExec *child, const Context &base);
 	void init_child_context_arg(JfpExec *child,
 		const json &, const Context &base);
-
-	NodeId get_next_node(const EnvironPtr &, const Id &);
 
 	void check_exec(const EnvironPtr &);
 	void exec(const EnvironPtr &);
@@ -58,6 +64,11 @@ private:
 	void do_afterwork(const EnvironPtr &, const Context &);
 
 	void _assert_rules();
+
+	LocatorPtr get_global_locator(const Id &, const EnvironPtr &,
+		const Context &);
+	NodeId glocate_next_node(const Id &, const EnvironPtr &,
+		const Context &);
 };
 
 class JfpReg : public Task

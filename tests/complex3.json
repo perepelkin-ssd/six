@@ -10,10 +10,31 @@
             {
                 "body": [
                     {
+                        "type": "dfs", 
+                        "names": []
+                    }, 
+                    {
                         "body": [
                             {
+                                "type": "dfs", 
+                                "names": []
+                            }, 
+                            {
                                 "code": "show", 
-                                "rules": [], 
+                                "rules": [
+                                    {
+                                        "expr": {
+                                            "ref": [
+                                                "j"
+                                            ], 
+                                            "type": "id", 
+                                            "is_expr": true
+                                        }, 
+                                        "ruletype": "expr", 
+                                        "property": "locator_cyclic", 
+                                        "type": "rule"
+                                    }
+                                ], 
                                 "args": [
                                     {
                                         "type": "sconst", 
@@ -52,7 +73,7 @@
                                         ]
                                     }
                                 ], 
-                                "line": 12, 
+                                "line": 15, 
                                 "type": "exec", 
                                 "id": [
                                     "a", 
@@ -78,6 +99,27 @@
                             "is_expr": true, 
                             "value": 1
                         }, 
+                        "rules": [
+                            {
+                                "flags": [
+                                    "unroll_at_once"
+                                ], 
+                                "ruletype": "flags", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "expr": {
+                                    "ref": [
+                                        "j"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
+                                "type": "rule"
+                            }
+                        ], 
                         "type": "while", 
                         "wout": {
                             "ref": [
@@ -123,6 +165,25 @@
                     "is_expr": true, 
                     "value": 5
                 }, 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "flags": [
+                            "unroll_at_once"
+                        ], 
+                        "ruletype": "flags", 
+                        "type": "rule"
+                    }
+                ], 
                 "where": {
                     "type": "luna"
                 }, 
@@ -139,7 +200,29 @@
         "args": [], 
         "where": {
             "type": "luna"
-        }
+        }, 
+        "rules": [
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "dummy", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }
+        ]
     }, 
     "show": {
         "type": "extern", 
