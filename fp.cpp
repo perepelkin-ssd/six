@@ -267,6 +267,10 @@ LocatorPtr CF::get_global_locator(const json &loc_spec,
 		// compare indices count
 		// make context' with vars assigned
 		Context ctx1=ctx;
+		if(indices.size()+1!=loc_spec["ref"].size()) {
+			ABORT("Idx length missmatch: " +
+				loc_spec.dump(2));
+		}
 		assert(indices.size()+1==loc_spec["ref"].size());
 		for (auto i=0u; i<indices.size(); i++) {
 			assert(loc_spec["ref"][i+1]["type"]=="id"
@@ -307,6 +311,7 @@ json CF::get_loc_spec(const json &cf)
 		}
 	}
 	
+	fprintf(stderr, "rules: %s\n", cf["rules"].dump(2).c_str());
 	ABORT("No locator: " + ref.dump(2));
 }
 

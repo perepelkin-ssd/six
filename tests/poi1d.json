@@ -165,6 +165,18 @@
                                 "ruletype": "enum", 
                                 "property": "req_unlimited", 
                                 "type": "rule"
+                            }, 
+                            {
+                                "expr": {
+                                    "ref": [
+                                        "i"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
+                                "type": "rule"
                             }
                         ], 
                         "args": [
@@ -241,7 +253,7 @@
                                 ]
                             }
                         ], 
-                        "line": 63, 
+                        "line": 68, 
                         "type": "exec", 
                         "id": [
                             "maxdiff", 
@@ -278,6 +290,16 @@
                         ], 
                         "ruletype": "flags", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "where": {
@@ -293,7 +315,18 @@
             }, 
             {
                 "code": "calc_max", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "type": "-", 
@@ -326,10 +359,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 67, 
+                "line": 75, 
                 "type": "exec", 
                 "id": [
-                    "_l67"
+                    "_l73"
                 ]
             }
         ], 
@@ -358,7 +391,36 @@
         ], 
         "where": {
             "type": "luna"
-        }
+        }, 
+        "rules": [
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "mxc", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "j"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }
+        ]
     }, 
     "calc_maxdiff": {
         "type": "extern", 
@@ -611,6 +673,18 @@
                                 "ruletype": "enum", 
                                 "property": "req_unlimited", 
                                 "type": "rule"
+                            }, 
+                            {
+                                "expr": {
+                                    "ref": [
+                                        "i"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
+                                "type": "rule"
                             }
                         ], 
                         "args": [
@@ -808,7 +882,7 @@
                                 "is_expr": true
                             }
                         ], 
-                        "line": 84, 
+                        "line": 95, 
                         "type": "exec", 
                         "id": [
                             "ps", 
@@ -844,6 +918,16 @@
                             "unroll_at_once"
                         ], 
                         "ruletype": "flags", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
                         "type": "rule"
                     }
                 ], 
@@ -1031,6 +1115,18 @@
                                 "ruletype": "enum", 
                                 "property": "req_unlimited", 
                                 "type": "rule"
+                            }, 
+                            {
+                                "expr": {
+                                    "ref": [
+                                        "i"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
+                                "type": "rule"
                             }
                         ], 
                         "args": [
@@ -1173,7 +1269,7 @@
                                 ]
                             }
                         ], 
-                        "line": 96, 
+                        "line": 109, 
                         "type": "exec", 
                         "id": [
                             "border", 
@@ -1210,6 +1306,16 @@
                         ], 
                         "ruletype": "flags", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "where": {
@@ -1225,7 +1331,18 @@
             }, 
             {
                 "code": "calc_max", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "type": "-", 
@@ -1283,10 +1400,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 101, 
+                "line": 117, 
                 "type": "exec", 
                 "id": [
-                    "_l101"
+                    "_l115"
                 ]
             }
         ], 
@@ -1315,7 +1432,130 @@
         ], 
         "where": {
             "type": "luna"
-        }
+        }, 
+        "rules": [
+            {
+                "expr": {
+                    "type": "id", 
+                    "ref": [
+                        "j"
+                    ], 
+                    "is_expr": true
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "FF", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "j"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "id", 
+                    "ref": [
+                        "j"
+                    ], 
+                    "is_expr": true
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "down", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "j"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "id", 
+                    "ref": [
+                        "j"
+                    ], 
+                    "is_expr": true
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "up", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "j"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "mx", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "j"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "k"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }
+        ]
     }, 
     "rmax": {
         "type": "extern", 
@@ -1419,6 +1659,16 @@
                         "ruletype": "enum", 
                         "property": "req_unlimited", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -1457,7 +1707,7 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 36, 
+                "line": 37, 
                 "type": "exec", 
                 "id": [
                     "_l33"
@@ -1596,6 +1846,16 @@
                                 "ruletype": "enum", 
                                 "property": "req_unlimited", 
                                 "type": "rule"
+                            }, 
+                            {
+                                "expr": {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
+                                "type": "rule"
                             }
                         ], 
                         "args": [
@@ -1668,7 +1928,7 @@
                                 "is_expr": true
                             }
                         ], 
-                        "line": 43, 
+                        "line": 45, 
                         "type": "exec", 
                         "id": [
                             "rmax", 
@@ -1695,6 +1955,16 @@
                             "unroll_at_once"
                         ], 
                         "ruletype": "flags", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
                         "type": "rule"
                     }
                 ], 
@@ -1768,6 +2038,16 @@
                         "ruletype": "enum", 
                         "property": "req_unlimited", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -1798,10 +2078,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 50, 
+                "line": 54, 
                 "type": "exec", 
                 "id": [
-                    "_l47"
+                    "_l50"
                 ]
             }
         ], 
@@ -1948,7 +2228,18 @@
             }, 
             {
                 "code": "print_info", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "type": "iconst", 
@@ -1976,10 +2267,10 @@
                         "value": 10
                     }
                 ], 
-                "line": 108, 
+                "line": 129, 
                 "type": "exec", 
                 "id": [
-                    "_l108"
+                    "_l129"
                 ]
             }, 
             {
@@ -1999,6 +2290,16 @@
                         ], 
                         "ruletype": "enum", 
                         "property": "req_unlimited", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
                         "type": "rule"
                     }
                 ], 
@@ -2035,10 +2336,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 112, 
+                "line": 134, 
                 "type": "exec", 
                 "id": [
-                    "_l110"
+                    "_l131"
                 ]
             }, 
             {
@@ -2083,6 +2384,18 @@
                                 ], 
                                 "ruletype": "enum", 
                                 "property": "req_unlimited", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "expr": {
+                                    "ref": [
+                                        "i"
+                                    ], 
+                                    "type": "id", 
+                                    "is_expr": true
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
                                 "type": "rule"
                             }
                         ], 
@@ -2138,7 +2451,7 @@
                                 "is_expr": true
                             }
                         ], 
-                        "line": 119, 
+                        "line": 142, 
                         "type": "exec", 
                         "id": [
                             "init_f", 
@@ -2175,6 +2488,16 @@
                         ], 
                         "ruletype": "flags", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "where": {
@@ -2205,6 +2528,16 @@
                         "ruletype": "enum", 
                         "property": "req_unlimited", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -2226,10 +2559,10 @@
                         "value": 1.0
                     }
                 ], 
-                "line": 124, 
+                "line": 151, 
                 "type": "exec", 
                 "id": [
-                    "_l122"
+                    "_l148"
                 ]
             }, 
             {
@@ -2256,6 +2589,16 @@
                                 ], 
                                 "ruletype": "enum", 
                                 "property": "delete", 
+                                "type": "rule"
+                            }, 
+                            {
+                                "expr": {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
                                 "type": "rule"
                             }
                         ], 
@@ -2296,10 +2639,10 @@
                                 "is_expr": true
                             }
                         ], 
-                        "line": 130, 
+                        "line": 158, 
                         "type": "exec", 
                         "id": [
-                            "_l128"
+                            "_l155"
                         ]
                     }
                 ], 
@@ -2344,6 +2687,16 @@
                             "unroll_at_once"
                         ], 
                         "ruletype": "flags", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
                         "type": "rule"
                     }
                 ], 
@@ -2427,6 +2780,16 @@
                         "ruletype": "enum", 
                         "property": "request", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -2438,10 +2801,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 138, 
+                "line": 170, 
                 "type": "exec", 
                 "id": [
-                    "_l138"
+                    "_l167"
                 ]
             }, 
             {
@@ -2486,6 +2849,16 @@
                         "ruletype": "enum", 
                         "property": "request", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -2504,10 +2877,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 139, 
+                "line": 174, 
                 "type": "exec", 
                 "id": [
-                    "_l139"
+                    "_l171"
                 ]
             }, 
             {
@@ -2521,6 +2894,16 @@
                         ], 
                         "ruletype": "enum", 
                         "property": "request", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
                         "type": "rule"
                     }
                 ], 
@@ -2568,10 +2951,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 142, 
+                "line": 178, 
                 "type": "exec", 
                 "id": [
-                    "_l140"
+                    "_l175"
                 ]
             }, 
             {
@@ -2616,6 +2999,16 @@
                                         "is_expr": true
                                     }
                                 ]
+                            }, 
+                            {
+                                "expr": {
+                                    "type": "iconst", 
+                                    "is_expr": true, 
+                                    "value": 0
+                                }, 
+                                "ruletype": "expr", 
+                                "property": "locator_cyclic", 
+                                "type": "rule"
                             }
                         ], 
                         "args": [
@@ -2625,10 +3018,10 @@
                                 "value": 10
                             }
                         ], 
-                        "line": 145, 
+                        "line": 183, 
                         "type": "exec", 
                         "id": [
-                            "_l145"
+                            "_l181"
                         ]
                     }
                 ], 
@@ -2650,6 +3043,16 @@
                         "ruletype": "enum", 
                         "property": "request", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ]
             }
@@ -2658,7 +3061,123 @@
         "args": [], 
         "where": {
             "type": "luna"
-        }
+        }, 
+        "rules": [
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "dft"
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "sft"
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "dim"
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "id", 
+                    "ref": [
+                        "j"
+                    ], 
+                    "is_expr": true
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "F", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "j"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "mx"
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "iter"
+                ]
+            }, 
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 0
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "maxdif", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }
+        ]
     }, 
     "copy_arr": {
         "type": "extern", 
