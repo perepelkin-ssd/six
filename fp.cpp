@@ -199,6 +199,117 @@ std::set<Id> CF::get_afterdels(const json &cf, const Context &ctx)
 	return res;
 }
 
+LocatorPtr CF::get_locator(const json &cf, const LocatorPtr &base,
+	const Context &ctx)
+{
+	if (cf.find("rules")==cf.end()) { return LocatorPtr(nullptr); }
+
+	std::set<std::pair<Id, Id> > res;
+
+	for (auto rule : cf["rules"]) {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="expr"
+				&& rule["property"]=="locator_cyclic") {
+			if (cf["type"]=="while") {
+				Context ctx1=ctx;
+				auto var=cf["var"].get<std::string>();
+				if (!ctx.can_eval(cf["start"])) {
+					ABORT("Cannot evaluate start expression for locator");
+				}
+				auto val=ctx.eval(cf["start"]);
+				ctx1.set_param(var, val, true);
+				if (!ctx1.can_eval(rule["expr"])) {
+					ABORT("Cannot evaluate locator expression");
+				}
+				return LocatorPtr(new CyclicLocator(
+					(int)(*ctx1.eval(rule["expr"]))));
+			} else {
+				return LocatorPtr(new CyclicLocator(
+					(int)(*ctx.eval(rule["expr"]))));
+			}
+		}
+	}
+
+	return LocatorPtr(nullptr);
+}
+
+std::map<Id, json> CF::get_global_locators(const json &cf,
+	const Context &ctx)
+{
+	if (cf.find("rules")==cf.end()) { return {}; }
+
+	std::map<Id, json> res;
+
+	for (auto rule : cf["rules"]) {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="map" && rule["property"]=="locator_cyclic") {
+			auto prefix=ctx.eval_ref(json({rule["id"][0]}));
+			auto ref=rule["id"];
+			auto expr=rule["expr"];
+			auto type=rule["property"];
+			assert(res.find(prefix)==res.end());
+			res[prefix]=json({
+				{"ref", ref},
+				{"expr", expr},
+				{"type", type}
+			});
+		}
+	}
+
+	return res;
+}
+
+LocatorPtr CF::get_global_locator(const json &loc_spec,
+	const std::vector<int> &indices, const Context &ctx)
+{
+	if (loc_spec["type"]=="locator_cyclic") {
+		// Algorithm:
+		// compare indices count
+		// make context' with vars assigned
+		Context ctx1=ctx;
+		assert(indices.size()+1==loc_spec["ref"].size());
+		for (auto i=0u; i<indices.size(); i++) {
+			assert(loc_spec["ref"][i+1]["type"]=="id"
+				&& loc_spec["ref"][i+1]["ref"].size()==1);
+			Name var=loc_spec["ref"][i+1]["ref"][0];
+			ctx1.set_param(var, IntValue::create(indices[i]), true);
+		}
+		return LocatorPtr(new CyclicLocator((int)(*ctx1.eval(loc_spec["expr"]))));
+		// TODO improve: make locator factory from json (loc_spec)
+	} else {
+		fprintf(stderr, "%s\n", loc_spec.dump(2).c_str());
+		ABORT("Unsupported locator type: " + loc_spec["type"].dump());
+	}
+}
+
+json CF::get_loc_spec(const json &cf)
+{
+	if (cf.find("rules")==cf.end()) {
+		ABORT("No locator: " + cf.dump(2));
+	}
+
+	if (cf.find("id")==cf.end()) {
+		ABORT("No id: " + cf.dump(2));
+	}
+
+	auto ref=cf["id"];
+
+	for (auto rule : cf["rules"]) {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="expr" 
+				&& rule["property"]=="locator_cyclic") {
+			json res={
+				{"ref", ref},
+				{"expr", rule["expr"]},
+				{"type", rule["property"]}
+			};
+			return res;
+		}
+	}
+	
+	ABORT("No locator: " + ref.dump(2));
+}
+
 bool CFFor::is_unroll_at_once(const json &cf)
 {
 	if (cf.find("rules")==cf.end()) { return true; }

@@ -32,8 +32,7 @@ public:
 
 	void serialize(Buffers &) const;
 
-	// Modifies the reference to the tail
-	static Id deserialize(Buffer &);
+	bool starts_with(const Id &prefix) const;
 
 private:
 	Name label_;

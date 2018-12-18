@@ -167,7 +167,7 @@ struct TaskEnv : public Environ, public BufHandler
 				if (std::get<0>(arg)==Custom) {
 					os << std::get<2>(arg) << "=";
 				}
-				os << std::get<1>(arg);
+				os << *std::get<1>(arg);
 			}
 		}
 		os<<")";

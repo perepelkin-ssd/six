@@ -5,6 +5,7 @@
 #include "context.h"
 #include "id.h"
 #include "json.h"
+#include "locator.h"
 
 struct CF
 {
@@ -22,7 +23,18 @@ struct CF
 	static bool is_ready_exec(const json &fp, const json &cf,
 		const Context &);
 	static std::set<Id> get_afterdels(const json &cf, const Context &);
-
+	static LocatorPtr get_locator(const json &cf, const LocatorPtr &base,
+		const Context &ctx);
+	static std::map<Id, json> get_global_locators(const json &cf,
+		const Context &);
+	// TODO: improve interface
+	static LocatorPtr get_global_locator(const json &loc_spec,
+		const std::vector<int> &indices, const Context &);
+	static json get_loc_spec(const json &cf);
+	// in format:
+	//	"ref": ["x", {..i..}],
+	//	"expr": {..i..}
+	//	"type": "locator_cyclic"
 };
 
 struct CFFor

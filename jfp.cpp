@@ -20,6 +20,13 @@ JfpExec::JfpExec(BufferPtr &buf, Factory &fact)
 	cf_id_=Id(buf);
 	j_=json::parse(Buffer::popString(buf));
 	loc_=fact.pop<Locator>(buf);
+	size_t count=Buffer::pop<size_t>(buf);
+	for (auto i=0u; i<count; i++) {
+		auto prefix=Id(buf);
+		auto j=json::parse(Buffer::popString(buf));
+		assert(locators_.find(prefix)==locators_.end());
+		locators_[prefix]=j;
+	}
 
 	ctx_=Context(buf, fact);
 }
@@ -30,7 +37,7 @@ void JfpExec::run(const EnvironPtr &env)
 
 	_assert_rules();
 	
-	NodeId next_node=get_next_node(env, cf_id_);
+	NodeId next_node=loc_->get_next_node(env->comm());
 
 	if (next_node!=env->comm().get_rank()) {
 		Buffers bufs;
@@ -48,7 +55,12 @@ void JfpExec::serialize(Buffers &bufs) const
 	fp_id_.serialize(bufs);
 	cf_id_.serialize(bufs);
 	bufs.push_back(Buffer::create(j_.dump()));
-	loc_->serialize(bufs)
+	loc_->serialize(bufs);
+	bufs.push_back(Buffer::create<size_t>(locators_.size()));
+	for (auto it : locators_) {
+		it.first.serialize(bufs);
+		bufs.push_back(Buffer::create(it.second.dump()));
+	}
 
 	ctx_.serialize(bufs);
 }
@@ -88,11 +100,6 @@ void JfpExec::request_requested_dfs(const EnvironPtr &env)
 {
 	auto req_dfs=CF::get_requested_dfs(j_, ctx_);
 	
-	std::string missing="";
-	for (auto df : req_dfs) {
-		missing+=" " + df.to_string();
-	}
-
 	for (auto dfid : req_dfs) {
 		if (requested_.find(dfid)!=requested_.end()) {
 			continue;
@@ -101,7 +108,7 @@ void JfpExec::request_requested_dfs(const EnvironPtr &env)
 			NOTE("REQUEST " + cf_id_.to_string()
 				+ " <= " + dfid.to_string());
 		}
-		NodeId df_node=get_next_node(env, dfid);
+		NodeId df_node=glocate_next_node(dfid, env, ctx_);
 		if (df_node==env->comm().get_rank()) {
 			NOTE("REQUEST LOCAL " + cf_id_.to_string()
 				+ " <= " + dfid.to_string());
@@ -134,27 +141,15 @@ void JfpExec::request_requested_dfs(const EnvironPtr &env)
 	}
 }
 
-NodeId JfpExec::get_next_node(const EnvironPtr &env, const Id &id)
-{
-	ABORT(id.to_string());
-	assert(id.size()>=2);
-	return (id[1]) % env->comm().get_size();
-}
-
 void JfpExec::check_exec(const EnvironPtr &env)
 {
-	NOTE("1");
 	request_requested_dfs(env);
-	NOTE("2");
 	if (CF::is_ready(fp(), j_, ctx_)) {
-		NOTE("3");
 		exec(env);
-		NOTE("4");
 
 		if (pushed_flag_) {
 			env->df_pusher().close(cf_id_);
 		}
-		NOTE("5");
 	}
 }
 
@@ -215,7 +210,7 @@ void JfpExec::exec_for(const EnvironPtr &env)
 		Context child_ctx=ctx_;
 		child_ctx.set_param(j_["var"].get<std::string>(),
 			IntValue::create(idx), true);
-		spawn_body(env, j_["body"], child_ctx);
+		spawn_body(env, j_, child_ctx);
 	}
 	do_afterwork(env, ctx_);
 }
@@ -239,25 +234,18 @@ void JfpExec::exec_while(const EnvironPtr &env)
 
 		do_afterwork(env, child_ctx);
 	} else {
-		spawn_body(env, j_["body"], child_ctx);
+		spawn_body(env, j_, child_ctx);
 
 		// TODO remove code duplication with spawnbody
 
 		Id item_id=env->create_id("_anon_"+j_["type"].get<std::string>());
 		json j1=j_;
 		j1["start"]={{"type", "iconst"}, {"value", start+1}};
-		JfpExec *item=new JfpExec(fp_id_, item_id, j1.dump(), fact_);
+		JfpExec *item=new JfpExec(fp_id_, item_id, j1.dump(), loc_, fact_);
 		item->ctx_=ctx_;
+		item->locators_=locators_;
 		TaskPtr task(item);
-		// push context
-
-		NodeId item_node=get_next_node(env, item_id);
-		if (item_node==env->comm().get_rank()) {
-			env->submit(task);
-		} else {
-			env->submit(TaskPtr(new Delivery(LocatorPtr(
-				new CyclicLocator(item_node)), task)));
-		}
+		env->submit(task);
 	}
 }
 
@@ -268,7 +256,7 @@ void JfpExec::exec_if(const EnvironPtr &env)
 	int cond=(int)(*ctx_.eval(j_["cond"]));
 	if (cond==0) {
 	} else {
-		spawn_body(env, j_["body"], ctx_);
+		spawn_body(env, j_, ctx_);
 	}
 	do_afterwork(env, ctx_);
 }
@@ -290,14 +278,17 @@ void JfpExec::exec_struct(const EnvironPtr &env, const json &sub)
 		child_ctx.set_param(param["id"], ctx_.cast(param["type"], arg));
 	}
 
-	spawn_body(env, sub["body"], child_ctx);
+	spawn_body(env, sub, child_ctx);
 
 	do_afterwork(env, ctx_);
 }
 
-void JfpExec::spawn_body(const EnvironPtr &env, const json &body,
+void JfpExec::spawn_body(const EnvironPtr &env, const json &item,
 		const Context &base_ctx)
 {
+	auto body=item["body"];
+	NOTE("spawn_body " + cf_id_.to_string() + " =>* " 
+		+ std::to_string(body.size()));
 	Context ctx; ctx=base_ctx;
 	// create local dfs
 	std::map<Name, Id> dfs_names;
@@ -321,12 +312,38 @@ void JfpExec::spawn_body(const EnvironPtr &env, const json &body,
 			if (bi.find("id")!=bi.end()) {
 				Name name=bi["id"][0].get<std::string>();
 				ctx.set_name(name, env->create_id(name));
+			} else if (bi["type"]!="while"
+				&& bi["type"]!="if"
+				&& bi["type"]!="for") {
+				WARN(bi.dump(2)+ " <- no id in cf of type " +
+					bi["type"].dump());
 			}
 		}
 	}
 
 	for (auto el : dfs_names) {
 		ctx.set_name(el.first, el.second);
+	}
+
+	// set global locators
+	for (auto it : CF::get_global_locators(item, ctx)) {
+		if (locators_.find(it.first)!=locators_.end()) {
+			ABORT("Locator redefinition for " + it.first.to_string());
+		}
+		locators_[it.first]=it.second;
+	}
+
+	// set local locators
+	for (auto bi : body) {
+		if (bi["type"]!="dfs") {
+			// create cfs names
+			if (bi.find("id")!=bi.end()) {
+				Id prefix=ctx.eval_ref(json({bi["id"][0]}));
+				if(locators_.find(prefix)==locators_.end()) {
+					locators_[prefix]=CF::get_loc_spec(bi);
+				}
+			}
+		}
 	}
 
 	for (auto bi : body) {
@@ -338,18 +355,20 @@ void JfpExec::spawn_body(const EnvironPtr &env, const json &body,
 				item_id=env->create_id("_anon_" 
 					+ bi["type"].get<std::string>());
 			}
-			JfpExec *item=new JfpExec(fp_id_, item_id, bi.dump(), fact_);
+			LocatorPtr loc=CF::get_locator(bi, loc_, ctx);
+			if (!loc) {
+				loc=get_global_locator(item_id, env, ctx);
+			}
+			if (!loc) {
+				ABORT("Failed to deduce locator");
+				// Or try to submit a trivial one?
+			}
+			JfpExec *item=new JfpExec(fp_id_, item_id, bi.dump(), loc,
+				fact_);
 			TaskPtr task(item);
 			// push context
 			init_child_context(item, ctx);
-
-			NodeId item_node=get_next_node(env, item_id);
-			if (item_node==env->comm().get_rank()) {
-				env->submit(task);
-			} else {
-				env->submit(TaskPtr(new Delivery(LocatorPtr(
-					new CyclicLocator(item_node)), task)));
-			}
+			env->submit(task);
 		}
 	}
 }
@@ -432,7 +451,7 @@ void JfpExec::do_afterwork(const EnvironPtr &env, const Context &ctx)
 		Id cfid=push.second;
 		NOTE("PUSHING " + dfid.to_string() + " >> "
 			+ cfid.to_string());
-		NodeId next_rank=get_next_node(env, cfid);
+		NodeId next_rank=glocate_next_node(cfid, env, ctx_);
 		if (next_rank==env->comm().get_rank()) {
 			env->df_pusher().push(cfid, dfid, ctx_.get_df(dfid));
 		} else {
@@ -443,7 +462,7 @@ void JfpExec::do_afterwork(const EnvironPtr &env, const Context &ctx)
 	}
 	for (auto dfid : CF::get_afterdels(j_, ctx)) {
 		TaskPtr task(new DelDf(dfid));;
-		NodeId next_rank=get_next_node(env, dfid);
+		NodeId next_rank=glocate_next_node(dfid, env, ctx_);
 		if (next_rank==env->comm().get_rank()) {
 			env->submit(task);
 		} else {
@@ -464,7 +483,7 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 
 	// store if requestable
 	if (CF::is_df_requested(j_, ctx_, id)) {
-		NodeId store_node=get_next_node(env, id);
+		NodeId store_node=glocate_next_node(id, env, ctx_);
 		int req_count;
 		if (CF::is_requested_unlimited(j_, ctx_, id)) {
 			req_count=-1;
@@ -496,9 +515,14 @@ void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
 
 void JfpExec::init_child_context(JfpExec *child, const Context &ctx)
 {
+	// TODO optimize here:
 	child->ctx_.pull_names(ctx); // maybe too much, but generally every
 	// body item can address any other body item
 	child->ctx_.pull_params(ctx); // maybe too much to clone?
+
+	// maybe too much? only import adressed names
+	child->locators_=locators_;
+
 
 	if (child->j_["type"]=="exec") {
 		if (child->j_["args"].empty()) {
@@ -592,6 +616,12 @@ void JfpExec::_assert_rules()
 			if (rule["property"]!="afterpush") {
 				ABORT("Unknown map property: " + rule["property"].dump());
 			}
+		} else if (rule["ruletype"]=="expr") {
+			assert(rule.find("property")!=rule.end());
+			assert(rule.find("expr")!=rule.end());
+			if (rule["property"]!="locator_cyclic") {
+				ABORT("Unknown expr property: " + rule["property"].dump());
+			}
 		} else if (rule["ruletype"]=="indexed") {
 			assert(rule.find("dfs")!=rule.end());
 		} else {
@@ -599,6 +629,28 @@ void JfpExec::_assert_rules()
 			ABORT("Unknown rule type: " + rule["ruletype"].dump());
 		}
 	}
+}
+
+LocatorPtr JfpExec::get_global_locator(const Id &id, const EnvironPtr &env,
+	const Context &ctx)
+{
+	Id prefix=id;
+	while (prefix.size()>=2) {
+		if (locators_.find(prefix)!=locators_.end()) {
+			return CF::get_global_locator(locators_[prefix],
+				std::vector<int>(id.begin()+prefix.size(), id.end()), ctx);
+		}
+		prefix.pop_back();
+	}
+	ABORT("No locator found for: " + id.to_string());
+}
+
+NodeId JfpExec::glocate_next_node(const Id &dfid, const EnvironPtr &env,
+	const Context &ctx)
+{
+	auto gloc=get_global_locator(dfid, env, ctx);
+	auto res=gloc->get_next_node(env->comm());
+	return res;
 }
 
 JfpReg::JfpReg(BufferPtr &buf, Factory &)

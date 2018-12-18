@@ -58,7 +58,14 @@ int main(int argc, char **argv)
 
 		rank=comm.get_rank();
 
-		note_prefix=std::to_string(rank)+": ";
+		note_prefix="";
+		if (comm.get_size()<5) {
+			note_prefix="\033[3" + std::to_string(2+rank) + "m";
+		}
+		note_prefix+=std::to_string(rank)+": ";
+		if (comm.get_size()==0) {
+			note_prefix="";
+		}
 
 		SoLib solib(argv[2]);
 

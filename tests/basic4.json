@@ -32,7 +32,18 @@
             }, 
             {
                 "code": "rprint", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 6
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "type": "rconst", 
@@ -48,7 +59,18 @@
             }, 
             {
                 "code": "rprint", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 5
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "type": "iconst", 
@@ -64,7 +86,18 @@
             }, 
             {
                 "code": "iprint", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 4
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "type": "rconst", 
@@ -80,7 +113,18 @@
             }, 
             {
                 "code": "rprint", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 3
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "expr": {
@@ -100,7 +144,18 @@
             }, 
             {
                 "code": "iprint", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 2
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "type": "/", 
@@ -127,7 +182,18 @@
             }, 
             {
                 "code": "rprint", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 1
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "type": "/", 
@@ -157,8 +223,7 @@
         "args": [], 
         "where": {
             "type": "luna"
-        }, 
-        "rules": []
+        }
     }, 
     "rprint": {
         "type": "extern", 

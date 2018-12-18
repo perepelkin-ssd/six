@@ -60,6 +60,16 @@
                             "is_expr": true, 
                             "value": 3
                         }
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 1
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -76,7 +86,7 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 15, 
+                "line": 16, 
                 "type": "exec", 
                 "id": [
                     "a"
@@ -137,7 +147,7 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 19, 
+                "line": 20, 
                 "type": "exec", 
                 "id": [
                     "b"
@@ -165,6 +175,16 @@
                         "ruletype": "enum", 
                         "property": "request", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 3
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -183,7 +203,7 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 22, 
+                "line": 24, 
                 "type": "exec", 
                 "id": [
                     "c"
@@ -211,6 +231,16 @@
                         "ruletype": "enum", 
                         "property": "request", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 4
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -229,7 +259,7 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 25, 
+                "line": 28, 
                 "type": "exec", 
                 "id": [
                     "d"
@@ -281,19 +311,6 @@
                 "expr": {
                     "type": "iconst", 
                     "is_expr": true, 
-                    "value": 1
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "a"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
                     "value": 2
                 }, 
                 "ruletype": "map", 
@@ -301,19 +318,6 @@
                 "type": "rule", 
                 "id": [
                     "b"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 3
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "c"
                 ]
             }
         ]

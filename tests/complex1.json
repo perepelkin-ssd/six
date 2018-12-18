@@ -36,6 +36,16 @@
                             "is_expr": true, 
                             "value": 2
                         }
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -59,10 +69,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 12, 
+                "line": 13, 
                 "type": "exec", 
                 "id": [
-                    "_l10"
+                    "d"
                 ]
             }
         ], 
@@ -79,8 +89,7 @@
         ], 
         "where": {
             "type": "luna"
-        }, 
-        "rules": []
+        }
     }, 
     "init": {
         "type": "extern", 
@@ -106,7 +115,18 @@
             }, 
             {
                 "code": "initialize", 
-                "rules": [], 
+                "rules": [
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
+                    }
+                ], 
                 "args": [
                     {
                         "ref": [
@@ -126,10 +146,10 @@
                         "value": 5
                     }
                 ], 
-                "line": 23, 
+                "line": 25, 
                 "type": "exec", 
                 "id": [
-                    "_l23"
+                    "a"
                 ]
             }, 
             {
@@ -153,6 +173,16 @@
                         ], 
                         "ruletype": "enum", 
                         "property": "request", 
+                        "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
                         "type": "rule"
                     }
                 ], 
@@ -182,10 +212,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 26, 
+                "line": 29, 
                 "type": "exec", 
                 "id": [
-                    "_l24"
+                    "b"
                 ]
             }
         ], 
@@ -194,7 +224,35 @@
         "where": {
             "type": "luna"
         }, 
-        "rules": []
+        "rules": [
+            {
+                "expr": {
+                    "type": "iconst", 
+                    "is_expr": true, 
+                    "value": 1
+                }, 
+                "ruletype": "map", 
+                "property": "locator_cyclic", 
+                "type": "rule", 
+                "id": [
+                    "z", 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "i"
+                        ], 
+                        "is_expr": true
+                    }, 
+                    {
+                        "type": "id", 
+                        "ref": [
+                            "j"
+                        ], 
+                        "is_expr": true
+                    }
+                ]
+            }
+        ]
     }, 
     "display": {
         "body": [
@@ -233,6 +291,16 @@
                         "ruletype": "enum", 
                         "property": "request", 
                         "type": "rule"
+                    }, 
+                    {
+                        "expr": {
+                            "type": "iconst", 
+                            "is_expr": true, 
+                            "value": 0
+                        }, 
+                        "ruletype": "expr", 
+                        "property": "locator_cyclic", 
+                        "type": "rule"
                     }
                 ], 
                 "args": [
@@ -267,10 +335,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 18, 
+                "line": 20, 
                 "type": "exec", 
                 "id": [
-                    "_l16"
+                    "c"
                 ]
             }
         ], 
@@ -287,7 +355,6 @@
         ], 
         "where": {
             "type": "luna"
-        }, 
-        "rules": []
+        }
     }
 }
