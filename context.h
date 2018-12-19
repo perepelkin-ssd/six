@@ -76,4 +76,6 @@ private:
 	void _pull_names(const Context &);
 	void _pull_param(const Name &name, const Context &);
 	void _pull_params(const Context &);
+
+	virtual std::string _to_string() const;
 };

@@ -171,7 +171,8 @@ struct TaskEnv : public Environ, public BufHandler
 			}
 		}
 		os<<")";
-		LOG(os.str());
+		NOTE(os.str());
+		//fprintf(stderr, "%d: %s\n", (int)comm_.get_rank(), os.str().c_str());
 		clib_.execute(code, args);
 	}
 
@@ -220,7 +221,7 @@ RTS::RTS(Comm &comm, CodeLib &clib)
 	});
 
 	comm_.start();
-	pool_.start(1);
+	pool_.start(10);
 }
 
 //CfEnv &RTS::get_env() { return env_; }

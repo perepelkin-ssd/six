@@ -199,6 +199,26 @@ std::set<Id> CF::get_afterdels(const json &cf, const Context &ctx)
 	return res;
 }
 
+std::set<Id> CF::get_aftersets(const json &cf, const Context &ctx)
+{
+	if (cf.find("rules")==cf.end()) { return {}; }
+
+	std::set<Id> res;
+	for (auto rule : cf["rules"]) {
+		assert(rule["type"]=="rule");
+		if (rule["ruletype"]=="indexed_setdfs") {
+			for (auto ref : rule["dfs"]) {
+				res.insert(ctx.eval_ref(ref["ref"]));
+			}
+		} else if (rule["ruletype"]=="enum" && rule["property"]=="set") {
+			for (auto ref : rule["items"]) {
+				res.insert(ctx.eval_ref(ref));
+			}
+		}
+	}
+	return res;
+}
+
 LocatorPtr CF::get_locator(const json &cf, const LocatorPtr &base,
 	const Context &ctx)
 {
@@ -247,7 +267,10 @@ std::map<Id, json> CF::get_global_locators(const json &cf,
 			auto ref=rule["id"];
 			auto expr=rule["expr"];
 			auto type=rule["property"];
-			assert(res.find(prefix)==res.end());
+			if(res.find(prefix)!=res.end()) {
+				ABORT("Locator redefinition: " +
+					ref.dump());
+			}
 			res[prefix]=json({
 				{"ref", ref},
 				{"expr", expr},

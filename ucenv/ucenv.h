@@ -60,6 +60,16 @@ public:
 		return static_cast<T *>(create(size*sizeof(T)));
 	}
 
+	template<class T>
+	T *create(size_t size, const T &init_val)
+	{
+		T *res=create<T>(size);
+		for (auto i=0u; i<size; i++) {
+			res[i]=init_val;
+		}
+		return res;
+	}
+
 	void grabBuffer(const DF &input_df);
 	void copy(const DF &);
 

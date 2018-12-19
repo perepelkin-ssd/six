@@ -208,8 +208,8 @@ ValuePtr Context::_get_df(const Id &id) const
 {
 	auto it=dfs_.find(id);
 	if (it==dfs_.end()) {
-		fprintf(stderr, "Context::_get_df: not found: %s\n",
-			id.to_string().c_str());
+		fprintf(stderr, "Context::_get_df: not found: %s in %s\n",
+			id.to_string().c_str(), _to_string().c_str());
 		ABORT("");
 	} else {
 		return it->second;
@@ -486,7 +486,11 @@ void Context::serialize(Buffers &bufs) const
 std::string Context::to_string() const
 {
 	std::lock_guard<std::mutex> lk(m_);
+	return _to_string();
+}
 
+std::string Context::_to_string() const
+{
 	std::ostringstream os;
 
 	os << "{";

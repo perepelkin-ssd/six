@@ -23,6 +23,7 @@ struct CF
 	static bool is_ready_exec(const json &fp, const json &cf,
 		const Context &);
 	static std::set<Id> get_afterdels(const json &cf, const Context &);
+	static std::set<Id> get_aftersets(const json &cf, const Context &);
 	static LocatorPtr get_locator(const json &cf, const LocatorPtr &base,
 		const Context &ctx);
 	static std::map<Id, json> get_global_locators(const json &cf,

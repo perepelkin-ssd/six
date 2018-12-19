@@ -37,6 +37,8 @@ private:
 	//	"expr": {..i..}
 	//	"type": "locator_cyclic"
 	// }
+	std::mutex m_;
+	bool executed_flag_;
 
 	const json &fp() { return *fp_; }
 
@@ -56,7 +58,7 @@ private:
 	void exec_extern(const EnvironPtr &, const Name &);
 	void spawn_body(const EnvironPtr &, const json &, const Context &);
 
-	void df_computed(const EnvironPtr &env, const json &ref,
+	void df_computed(const EnvironPtr &env, const Id &,
 		const ValuePtr &);
 
 	void request_requested_dfs(const EnvironPtr &env);

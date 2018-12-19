@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include "common.h"
+
 ThreadPool::ThreadPool()
 	: running_jobs_(0), stop_flag_(false)
 {
@@ -56,6 +58,8 @@ void ThreadPool::submit(std::function<void()> job)
 
 	jobs_.push(job);
 
+	NOTE("ThreadPool::submit " + std::to_string((size_t)(&job)));
+
 	cv_.notify_one();
 }
 
@@ -81,6 +85,7 @@ void ThreadPool::routine()
 		
 		auto job=jobs_.front();
 		jobs_.pop();
+		NOTE("ThreadPool::run " + std::to_string((size_t)(&job)));
 		running_jobs_++;
 		
 		lk.unlock();
@@ -88,6 +93,8 @@ void ThreadPool::routine()
 		job();
 
 		lk.lock();
+
+		NOTE("ThreadPool::finish " + std::to_string((size_t)(&job)));
 
 		assert(running_jobs_>0);
 		running_jobs_--;

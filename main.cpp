@@ -36,8 +36,8 @@ RTS *rts;
 
 void signal_handler(int signal)
 {
-	NOTE("Signaled " + std::to_string(signal));
-	NOTE(rts->to_string());
+	WARN("Signaled " + std::to_string(signal));
+	WARN(rts->to_string());
 	ABORT("SIGNALED");
 }
 

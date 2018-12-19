@@ -12,9 +12,6 @@ extern std::string note_prefix;
 	"\033[2m%s:%d\033[0m\n", \
 	note_prefix.c_str(), std::string(msg).c_str(), __FILE__, __LINE__)
 
-#define LOG(msg) if (true) printf("%s%s\n", \
-	note_prefix.c_str(), std::string(msg).c_str())
-
 #define WARN(msg) { \
 	fprintf(stderr, "\033[33;1mWARNING:\033[0m %s \033[34m%s:%d\033[0m\n",\
 	std::string(msg).c_str(), __FILE__, __LINE__); \

@@ -73,6 +73,10 @@ std::string JfpExec::to_string() const
 
 void JfpExec::resolve_args(const EnvironPtr &env)
 {
+	{
+		std::lock_guard<std::mutex> lk(m_);
+		executed_flag_=false;
+	}
 	NOTE("RESOLVING " + cf_id_.to_string());
 	pushed_flag_=false;
 
@@ -144,6 +148,11 @@ void JfpExec::request_requested_dfs(const EnvironPtr &env)
 void JfpExec::check_exec(const EnvironPtr &env)
 {
 	request_requested_dfs(env);
+	for (auto dfid : requested_) {
+		if (!ctx_.has_df(dfid)) {
+			return;
+		}
+	}
 	if (CF::is_ready(fp(), j_, ctx_)) {
 		exec(env);
 
@@ -155,6 +164,13 @@ void JfpExec::check_exec(const EnvironPtr &env)
 
 void JfpExec::exec(const EnvironPtr &env)
 {
+	{
+		std::lock_guard<std::mutex> lk(m_);
+		if (executed_flag_) {
+			return;
+		}
+		executed_flag_=true;
+	}
 	NOTE("JfpExec::exec " + to_string());
 	if (j_["type"]=="exec") { exec_exec(env); }
 	else if (j_["type"]=="for") { exec_for(env); }
@@ -230,7 +246,8 @@ void JfpExec::exec_while(const EnvironPtr &env)
 		IntValue::create(start), true);
 	int cond=(int)(*child_ctx.eval(j_["cond"]));
 	if (cond==0) {
-		df_computed(env, j_["wout"]["ref"], ValuePtr(new IntValue(start)));
+		df_computed(env, ctx_.eval_ref(j_["wout"]["ref"]),
+			ValuePtr(new IntValue(start)));
 
 		do_afterwork(env, child_ctx);
 	} else {
@@ -419,7 +436,8 @@ void JfpExec::exec_extern(const EnvironPtr &env, const Name &code)
 			}
 		} else if (param["type"]=="name") {
 			if (std::get<1>(args[i])) {
-				df_computed(env, arg["ref"], std::get<1>(args[i]));
+				df_computed(env, ctx_.eval_ref(arg["ref"]),
+					std::get<1>(args[i]));
 			} else {
 				fprintf(stderr, "extern %s: output parameter %d not set\n",
 					code.c_str(), (int)i);
@@ -464,7 +482,9 @@ void JfpExec::do_afterwork(const EnvironPtr &env, const Context &ctx)
 				new SubmitDfToCf(dfid, ctx_.get_df(dfid), cfid)))));
 		}
 	}
+	//Afterdels
 	for (auto dfid : CF::get_afterdels(j_, ctx)) {
+		NOTE("AFTERDEL " + dfid.to_string());
 		TaskPtr task(new DelDf(dfid));;
 		NodeId next_rank=glocate_next_node(dfid, env, ctx_);
 		if (next_rank==env->comm().get_rank()) {
@@ -474,13 +494,16 @@ void JfpExec::do_afterwork(const EnvironPtr &env, const Context &ctx)
 				new CyclicLocator(next_rank)), task)));
 		}
 	}
+	//Aftersets
+	for (auto dfid : CF::get_aftersets(j_, ctx)) {
+		df_computed(env, dfid, IntValue::create(1));
+	}
 	NOTE("AFTERWORK DONE: " + cf_id_.to_string());
 }
 
-void JfpExec::df_computed(const EnvironPtr &env, const json &ref,
+void JfpExec::df_computed(const EnvironPtr &env, const Id &id,
 	const ValuePtr &val)
 {
-	Id id=ctx_.eval_ref(ref);
 	NOTE("DF COMPUTED: " + id.to_string() + ": " + val->to_string());
 
 	ctx_.set_df(id, val);
@@ -627,6 +650,8 @@ void JfpExec::_assert_rules()
 				ABORT("Unknown expr property: " + rule["property"].dump());
 			}
 		} else if (rule["ruletype"]=="indexed") {
+			assert(rule.find("dfs")!=rule.end());
+		} else if (rule["ruletype"]=="indexed_setdfs") {
 			assert(rule.find("dfs")!=rule.end());
 		} else {
 			fprintf(stderr, "rule: %s\n", rule.dump(2).c_str());
