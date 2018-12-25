@@ -76,25 +76,26 @@ void JfpExec::resolve_args(const EnvironPtr &env)
 	{
 		std::lock_guard<std::mutex> lk(m_);
 		executed_flag_=false;
-	}
-	NOTE("RESOLVING " + cf_id_.to_string());
-	pushed_flag_=false;
 
-	request_requested_dfs(env);
+		NOTE("RESOLVING " + cf_id_.to_string());
+		pushed_flag_=false;
 
-	// Has pushed?
+		request_requested_dfs(env);
 
-	pushed_flag_=CF::has_pushes(j_);
+		// Has pushed?
 
-	if (pushed_flag_) {
-		NOTE("PUSHWAITING " + cf_id_.to_string());
-		env->df_pusher().open(cf_id_, [this, env](const Id &dfid,
-				const ValuePtr &val) {
-			ctx_.set_df(dfid, val);
-			NOTE("PUSH RECV: " + cf_id_.to_string() + " << " 
-				+ dfid.to_string());
-			check_exec(env);
-		});
+		pushed_flag_=CF::has_pushes(j_);
+
+		if (pushed_flag_) {
+			NOTE("PUSHWAITING " + cf_id_.to_string());
+			env->df_pusher().open(cf_id_, [this, env](const Id &dfid,
+					const ValuePtr &val) {
+				ctx_.set_df(dfid, val);
+				NOTE("PUSH RECV: " + cf_id_.to_string() + " << " 
+					+ dfid.to_string());
+				check_exec(env);
+			});
+		}
 	}
 
 	check_exec(env);
@@ -147,6 +148,9 @@ void JfpExec::request_requested_dfs(const EnvironPtr &env)
 
 void JfpExec::check_exec(const EnvironPtr &env)
 {
+	std::unique_lock<std::mutex> lk(m_);
+	if (executed_flag_) { return; }
+
 	request_requested_dfs(env);
 	for (auto dfid : requested_) {
 		if (!ctx_.has_df(dfid)) {
@@ -154,7 +158,10 @@ void JfpExec::check_exec(const EnvironPtr &env)
 		}
 	}
 	if (CF::is_ready(fp(), j_, ctx_)) {
+		executed_flag_=true;
+		lk.unlock();
 		exec(env);
+		lk.lock();
 
 		if (pushed_flag_) {
 			env->df_pusher().close(cf_id_);
@@ -164,13 +171,6 @@ void JfpExec::check_exec(const EnvironPtr &env)
 
 void JfpExec::exec(const EnvironPtr &env)
 {
-	{
-		std::lock_guard<std::mutex> lk(m_);
-		if (executed_flag_) {
-			return;
-		}
-		executed_flag_=true;
-	}
 	NOTE("JfpExec::exec " + to_string());
 	if (j_["type"]=="exec") { exec_exec(env); }
 	else if (j_["type"]=="for") { exec_for(env); }

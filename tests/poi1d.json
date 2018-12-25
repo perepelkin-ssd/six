@@ -95,90 +95,8 @@
             {
                 "body": [
                     {
-                        "type": "dfs", 
-                        "names": []
-                    }, 
-                    {
                         "code": "calc_maxdiff", 
-                        "rules": [
-                            {
-                                "ruletype": "indexed", 
-                                "type": "rule", 
-                                "dfs": [
-                                    {
-                                        "ref": [
-                                            "FF", 
-                                            {
-                                                "ref": [
-                                                    "i"
-                                                ], 
-                                                "type": "id", 
-                                                "is_expr": true
-                                            }
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }
-                                ]
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "dim"
-                                    ], 
-                                    [
-                                        "sft"
-                                    ], 
-                                    [
-                                        "FF", 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "request", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "mxc", 
-                                        {
-                                            "type": "iconst", 
-                                            "is_expr": true, 
-                                            "value": 0
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "req_unlimited", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "expr": {
-                                    "ref": [
-                                        "i"
-                                    ], 
-                                    "type": "id", 
-                                    "is_expr": true
-                                }, 
-                                "ruletype": "expr", 
-                                "property": "locator_cyclic", 
-                                "type": "rule"
-                            }
-                        ], 
+                        "rules": [], 
                         "args": [
                             {
                                 "ref": [
@@ -253,7 +171,7 @@
                                 ]
                             }
                         ], 
-                        "line": 68, 
+                        "line": 43, 
                         "type": "exec", 
                         "id": [
                             "maxdiff", 
@@ -274,7 +192,7 @@
                         {
                             "type": "iconst", 
                             "is_expr": true, 
-                            "value": 4
+                            "value": 32
                         }, 
                         {
                             "type": "iconst", 
@@ -283,25 +201,6 @@
                         }
                     ]
                 }, 
-                "rules": [
-                    {
-                        "flags": [
-                            "unroll_at_once"
-                        ], 
-                        "ruletype": "flags", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
                 "where": {
                     "type": "luna"
                 }, 
@@ -315,18 +214,7 @@
             }, 
             {
                 "code": "calc_max", 
-                "rules": [
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "type": "-", 
@@ -335,7 +223,7 @@
                             {
                                 "type": "iconst", 
                                 "is_expr": true, 
-                                "value": 4
+                                "value": 32
                             }, 
                             {
                                 "type": "iconst", 
@@ -359,10 +247,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 75, 
+                "line": 44, 
                 "type": "exec", 
                 "id": [
-                    "_l73"
+                    "_l44"
                 ]
             }
         ], 
@@ -391,36 +279,7 @@
         ], 
         "where": {
             "type": "luna"
-        }, 
-        "rules": [
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "mxc", 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "i"
-                        ], 
-                        "is_expr": true
-                    }, 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "j"
-                        ], 
-                        "is_expr": true
-                    }
-                ]
-            }
-        ]
+        }
     }, 
     "calc_maxdiff": {
         "type": "extern", 
@@ -476,10 +335,6 @@
             {
                 "body": [
                     {
-                        "type": "dfs", 
-                        "names": []
-                    }, 
-                    {
                         "code": "ps", 
                         "rules": [
                             {
@@ -508,183 +363,6 @@
                                         "is_expr": true
                                     }
                                 ]
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "sft"
-                                    ], 
-                                    [
-                                        "dim"
-                                    ], 
-                                    [
-                                        "F", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "request", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "FF", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ], 
-                                    [
-                                        "down", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }, 
-                                        {
-                                            "type": "%", 
-                                            "is_expr": true, 
-                                            "operands": [
-                                                {
-                                                    "type": "+", 
-                                                    "is_expr": true, 
-                                                    "operands": [
-                                                        {
-                                                            "type": "-", 
-                                                            "is_expr": true, 
-                                                            "operands": [
-                                                                {
-                                                                    "ref": [
-                                                                        "i"
-                                                                    ], 
-                                                                    "type": "id", 
-                                                                    "is_expr": true
-                                                                }, 
-                                                                {
-                                                                    "type": "iconst", 
-                                                                    "is_expr": true, 
-                                                                    "value": 1
-                                                                }
-                                                            ]
-                                                        }, 
-                                                        {
-                                                            "type": "iconst", 
-                                                            "is_expr": true, 
-                                                            "value": 4
-                                                        }
-                                                    ]
-                                                }, 
-                                                {
-                                                    "type": "iconst", 
-                                                    "is_expr": true, 
-                                                    "value": 4
-                                                }
-                                            ]
-                                        }
-                                    ], 
-                                    [
-                                        "up", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }, 
-                                        {
-                                            "type": "%", 
-                                            "is_expr": true, 
-                                            "operands": [
-                                                {
-                                                    "type": "+", 
-                                                    "is_expr": true, 
-                                                    "operands": [
-                                                        {
-                                                            "ref": [
-                                                                "i"
-                                                            ], 
-                                                            "type": "id", 
-                                                            "is_expr": true
-                                                        }, 
-                                                        {
-                                                            "type": "iconst", 
-                                                            "is_expr": true, 
-                                                            "value": 1
-                                                        }
-                                                    ]
-                                                }, 
-                                                {
-                                                    "type": "iconst", 
-                                                    "is_expr": true, 
-                                                    "value": 4
-                                                }
-                                            ]
-                                        }
-                                    ], 
-                                    [
-                                        "mx", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }, 
-                                        {
-                                            "type": "iconst", 
-                                            "is_expr": true, 
-                                            "value": 0
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "req_unlimited", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "expr": {
-                                    "ref": [
-                                        "i"
-                                    ], 
-                                    "type": "id", 
-                                    "is_expr": true
-                                }, 
-                                "ruletype": "expr", 
-                                "property": "locator_cyclic", 
-                                "type": "rule"
                             }
                         ], 
                         "args": [
@@ -790,14 +468,14 @@
                                                     {
                                                         "type": "iconst", 
                                                         "is_expr": true, 
-                                                        "value": 4
+                                                        "value": 32
                                                     }
                                                 ]
                                             }, 
                                             {
                                                 "type": "iconst", 
                                                 "is_expr": true, 
-                                                "value": 4
+                                                "value": 32
                                             }
                                         ]
                                     }
@@ -840,7 +518,7 @@
                                             {
                                                 "type": "iconst", 
                                                 "is_expr": true, 
-                                                "value": 4
+                                                "value": 32
                                             }
                                         ]
                                     }
@@ -882,7 +560,7 @@
                                 "is_expr": true
                             }
                         ], 
-                        "line": 95, 
+                        "line": 53, 
                         "type": "exec", 
                         "id": [
                             "ps", 
@@ -903,7 +581,7 @@
                         {
                             "type": "iconst", 
                             "is_expr": true, 
-                            "value": 4
+                            "value": 32
                         }, 
                         {
                             "type": "iconst", 
@@ -912,25 +590,6 @@
                         }
                     ]
                 }, 
-                "rules": [
-                    {
-                        "flags": [
-                            "unroll_at_once"
-                        ], 
-                        "ruletype": "flags", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
                 "where": {
                     "type": "luna"
                 }, 
@@ -944,10 +603,6 @@
             }, 
             {
                 "body": [
-                    {
-                        "type": "dfs", 
-                        "names": []
-                    }, 
                     {
                         "code": "change_border", 
                         "rules": [
@@ -975,158 +630,8 @@
                                         ], 
                                         "type": "id", 
                                         "is_expr": true
-                                    }, 
-                                    {
-                                        "ref": [
-                                            "up", 
-                                            {
-                                                "ref": [
-                                                    "it"
-                                                ], 
-                                                "type": "id", 
-                                                "is_expr": true
-                                            }, 
-                                            {
-                                                "ref": [
-                                                    "i"
-                                                ], 
-                                                "type": "id", 
-                                                "is_expr": true
-                                            }
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }, 
-                                    {
-                                        "ref": [
-                                            "down", 
-                                            {
-                                                "ref": [
-                                                    "it"
-                                                ], 
-                                                "type": "id", 
-                                                "is_expr": true
-                                            }, 
-                                            {
-                                                "ref": [
-                                                    "i"
-                                                ], 
-                                                "type": "id", 
-                                                "is_expr": true
-                                            }
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
                                     }
                                 ]
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "dim"
-                                    ], 
-                                    [
-                                        "up", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ], 
-                                    [
-                                        "down", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ], 
-                                    [
-                                        "FF", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "request", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "F", 
-                                        {
-                                            "type": "+", 
-                                            "is_expr": true, 
-                                            "operands": [
-                                                {
-                                                    "ref": [
-                                                        "it"
-                                                    ], 
-                                                    "type": "id", 
-                                                    "is_expr": true
-                                                }, 
-                                                {
-                                                    "type": "iconst", 
-                                                    "is_expr": true, 
-                                                    "value": 1
-                                                }
-                                            ]
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "req_unlimited", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "expr": {
-                                    "ref": [
-                                        "i"
-                                    ], 
-                                    "type": "id", 
-                                    "is_expr": true
-                                }, 
-                                "ruletype": "expr", 
-                                "property": "locator_cyclic", 
-                                "type": "rule"
                             }
                         ], 
                         "args": [
@@ -1269,7 +774,7 @@
                                 ]
                             }
                         ], 
-                        "line": 109, 
+                        "line": 56, 
                         "type": "exec", 
                         "id": [
                             "border", 
@@ -1290,7 +795,7 @@
                         {
                             "type": "iconst", 
                             "is_expr": true, 
-                            "value": 4
+                            "value": 32
                         }, 
                         {
                             "type": "iconst", 
@@ -1299,25 +804,6 @@
                         }
                     ]
                 }, 
-                "rules": [
-                    {
-                        "flags": [
-                            "unroll_at_once"
-                        ], 
-                        "ruletype": "flags", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
                 "where": {
                     "type": "luna"
                 }, 
@@ -1331,18 +817,7 @@
             }, 
             {
                 "code": "calc_max", 
-                "rules": [
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "type": "-", 
@@ -1351,7 +826,7 @@
                             {
                                 "type": "iconst", 
                                 "is_expr": true, 
-                                "value": 4
+                                "value": 32
                             }, 
                             {
                                 "type": "iconst", 
@@ -1400,10 +875,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 117, 
+                "line": 58, 
                 "type": "exec", 
                 "id": [
-                    "_l115"
+                    "_l58"
                 ]
             }
         ], 
@@ -1432,130 +907,7 @@
         ], 
         "where": {
             "type": "luna"
-        }, 
-        "rules": [
-            {
-                "expr": {
-                    "type": "id", 
-                    "ref": [
-                        "j"
-                    ], 
-                    "is_expr": true
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "FF", 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "i"
-                        ], 
-                        "is_expr": true
-                    }, 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "j"
-                        ], 
-                        "is_expr": true
-                    }
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "id", 
-                    "ref": [
-                        "j"
-                    ], 
-                    "is_expr": true
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "down", 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "i"
-                        ], 
-                        "is_expr": true
-                    }, 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "j"
-                        ], 
-                        "is_expr": true
-                    }
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "id", 
-                    "ref": [
-                        "j"
-                    ], 
-                    "is_expr": true
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "up", 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "i"
-                        ], 
-                        "is_expr": true
-                    }, 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "j"
-                        ], 
-                        "is_expr": true
-                    }
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "mx", 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "i"
-                        ], 
-                        "is_expr": true
-                    }, 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "j"
-                        ], 
-                        "is_expr": true
-                    }, 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "k"
-                        ], 
-                        "is_expr": true
-                    }
-                ]
-            }
-        ]
+        }
     }, 
     "rmax": {
         "type": "extern", 
@@ -1596,81 +948,7 @@
             }, 
             {
                 "code": "set_real", 
-                "rules": [
-                    {
-                        "ruletype": "indexed", 
-                        "type": "rule", 
-                        "dfs": [
-                            {
-                                "ref": [
-                                    "mx", 
-                                    {
-                                        "type": "iconst", 
-                                        "is_expr": true, 
-                                        "value": 0
-                                    }, 
-                                    {
-                                        "type": "iconst", 
-                                        "is_expr": true, 
-                                        "value": 0
-                                    }
-                                ], 
-                                "type": "id", 
-                                "is_expr": true
-                            }
-                        ]
-                    }, 
-                    {
-                        "items": [
-                            [
-                                "mx", 
-                                {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 0
-                                }, 
-                                {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 0
-                                }
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "items": [
-                            [
-                                "mx", 
-                                {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 1
-                                }, 
-                                {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 0
-                                }
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "req_unlimited", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "ref": [
@@ -1707,7 +985,7 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 37, 
+                "line": 33, 
                 "type": "exec", 
                 "id": [
                     "_l33"
@@ -1716,148 +994,8 @@
             {
                 "body": [
                     {
-                        "type": "dfs", 
-                        "names": []
-                    }, 
-                    {
                         "code": "rmax", 
-                        "rules": [
-                            {
-                                "ruletype": "indexed", 
-                                "type": "rule", 
-                                "dfs": [
-                                    {
-                                        "ref": [
-                                            "mx", 
-                                            {
-                                                "type": "iconst", 
-                                                "is_expr": true, 
-                                                "value": 1
-                                            }, 
-                                            {
-                                                "type": "-", 
-                                                "is_expr": true, 
-                                                "operands": [
-                                                    {
-                                                        "ref": [
-                                                            "i"
-                                                        ], 
-                                                        "type": "id", 
-                                                        "is_expr": true
-                                                    }, 
-                                                    {
-                                                        "type": "iconst", 
-                                                        "is_expr": true, 
-                                                        "value": 1
-                                                    }
-                                                ]
-                                            }
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }, 
-                                    {
-                                        "ref": [
-                                            "mx", 
-                                            {
-                                                "type": "iconst", 
-                                                "is_expr": true, 
-                                                "value": 0
-                                            }, 
-                                            {
-                                                "ref": [
-                                                    "i"
-                                                ], 
-                                                "type": "id", 
-                                                "is_expr": true
-                                            }
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }
-                                ]
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "mx", 
-                                        {
-                                            "type": "iconst", 
-                                            "is_expr": true, 
-                                            "value": 0
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ], 
-                                    [
-                                        "mx", 
-                                        {
-                                            "type": "iconst", 
-                                            "is_expr": true, 
-                                            "value": 1
-                                        }, 
-                                        {
-                                            "type": "-", 
-                                            "is_expr": true, 
-                                            "operands": [
-                                                {
-                                                    "ref": [
-                                                        "i"
-                                                    ], 
-                                                    "type": "id", 
-                                                    "is_expr": true
-                                                }, 
-                                                {
-                                                    "type": "iconst", 
-                                                    "is_expr": true, 
-                                                    "value": 1
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "request", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "mx", 
-                                        {
-                                            "type": "iconst", 
-                                            "is_expr": true, 
-                                            "value": 1
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "req_unlimited", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "expr": {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 0
-                                }, 
-                                "ruletype": "expr", 
-                                "property": "locator_cyclic", 
-                                "type": "rule"
-                            }
-                        ], 
+                        "rules": [], 
                         "args": [
                             {
                                 "ref": [
@@ -1928,7 +1066,7 @@
                                 "is_expr": true
                             }
                         ], 
-                        "line": 45, 
+                        "line": 35, 
                         "type": "exec", 
                         "id": [
                             "rmax", 
@@ -1949,25 +1087,6 @@
                     "type": "id", 
                     "is_expr": true
                 }, 
-                "rules": [
-                    {
-                        "flags": [
-                            "unroll_at_once"
-                        ], 
-                        "ruletype": "flags", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
                 "where": {
                     "type": "luna"
                 }, 
@@ -1981,75 +1100,7 @@
             }, 
             {
                 "code": "set_real", 
-                "rules": [
-                    {
-                        "ruletype": "indexed", 
-                        "type": "rule", 
-                        "dfs": [
-                            {
-                                "ref": [
-                                    "mx", 
-                                    {
-                                        "type": "iconst", 
-                                        "is_expr": true, 
-                                        "value": 1
-                                    }, 
-                                    {
-                                        "ref": [
-                                            "count"
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }
-                                ], 
-                                "type": "id", 
-                                "is_expr": true
-                            }
-                        ]
-                    }, 
-                    {
-                        "items": [
-                            [
-                                "mx", 
-                                {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 1
-                                }, 
-                                {
-                                    "ref": [
-                                        "count"
-                                    ], 
-                                    "type": "id", 
-                                    "is_expr": true
-                                }
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "items": [
-                            [
-                                "maxdif"
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "req_unlimited", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "ref": [
@@ -2078,10 +1129,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 54, 
+                "line": 36, 
                 "type": "exec", 
                 "id": [
-                    "_l50"
+                    "_l36"
                 ]
             }
         ], 
@@ -2228,91 +1279,53 @@
             }, 
             {
                 "code": "print_info", 
-                "rules": [
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 20
+                        "value": 200
                     }, 
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 20
+                        "value": 200
                     }, 
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 20
+                        "value": 200
                     }, 
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 4
+                        "value": 32
                     }, 
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 10
+                        "value": 100
                     }
                 ], 
-                "line": 129, 
+                "line": 65, 
                 "type": "exec", 
                 "id": [
-                    "_l129"
+                    "_l65"
                 ]
             }, 
             {
                 "code": "init_dist", 
-                "rules": [
-                    {
-                        "items": [
-                            [
-                                "dft"
-                            ], 
-                            [
-                                "sft"
-                            ], 
-                            [
-                                "dim"
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "req_unlimited", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 20
+                        "value": 200
                     }, 
                     {
                         "type": "iconst", 
                         "is_expr": true, 
-                        "value": 4
+                        "value": 32
                     }, 
                     {
                         "ref": [
@@ -2336,69 +1349,17 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 134, 
+                "line": 67, 
                 "type": "exec", 
                 "id": [
-                    "_l131"
+                    "_l67"
                 ]
             }, 
             {
                 "body": [
                     {
-                        "type": "dfs", 
-                        "names": []
-                    }, 
-                    {
                         "code": "init_F", 
-                        "rules": [
-                            {
-                                "items": [
-                                    [
-                                        "sft"
-                                    ], 
-                                    [
-                                        "dim"
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "request", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "items": [
-                                    [
-                                        "F", 
-                                        {
-                                            "type": "iconst", 
-                                            "is_expr": true, 
-                                            "value": 0
-                                        }, 
-                                        {
-                                            "ref": [
-                                                "i"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "req_unlimited", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "expr": {
-                                    "ref": [
-                                        "i"
-                                    ], 
-                                    "type": "id", 
-                                    "is_expr": true
-                                }, 
-                                "ruletype": "expr", 
-                                "property": "locator_cyclic", 
-                                "type": "rule"
-                            }
-                        ], 
+                        "rules": [], 
                         "args": [
                             {
                                 "ref": [
@@ -2410,12 +1371,12 @@
                             {
                                 "type": "iconst", 
                                 "is_expr": true, 
-                                "value": 20
+                                "value": 200
                             }, 
                             {
                                 "type": "iconst", 
                                 "is_expr": true, 
-                                "value": 4
+                                "value": 32
                             }, 
                             {
                                 "ref": [
@@ -2451,7 +1412,7 @@
                                 "is_expr": true
                             }
                         ], 
-                        "line": 142, 
+                        "line": 70, 
                         "type": "exec", 
                         "id": [
                             "init_f", 
@@ -2472,7 +1433,7 @@
                         {
                             "type": "iconst", 
                             "is_expr": true, 
-                            "value": 4
+                            "value": 32
                         }, 
                         {
                             "type": "iconst", 
@@ -2481,25 +1442,6 @@
                         }
                     ]
                 }, 
-                "rules": [
-                    {
-                        "flags": [
-                            "unroll_at_once"
-                        ], 
-                        "ruletype": "flags", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
                 "where": {
                     "type": "luna"
                 }, 
@@ -2513,33 +1455,7 @@
             }, 
             {
                 "code": "set_real", 
-                "rules": [
-                    {
-                        "items": [
-                            [
-                                "maxdif", 
-                                {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 0
-                                }
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "req_unlimited", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "ref": [
@@ -2559,10 +1475,10 @@
                         "value": 1.0
                     }
                 ], 
-                "line": 151, 
+                "line": 72, 
                 "type": "exec", 
                 "id": [
-                    "_l148"
+                    "_l72"
                 ]
             }, 
             {
@@ -2573,35 +1489,7 @@
                     }, 
                     {
                         "code": "puasson", 
-                        "rules": [
-                            {
-                                "items": [
-                                    [
-                                        "maxdif", 
-                                        {
-                                            "ref": [
-                                                "it"
-                                            ], 
-                                            "type": "id", 
-                                            "is_expr": true
-                                        }
-                                    ]
-                                ], 
-                                "ruletype": "enum", 
-                                "property": "delete", 
-                                "type": "rule"
-                            }, 
-                            {
-                                "expr": {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 0
-                                }, 
-                                "ruletype": "expr", 
-                                "property": "locator_cyclic", 
-                                "type": "rule"
-                            }
-                        ], 
+                        "rules": [], 
                         "args": [
                             {
                                 "ref": [
@@ -2639,10 +1527,10 @@
                                 "is_expr": true
                             }
                         ], 
-                        "line": 158, 
+                        "line": 76, 
                         "type": "exec", 
                         "id": [
-                            "_l155"
+                            "_l76"
                         ]
                     }
                 ], 
@@ -2651,55 +1539,6 @@
                     "is_expr": true, 
                     "value": 0
                 }, 
-                "rules": [
-                    {
-                        "items": [
-                            [
-                                "maxdif", 
-                                {
-                                    "ref": [
-                                        "it"
-                                    ], 
-                                    "type": "id", 
-                                    "is_expr": true
-                                }
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "ruletype": "assign", 
-                        "property": "req_count", 
-                        "type": "rule", 
-                        "id": [
-                            "iter"
-                        ], 
-                        "val": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 3
-                        }
-                    }, 
-                    {
-                        "flags": [
-                            "unroll_at_once"
-                        ], 
-                        "ruletype": "flags", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
                 "type": "while", 
                 "wout": {
                     "ref": [
@@ -2754,7 +1593,7 @@
                                 {
                                     "type": "iconst", 
                                     "is_expr": true, 
-                                    "value": 10
+                                    "value": 100
                                 }
                             ]
                         }
@@ -2767,31 +1606,7 @@
             }, 
             {
                 "code": "print_int", 
-                "rules": [
-                    {
-                        "items": [
-                            [
-                                "iter"
-                            ], 
-                            [
-                                "mx"
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "ref": [
@@ -2801,66 +1616,15 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 170, 
+                "line": 80, 
                 "type": "exec", 
                 "id": [
-                    "_l167"
+                    "_l80"
                 ]
             }, 
             {
                 "code": "print", 
-                "rules": [
-                    {
-                        "ruletype": "indexed", 
-                        "type": "rule", 
-                        "dfs": [
-                            {
-                                "ref": [
-                                    "maxdif", 
-                                    {
-                                        "ref": [
-                                            "iter"
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }
-                                ], 
-                                "type": "id", 
-                                "is_expr": true
-                            }
-                        ]
-                    }, 
-                    {
-                        "items": [
-                            [
-                                "iter"
-                            ], 
-                            [
-                                "maxdif", 
-                                {
-                                    "ref": [
-                                        "iter"
-                                    ], 
-                                    "type": "id", 
-                                    "is_expr": true
-                                }
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "ref": [
@@ -2877,36 +1641,15 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 174, 
+                "line": 81, 
                 "type": "exec", 
                 "id": [
-                    "_l171"
+                    "_l81"
                 ]
             }, 
             {
                 "code": "find_maxdiff", 
-                "rules": [
-                    {
-                        "items": [
-                            [
-                                "iter"
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
-                ], 
+                "rules": [], 
                 "args": [
                     {
                         "ref": [
@@ -2951,109 +1694,10 @@
                         "is_expr": true
                     }
                 ], 
-                "line": 178, 
+                "line": 82, 
                 "type": "exec", 
                 "id": [
-                    "_l175"
-                ]
-            }, 
-            {
-                "body": [
-                    {
-                        "type": "dfs", 
-                        "names": []
-                    }, 
-                    {
-                        "code": "print_int", 
-                        "rules": [
-                            {
-                                "ruletype": "indexed", 
-                                "type": "rule", 
-                                "dfs": [
-                                    {
-                                        "ref": [
-                                            "sft"
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }, 
-                                    {
-                                        "ref": [
-                                            "dft"
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }, 
-                                    {
-                                        "ref": [
-                                            "dim"
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }, 
-                                    {
-                                        "ref": [
-                                            "mx"
-                                        ], 
-                                        "type": "id", 
-                                        "is_expr": true
-                                    }
-                                ]
-                            }, 
-                            {
-                                "expr": {
-                                    "type": "iconst", 
-                                    "is_expr": true, 
-                                    "value": 0
-                                }, 
-                                "ruletype": "expr", 
-                                "property": "locator_cyclic", 
-                                "type": "rule"
-                            }
-                        ], 
-                        "args": [
-                            {
-                                "type": "iconst", 
-                                "is_expr": true, 
-                                "value": 10
-                            }
-                        ], 
-                        "line": 183, 
-                        "type": "exec", 
-                        "id": [
-                            "_l181"
-                        ]
-                    }
-                ], 
-                "cond": {
-                    "ref": [
-                        "mx"
-                    ], 
-                    "type": "id", 
-                    "is_expr": true
-                }, 
-                "type": "if", 
-                "rules": [
-                    {
-                        "items": [
-                            [
-                                "mx"
-                            ]
-                        ], 
-                        "ruletype": "enum", 
-                        "property": "request", 
-                        "type": "rule"
-                    }, 
-                    {
-                        "expr": {
-                            "type": "iconst", 
-                            "is_expr": true, 
-                            "value": 0
-                        }, 
-                        "ruletype": "expr", 
-                        "property": "locator_cyclic", 
-                        "type": "rule"
-                    }
+                    "_l82"
                 ]
             }
         ], 
@@ -3061,123 +1705,7 @@
         "args": [], 
         "where": {
             "type": "luna"
-        }, 
-        "rules": [
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "dft"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "sft"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "dim"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "id", 
-                    "ref": [
-                        "j"
-                    ], 
-                    "is_expr": true
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "F", 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "i"
-                        ], 
-                        "is_expr": true
-                    }, 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "j"
-                        ], 
-                        "is_expr": true
-                    }
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "mx"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "iter"
-                ]
-            }, 
-            {
-                "expr": {
-                    "type": "iconst", 
-                    "is_expr": true, 
-                    "value": 0
-                }, 
-                "ruletype": "map", 
-                "property": "locator_cyclic", 
-                "type": "rule", 
-                "id": [
-                    "maxdif", 
-                    {
-                        "type": "id", 
-                        "ref": [
-                            "i"
-                        ], 
-                        "is_expr": true
-                    }
-                ]
-            }
-        ]
+        }
     }, 
     "copy_arr": {
         "type": "extern", 

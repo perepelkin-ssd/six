@@ -4,6 +4,5 @@
 
 #define JSON_THROW_USER(exception) ABORT("json exception")
 
-#include "json.hpp"
+//#include "json.hpp"
 
-typedef nlohmann::json json;

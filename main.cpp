@@ -50,6 +50,7 @@ int main(int argc, char **argv)
 	L.reset(new Logger("log.txt", std::to_string(rank), 1));
 	assert(desired==provided);
 	test_all();
+	auto start=MPI_Wtime();
 
 	if (argc<3 || argc>4) {
 		note("Usage: %s <path/to/json> <path/to/so> [main_arg]\n");
@@ -101,6 +102,7 @@ int main(int argc, char **argv)
 		comm.barrier();
 		delete rts;
 
+		note("Total time: "+std::to_string(MPI_Wtime()-start)+" sec.\n");
 		note("NORMAL SYSTEM STOP\n");
 	}
 

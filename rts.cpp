@@ -221,7 +221,7 @@ RTS::RTS(Comm &comm, CodeLib &clib)
 	});
 
 	comm_.start();
-	pool_.start(10);
+	pool_.start(8);
 }
 
 //CfEnv &RTS::get_env() { return env_; }
