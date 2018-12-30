@@ -20,6 +20,7 @@ extern std::string note_prefix;
 #define ABORT(msg) { \
 	fprintf(stderr, "\033[31;1mERROR:\033[0;1m %s \033[34m%s:%d\033[0m\n",\
 	std::string(msg).c_str(), __FILE__, __LINE__); \
+	print_trace(stderr); \
 	abort(); \
 }
 
@@ -37,6 +38,6 @@ extern std::string note_prefix;
 #include <sys/wait.h>
 #include <unistd.h>
 
-void print_trace();
+void print_trace(FILE *);
 
 #endif // COMMON_H_

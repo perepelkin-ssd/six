@@ -2,11 +2,14 @@
 #define BUFFER_H
 
 #include <cassert>
+#include <cstdlib>
 #include <deque>
 #include <functional>
 #include <memory>
 #include <memory.h>
 #include <tuple>
+
+#include "common.h"
 
 class Buffer;
 typedef std::shared_ptr<Buffer> BufferPtr;
@@ -140,7 +143,7 @@ public:
     static std::tuple<T, BufferPtr> extract(const BufferPtr &buf)
     {
         if(buf->size_<sizeof(T)) {
-            throw std::invalid_argument("Not enough data to extract value");
+			ABORT("Not enough data to extract value");
         }
 
         BufferPtr rest=Buffer::createSubBuffer(buf, sizeof(T));
@@ -170,6 +173,9 @@ public:
 		std::tie(res, buf)=extractItem<T>(buf);
 		return res;
 	}
+
+	static BufferPtr popBuffer(BufferPtr &buf);
+	static BufferPtr pack(Buffers &bufs, const BufferPtr &buf);
 
 private:
     void *data_;

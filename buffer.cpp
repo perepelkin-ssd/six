@@ -99,6 +99,23 @@ std::tuple<std::string, BufferPtr> Buffer::extractString(const BufferPtr &buf)
     return std::make_tuple(val, rest);
 }
 
+BufferPtr Buffer::popBuffer(BufferPtr &buf)
+{
+	size_t size=Buffer::pop<size_t>(buf);
+	if (size>buf->getSize()) {
+		throw std::invalid_argument("Buffer too small");
+	}
+	BufferPtr res=Buffer::createSubBuffer(buf, 0, size);
+	buf=Buffer::createSubBuffer(buf, size);
+	return res;
+}
+
+BufferPtr Buffer::pack(Buffers &bufs, const BufferPtr &buf)
+{
+	bufs.push_back(Buffer::create<size_t>(buf->getSize()));
+	bufs.push_back(buf);
+}
+
 BufferPtr Buffer::createSubBuffer(const BufferPtr &buf, size_t offset, size_t length)
 {
     if (length==std::string::npos) {

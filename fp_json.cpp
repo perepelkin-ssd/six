@@ -3,49 +3,46 @@
 
 #include "common.h"
 #include "jfp.h"
-#include "json.h"
 #include "remote_monitor.h"
 
-ExecJsonFp::ExecJsonFp(const std::string &json_content, Factory &fact,
+extern "C" {
+#include "fp.h"
+#include "sub.h"
+}
+
+ExecJsonFp::ExecJsonFp(const BufferPtr &fp_buf, Factory &fact,
 		const std::string &main_arg)
-	: fact_(fact), json_dump_(json::parse(json_content).dump()),
-		main_arg_(main_arg)
+	: fact_(fact), fp_buf_(fp_buf), main_arg_(main_arg)
 {}
 
 ExecJsonFp::ExecJsonFp(BufferPtr &buf, Factory &fact)
 	: fact_(fact)
 {
-	json_dump_=Buffer::popString(buf);
+	size_t size=Buffer::pop<size_t>(buf);
+	assert(size<=buf->getSize());
+	fp_buf_=Buffer::createSubBuffer(buf, 0, size);
+	buf=Buffer::createSubBuffer(buf, size);
 }
 
 void ExecJsonFp::run(const EnvironPtr &env)
 {
 	Id fp_id=env->create_id("_fp_");
 
-	json j=json::parse(json_dump_);
-
 	Buffers bufs;
 	bufs.push_back(Buffer::create(STAG_JfpReg));
 	fp_id.serialize(bufs);
-	bufs.push_back(Buffer::create(j.dump()));
+	Buffer::pack(bufs, fp_buf_);
 
-	std::string opt_arg="";
+	const void *fp=fp_buf_->getData();
+	const void *main_sub=fp_sub_by_name(fp, "main");
 
-	auto main_sub=j["main"];
-	if (main_sub["args"].size()!=0) {
-		assert(main_sub["args"].size()==1);
-		assert(main_sub["args"][0]["type"]=="string");
-		opt_arg="{\"type\": \"sconst\", \"value\": \"" + main_arg_
-			+ "\"}";
+	if (sub_params_count(main_sub)!=0) {
+		assert(sub_params_count(main_sub)==1);
 	}
 
 	RPtr rptr(env->comm().get_rank(), create_counter(env->comm().get_size(),
-		[env, fp_id, this, opt_arg]() {
-			env->submit(TaskPtr(new JfpExec(fp_id, env->create_id("_main"),
-			"{\"type\": \"exec\", \"code\": \"main\", \"args\": ["
-			+ opt_arg +
-			"]}", LocatorPtr(new CyclicLocator(0)),
-			fact_)));
+		[env, fp_id, this]() {
+			JfpExec::exec_main(env, fp_id, fact_, main_arg_);
 		}
 	));
 
@@ -56,11 +53,13 @@ void ExecJsonFp::run(const EnvironPtr &env)
 void ExecJsonFp::serialize(Buffers &bufs) const
 {
 	bufs.push_back(Buffer::create(STAG_ExecJsonFp));
-	bufs.push_back(Buffer::create(json_dump_));
+	bufs.push_back(Buffer::create<size_t>(fp_buf_->getSize()));
+	bufs.push_back(fp_buf_);
 }
 
 std::string ExecJsonFp::to_string() const
 {
-	return "(json_fp)";
+	return "(bfp of size " + std::to_string(fp_buf_->getSize()) + ")";
 }
+
 

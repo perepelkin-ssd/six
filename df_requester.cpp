@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "common.h"
+
 DfRequester::DfRequester(ThreadPool *pool, std::function<void(int)> wlc)
 	: pool_(pool), wl_changer_(wlc)
 {}

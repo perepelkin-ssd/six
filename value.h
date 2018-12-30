@@ -5,7 +5,6 @@
 #include <mutex>
 
 #include "id.h"
-#include "json.h"
 #include "printable.h"
 #include "serializable.h"
 
@@ -156,6 +155,8 @@ public:
 	std::pair<void *, size_t> grab_buffer(); // will make copy
 		// if this is not the only reference
 
+	const void *get_data() const;
+
 	virtual std::string to_string() const;
 
 	static CustomValue *create_copy(const void *, size_t);
@@ -177,22 +178,6 @@ private:
 	SharedBufferPtr buf_;
 	std::function<void()> delete_;
 	void default_delete();
-};
-
-class JsonValue : public Value
-{
-public:
-	virtual ~JsonValue() {}
-
-	JsonValue(const json &);
-
-	virtual const json &value() const;
-
-	virtual void serialize(Buffers &) const;
-
-	virtual ValueType type() const { return Other; }
-private:
-	json value_;
 };
 
 #endif // VALUE_H_

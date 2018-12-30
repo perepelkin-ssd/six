@@ -17,6 +17,10 @@
 #include "task.h"
 #include "tasks.h"
 
+extern "C" {
+#include "fp.h"
+}
+
 int rank;
 std::string note_prefix;
 void init_stags(Factory &fact);
@@ -53,7 +57,7 @@ int main(int argc, char **argv)
 	auto start=MPI_Wtime();
 
 	if (argc<3 || argc>4) {
-		note("Usage: %s <path/to/json> <path/to/so> [main_arg]\n");
+		note("Usage: %s <path/to/bfp> <path/to/so> [main_arg]\n");
 	} else {
 		MpiComm comm(MPI_COMM_WORLD);
 
@@ -78,22 +82,18 @@ int main(int argc, char **argv)
 
 		if (comm.get_rank()==0) {
 			std::string path(argv[1]);
+			long size;
+			void *fp=fp_load_sz(path.c_str(), &size);
+			BufferPtr fp_buf(new Buffer(fp, size, true));
+			free(fp);
 			//printf("executing path: %s\n", path.c_str());
-
-			std::ifstream f(path);
-			std::stringstream ss;
-			ss << f.rdbuf();//read the file
-			std::string j=ss.str();
-			if (j.size()==0) {
-				ABORT("JSON file not found: " + path);
-			}
 
 			std::string main_arg="";
 			if (argc==4) {
 				main_arg=argv[3];
 			}
 
-			rts->submit(TaskPtr(new ExecJsonFp(j, rts->factory(),
+			rts->submit(TaskPtr(new ExecJsonFp(fp_buf, rts->factory(),
 				main_arg)));
 		}
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 		delete rts;
 
 		note("Total time: "+std::to_string(MPI_Wtime()-start)+" sec.\n");
-		note("NORMAL SYSTEM STOP\n");
+		note("\033[38;5;29mNORMAL SYSTEM STOP\033[0m\n");
 	}
 
 	MPI_Finalize();

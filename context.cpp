@@ -4,6 +4,12 @@
 
 #include "common.h"
 
+extern "C" {
+#include "expr.h"
+#include "sub.h"
+#include "ref.h"
+}
+
 Context::Context(const Context &ctx)
 {
 	*this=ctx;
@@ -101,28 +107,28 @@ ValuePtr Context::get_df(const Id &id) const
 	return _get_df(id);
 }
 
-bool Context::can_eval(const json &expr) const
+bool Context::can_eval(const void *expr) const
 {
 	std::lock_guard<std::mutex> lk(m_);
 	return _can_eval(expr);
 }
 
-bool Context::can_eval_ref(const json &ref) const
+bool Context::can_eval_ref(const void *ref, size_t end_idx) const
 {
 	std::lock_guard<std::mutex> lk(m_);
-	return _can_eval_ref(ref);
+	return _can_eval_ref(ref, end_idx);
 }
 
-ValuePtr Context::eval(const json &expr) const
+ValuePtr Context::eval(const void *expr) const
 {
 	std::lock_guard<std::mutex> lk(m_);
 	return _eval(expr);
 }
 
-Id Context::eval_ref(const json &ref) const
+Id Context::eval_ref(const void *ref, size_t end_idx) const
 {
 	std::lock_guard<std::mutex> lk(m_);
-	return _eval_ref(ref);
+	return _eval_ref(ref, end_idx);
 }
 
 void Context::pull_name(const Name &name, const Context &ctx)
@@ -216,36 +222,70 @@ ValuePtr Context::_get_df(const Id &id) const
 	}
 }
 
-bool Context::_can_eval(const json &expr) const
+bool Context::_can_eval(const void *expr) const
 {
-	if (expr["type"]=="iconst" || expr["type"]=="rconst"
-			|| expr["type"]=="sconst") {
-		return true;
-	} else if (expr["type"]=="id") {
-		if (!_can_eval_ref(expr["ref"])) {
-			return false;
-		} else {
-			// param: 
-			Name base_name=expr["ref"][0].get<std::string>();
-
-			auto it=params_.find(base_name);
-
-			if (it!=params_.end()) {
-				auto val=it->second;
-				if (val->type()!=Reference) {
-					return true; // it's a constant
-				} else {
-					Id id=(*val);
-					for (auto i=1u; i<expr["ref"].size(); i++) {
-						id.push_back((int)(*_eval(expr["ref"][i])));
-					}
-					return dfs_.find(id)!=dfs_.end();
-				}
+	switch (expr_type(expr)) {
+		case EXPR_ICONST:
+		case EXPR_RCONST:
+		case EXPR_SCONST:
+			return true;
+		case EXPR_ID:
+			if (!_can_eval_ref(expr_id_value(expr))) {
+				return false;
 			} else {
-				return dfs_.find(_eval_ref(expr["ref"]))!=dfs_.end();
+				auto ref=expr_id_value(expr);
+				// param: 
+				Name base_name(ref_basename(ref));
+
+				auto it=params_.find(base_name);
+
+				if (it!=params_.end()) {
+					auto val=it->second;
+					if (val->type()!=Reference) {
+						return true; // it's a constant
+					} else {
+						Id id=(*val);
+						auto idx_count=ref_idx_count(ref);
+						for (auto i=0u; i<idx_count; i++) {
+							id.push_back((int)(*_eval(ref_idx(ref, i))));
+						}
+						return dfs_.find(id)!=dfs_.end();
+					}
+				} else {
+					return dfs_.find(_eval_ref(ref))!=dfs_.end();
+				}
 			}
-		}
-	} else if (expr["type"]=="+"
+		case EXPR_ICAST:
+		case EXPR_RCAST:
+		case EXPR_SCAST:
+			return _can_eval(expr_subexpr(expr));
+		case EXPR_PLUS:
+		case EXPR_MINUS:
+		case EXPR_MUL:
+		case EXPR_DIV:
+		case EXPR_MOD:
+		case EXPR_EQ:
+		case EXPR_NEQ:
+		case EXPR_LT:
+		case EXPR_LE:
+		case EXPR_GT:
+		case EXPR_GE:
+			{
+				auto op_count=expr_op_count(expr);
+				for (auto i=0u; i<op_count; i++) {
+					if (!_can_eval(expr_op(expr, i))) {
+						return false;
+					}
+				}
+				return true;
+			}
+		default:
+			expr_print(expr);
+			fprintf(stderr, "Context::_can_eval: fail\n");
+			ABORT("Not implemented type: "+std::to_string(expr_type(expr)));
+			NIMPL
+	}
+/*	} else if (expr["type"]=="+"
 			|| expr["type"]=="/"
 			|| expr["type"]=="-"
 			|| expr["type"]=="*"
@@ -262,106 +302,124 @@ bool Context::_can_eval(const json &expr) const
 		}
 		return true;
 	} else if (expr["type"]=="icast") {
-		return _can_eval(expr["expr"]);
-	} else {
-		fprintf(stderr, "Context::_can_eval: %s\n", expr.dump(2).c_str());
-		ABORT("Not implemented type: " + expr["type"].dump());
-		NIMPL
-	}
+		return _can_eval(expr["expr"]);*/
 }
 
-bool Context::_can_eval_ref(const json &ref) const
+bool Context::_can_eval_ref(const void *ref, size_t end_idx) const
 {
-	for (auto i=1u; i<ref.size(); i++) {
-		if (!_can_eval(ref[i])) {
+	auto idx_count=ref_idx_count(ref);
+	for (auto i=0; i<idx_count && i<end_idx; i++) {
+		if (!_can_eval(ref_idx(ref, i))) {
 			return false;
 		}
 	}
 	return true;
 }
 
-ValuePtr Context::_eval(const json &expr) const
+ValuePtr Context::_eval(const void *expr) const
 {
-	if (expr["type"]=="iconst") {
-		return ValuePtr(new IntValue(expr["value"].get<int>()));
-	} else if (expr["type"]=="rconst") {
-		return ValuePtr(new RealValue(expr["value"].get<double>()));
-	} else if (expr["type"]=="sconst") {
-		return ValuePtr(new StringValue(expr["value"].get<std::string>()));
-	} else if (expr["type"]=="id") {
-		auto base_name=expr["ref"][0];
-		auto it=params_.find(base_name);
-		if (it!=params_.end()) {
-			auto val=it->second;
-			if (val->type()!=Reference) {
-				if (expr["ref"].size()==1) {
-					return val;
+	switch (expr_type(expr)) {
+		case EXPR_ICONST:
+			return ValuePtr(new IntValue(expr_iconst_value(expr)));
+		case EXPR_RCONST:
+			return ValuePtr(new RealValue(expr_rconst_value(expr)));
+		case EXPR_SCONST:
+			return ValuePtr(new StringValue(expr_sconst_value(expr)));
+		case EXPR_ID:
+			{
+				auto ref=expr_id_value(expr);
+				auto base_name(ref_basename(ref));
+				auto it=params_.find(base_name);
+				if (it!=params_.end()) {
+					auto val=it->second;
+					if (val->type()!=Reference) {
+						if (ref_idx_count(ref)==0) {
+							return val;
+						} else {
+							ref_print(ref);
+							ABORT("index in parameter");
+						}
+					} else {
+						Id id=(*val);
+						auto idx_count=ref_idx_count(ref);
+						for (auto i=0; i<idx_count; i++) {
+							id.push_back((int)(*_eval(ref_idx(ref, i))));
+						}
+						return _get_df(id);
+					}
 				} else {
-					fprintf(stderr, "Context::_eval: index in parameter: "
-						"%s\n", expr["ref"].dump(2).c_str());
-					ABORT("");
+					return _get_df(_eval_ref(ref));
 				}
-			} else {
-				Id id=(*val);
-				for (auto i=1u; i<expr["ref"].size(); i++) {
-					id.push_back((int)(*_eval(expr["ref"][i])));
-				}
-				return _get_df(id);
 			}
-		} else {
-			return _get_df(_eval_ref(expr["ref"]));
-		}
-	} else if (expr["type"]=="+"
-			|| expr["type"]=="/"
-			|| expr["type"]=="-"
-			|| expr["type"]=="*"
-			|| expr["type"]=="<"
-			|| expr["type"]==">"
-			|| expr["type"]=="=="
-			|| expr["type"]=="&&"
-			|| expr["type"]=="%"
-			) {
-		return _eval_op(expr["type"], expr["operands"]);
-	} else if (expr["type"]=="icast") {
-		return cast("int", _eval(expr["expr"]));
-	} else {
-		fprintf(stderr, "Context::_eval: %s\n", expr.dump(2).c_str());
-		ABORT("Expr type not supported: " + expr["type"].dump());
+		case EXPR_ICAST:
+			return cast(PARAM_INT, _eval(expr_subexpr(expr)));
+		case EXPR_RCAST:
+			return cast(PARAM_REAL, _eval(expr_subexpr(expr)));
+		case EXPR_SCAST:
+			return cast(PARAM_STRING, _eval(expr_subexpr(expr)));
+		case EXPR_PLUS:
+		case EXPR_MINUS:
+		case EXPR_MUL:
+		case EXPR_DIV:
+		case EXPR_MOD:
+		case EXPR_EQ:
+		case EXPR_NEQ:
+		case EXPR_LT:
+		case EXPR_LE:
+		case EXPR_GT:
+		case EXPR_GE:
+			return _eval_op(expr_type(expr), expr);
+		default:
+			ABORT("Expr type not supported: " 
+				+ std::to_string(expr_type(expr)));
 	}
 }
-
-ValuePtr Context::_eval_op(const std::string &op, const json &ops) const
+ValuePtr Context::_eval_op(BYTE op, const void *expr) const
 {
-	if (ops.size()!=2) {
-		fprintf(stderr, "Context::_eval_op: non-binary op: %s on %s\n",
-			op.c_str(), ops.dump(2).c_str());
+	if (expr_op_count(expr)!=2) {
+		fprintf(stderr, "Context::_eval_op: non-binary op: %d\n", op);
 		NIMPL
 	}
 	
-	ValuePtr op0=_eval(ops[0]), op1=_eval(ops[1]);
+	ValuePtr op0=_eval(expr_op(expr, 0)), op1=_eval(expr_op(expr, 1));
 
 	if (op0->type()==Integer && op1->type()==Integer) {
 		int res;
-		if (op=="+") { res=(int)(*op0)+(int)(*op1); }
-		else if (op=="/") { res=(int)(*op0)/(int)(*op1); }
-		else if (op=="-") { res=(int)(*op0)-(int)(*op1); }
-		else if (op=="*") { res=(int)(*op0)*(int)(*op1); }
-		else if (op=="%") { res=(int)(*op0)%(int)(*op1); }
-		else if (op=="<") { res=((int)(*op0)<(int)(*op1)? 1: 0); }
-		else if (op=="==") { res=((int)(*op0)==(int)(*op1)? 1: 0); }
+		switch(op) {
+			case EXPR_PLUS: res=(int)(*op0)+(int)(*op1); break;
+			case EXPR_MINUS: res=(int)(*op0)-(int)(*op1); break;
+			case EXPR_MUL: res=(int)(*op0)*(int)(*op1); break;
+			case EXPR_DIV: res=(int)(*op0)/(int)(*op1); break;
+			case EXPR_MOD: res=(int)(*op0)%(int)(*op1); break;
+			case EXPR_EQ: res=((int)(*op0)==(int)(*op1)? 1: 0); break;
+			case EXPR_NEQ: res=((int)(*op0)!=(int)(*op1)? 1: 0); break;
+			case EXPR_LT: res=((int)(*op0)<(int)(*op1)? 1: 0); break;
+			case EXPR_LE: res=((int)(*op0)<=(int)(*op1)? 1: 0); break;
+			case EXPR_GT: res=((int)(*op0)>(int)(*op1)? 1: 0); break;
+			case EXPR_GE: res=((int)(*op0)>=(int)(*op1)? 1: 0); break;
+			default:
+				ABORT("Can't eval: " + op0->to_string() 
+					+ "<"+std::to_string(op) +">"+ op1->to_string());
+		}
+		/*
 		else if (op=="&&") { res=((int)(*op0)&&(int)(*op1)? 1: 0); }
 		else { 
-			ABORT("Can't eval: " + op0->to_string() + op 
-			+ op1->to_string());
 		}
+		*/
 		return ValuePtr(new IntValue(res));
 	} else if ((op0->type()==Integer||op0->type()==Real)
 			&& ((op1->type()==Integer||op1->type()==Real))) {
 		double res;
-		if (op=="+") { res=(double)(*op0)+(double)(*op1); }
-		else if (op=="/") { res=(double)(*op0)/(double)(*op1); }
-		else if (op=="-") { res=(double)(*op0)-(double)(*op1); }
-		else if (op=="*") { res=(double)(*op0)*(double)(*op1); }
+		switch (op) {
+			case EXPR_PLUS: res=(double)(*op0)+(double)(*op1); break;
+			case EXPR_MINUS: res=(double)(*op0)-(double)(*op1); break;
+			case EXPR_MUL: res=(double)(*op0)*(double)(*op1); break;
+			case EXPR_DIV: res=(double)(*op0)/(double)(*op1); break;
+			default:
+				ABORT("Can't eval: " + op0->to_string() 
+					+ std::to_string(op) + op1->to_string());
+		}
+		/*
 		else if (op=="<") { return ValuePtr(new IntValue(
 			(double)(*op0)<(double)(*op1)? 1: 0)); }
 		else if (op==">") { return ValuePtr(new IntValue(
@@ -369,17 +427,18 @@ ValuePtr Context::_eval_op(const std::string &op, const json &ops) const
 		else if (op=="==") { return ValuePtr(new IntValue(
 			(double)(*op0)==(double)(*op1)? 1: 0)); }
 		else { fprintf(stderr, "OP NIMPL: %s\n", op.c_str()); NIMPL }
+		*/
 		return ValuePtr(new RealValue(res));
 	} else {
-		fprintf(stderr, "Operation result type not deduced for %s %s %s\n",
-			op0->to_string().c_str(), op.c_str(), op1->to_string().c_str());
+		fprintf(stderr, "Operation result type not deduced for %s %d %s\n",
+			op0->to_string().c_str(), op, op1->to_string().c_str());
 		NIMPL
 	}
 }
 
-Id Context::_eval_ref(const json &ref) const
+Id Context::_eval_ref(const void *ref, size_t end_idx) const
 {
-	Name ref_name=ref[0].get<std::string>();
+	Name ref_name(ref_basename(ref));
 
 	Id id;
 
@@ -400,16 +459,16 @@ Id Context::_eval_ref(const json &ref) const
 		auto it=names_.find(ref_name);
 
 		if (it==names_.end()) {
-			fprintf(stderr, "Context::_eval_ref: name %s is missing"
-				" in ref %s\n",
-				ref_name.c_str(), ref.dump().c_str());
-			ABORT("");
+			ref_print(ref);
+			ABORT("Context::_eval_ref: name " + ref_name + " is missing"
+				" in ref");
 		}
 		id=it->second;
 	}
 
-	for (auto i=1u; i<ref.size(); i++) {
-		id.push_back((int)(*_eval(ref[i])));
+	auto idx_count=ref_idx_count(ref);
+	for (auto i=0u; i<idx_count && i<end_idx; i++) {
+		id.push_back((int)(*_eval(ref_idx(ref, i))));
 	}
 
 	return id;
@@ -507,21 +566,21 @@ std::string Context::_to_string() const
 	return os.str();
 }
 
-ValuePtr Context::cast(const std::string &type, const ValuePtr &val)
+ValuePtr Context::cast(BYTE type, const ValuePtr &val)
 {
-	if (type=="int") {
+	if (type==PARAM_INT) {
 		return ValuePtr(new IntValue((int)(*val)));
-	} else if (type=="string") {
+	} else if (type==PARAM_STRING) {
 		return ValuePtr(new StringValue((std::string)(*val)));
-	} else if (type=="name") {
+	} else if (type==PARAM_NAME) {
 		return ValuePtr(new NameValue((Id)(*val)));
-	} else if (type=="value") {
+	} else if (type==PARAM_VALUE) {
 		return ValuePtr(new CustomValue(*val));
-	} else if (type=="real") {
+	} else if (type==PARAM_REAL) {
 		return ValuePtr(new RealValue(*val));
 	} else {
-		fprintf(stderr, "Context::cast: casting (%s)%s\n",
-			type.c_str(), val->to_string().c_str());
+		fprintf(stderr, "Context::cast: casting (%d)%s\n",
+			(int)type, val->to_string().c_str());
 		NIMPL
 	}
 }

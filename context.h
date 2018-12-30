@@ -31,11 +31,11 @@ public:
 	ValuePtr get_param(const Name &) const;
 	ValuePtr get_df(const Id &) const;
 
-	bool can_eval(const json &) const;
-	bool can_eval_ref(const json &) const;
+	bool can_eval(const void *expr) const;
+	bool can_eval_ref(const void *ref, size_t last_index=(size_t)-1) const;
 
-	ValuePtr eval(const json &) const;
-	Id eval_ref(const json &) const;
+	ValuePtr eval(const void *expr) const;
+	Id eval_ref(const void *ref, size_t last_index=(size_t)-1) const;
 
 	void pull_name(const Name &name, const Context &);
 	void pull_names(const Context &);
@@ -45,7 +45,7 @@ public:
 
 	virtual std::string to_string() const;
 	
-	static ValuePtr cast(const std::string &type, const ValuePtr &val);
+	static ValuePtr cast(uint8_t type, const ValuePtr &val);
 
 	// get all base names, through which given ID is accessible
 	std::set<std::pair<Name, std::vector<int> > > 
@@ -65,12 +65,12 @@ private:
 	ValuePtr _get_param(const Name &) const;
 	ValuePtr _get_df(const Id &) const;
 
-	bool _can_eval(const json &) const;
-	bool _can_eval_ref(const json &) const;
+	bool _can_eval(const void *expr) const;
+	bool _can_eval_ref(const void *ref, size_t end_idx=(size_t)-1) const;
 
-	ValuePtr _eval(const json &expr) const;
-	ValuePtr _eval_op(const std::string &op, const json &expr) const;
-	Id _eval_ref(const json &) const;
+	ValuePtr _eval(const void *expr) const;
+	ValuePtr _eval_op(uint8_t op, const void *expr) const;
+	Id _eval_ref(const void *ref, size_t end_idx=(size_t)-1) const;
 
 	void _pull_name(const Name &name, const Context &);
 	void _pull_names(const Context &);

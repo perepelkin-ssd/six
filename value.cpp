@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 
+#include "common.h"
 #include "stags.h"
 
 Value::operator int() const
@@ -267,6 +268,14 @@ std::pair<void *, size_t> CustomValue::grab_buffer()
 	}
 }
 
+const void *CustomValue::get_data() const
+{
+	if (!buf_) { ABORT("No buffer"); }
+	std::unique_lock<std::mutex> lk(buf_->m);
+	assert(buf_->refs>0);
+	return buf_->data;
+}
+
 std::string CustomValue::to_string() const
 {
 	if (!buf_) {
@@ -280,6 +289,7 @@ std::string CustomValue::to_string() const
 CustomValue *CustomValue::create_take(void *data, size_t size,
 	std::function<void()> deleter)
 {
+	WARN("Not actually taking, but copying o_O");
 	auto *res=new CustomValue();
 	res->buf_.reset(new SharedBuffer());
 	std::lock_guard<std::mutex> lk(res->buf_->m);
@@ -295,16 +305,16 @@ CustomValue *CustomValue::create_take(void *data, size_t size,
 	return res;
 }
 
-JsonValue::JsonValue(const json &value)
-	: value_(value)
-{}
-
-const json &JsonValue::value() const
+CustomValue *CustomValue::create_copy(const void *data, size_t size)
 {
-	return value_;
+	auto *res=new CustomValue();
+	res->buf_.reset(new SharedBuffer());
+	std::lock_guard<std::mutex> lk(res->buf_->m);
+	res->buf_->size=size;
+	res->buf_->data=operator new(res->buf_->size);
+	res->buf_->refs=1;
+	memcpy(res->buf_->data, data, res->buf_->size);
+	res->delete_=[res](){ res->default_delete(); };
+	return res;
 }
 
-void JsonValue::serialize(Buffers &bufs) const
-{
-	bufs.push_back(Buffer::create(value_.dump()));
-}
